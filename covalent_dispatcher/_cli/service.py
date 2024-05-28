@@ -56,7 +56,6 @@ from sqlalchemy import exc as sa_exc
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
-from .migrate import migrate_pickled_result_object
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -785,17 +784,6 @@ def logs() -> None:
             f"{UI_LOGFILE} not found. Restart the server to create a new log file.",
             style="bold red",
         )
-
-
-@click.command()
-@click.argument("result_pickle_path")
-def migrate_legacy_result_object(result_pickle_path) -> None:
-    """Migrate a legacy result object
-
-    Example: `covalent migrate-legacy-result-object result.pkl`
-    """
-
-    migrate_pickled_result_object(result_pickle_path)
 
 
 # Cluster CLI handlers (client side wrappers for the async handlers exposed

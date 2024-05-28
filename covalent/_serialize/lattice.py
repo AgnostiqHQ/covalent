@@ -40,10 +40,6 @@ ASSET_TYPES = {
     "workflow_function_string": AssetType.TEXT,
     "doc": AssetType.TEXT,
     "inputs": AssetType.TRANSPORTABLE,
-    "named_args": AssetType.TRANSPORTABLE,
-    "named_kwargs": AssetType.TRANSPORTABLE,
-    "cova_imports": AssetType.JSONABLE,
-    "lattice_imports": AssetType.TEXT,
     "hooks": AssetType.JSONABLE,
 }
 
@@ -112,33 +108,6 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         lat.inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
     )
 
-    # Deprecate
-    named_args_asset = save_asset(
-        lat.named_args,
-        ASSET_TYPES["named_args"],
-        storage_path,
-        ASSET_FILENAME_MAP["named_args"],
-    )
-    named_kwargs_asset = save_asset(
-        lat.named_kwargs,
-        ASSET_TYPES["named_kwargs"],
-        storage_path,
-        ASSET_FILENAME_MAP["named_kwargs"],
-    )
-    cova_imports_asset = save_asset(
-        lat.cova_imports,
-        ASSET_TYPES["cova_imports"],
-        storage_path,
-        ASSET_FILENAME_MAP["cova_imports"],
-    )
-    lattice_imports_asset = save_asset(
-        lat.lattice_imports,
-        ASSET_TYPES["lattice_imports"],
-        storage_path,
-        ASSET_FILENAME_MAP["lattice_imports"],
-    )
-
-    # NOTE: these are actually JSONable
     hooks_asset = save_asset(
         lat.metadata["hooks"],
         ASSET_TYPES["hooks"],
@@ -151,10 +120,6 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         workflow_function_string=workflow_func_str_asset,
         doc=docstring_asset,
         inputs=inputs_asset,
-        named_args=named_args_asset,
-        named_kwargs=named_kwargs_asset,
-        cova_imports=cova_imports_asset,
-        lattice_imports=lattice_imports_asset,
         hooks=hooks_asset,
     )
 
@@ -166,20 +131,12 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
     )
     doc = load_asset(assets.doc, ASSET_TYPES["doc"])
     inputs = load_asset(assets.inputs, ASSET_TYPES["inputs"])
-    named_args = load_asset(assets.named_args, ASSET_TYPES["named_args"])
-    named_kwargs = load_asset(assets.named_kwargs, ASSET_TYPES["named_kwargs"])
-    cova_imports = load_asset(assets.cova_imports, ASSET_TYPES["cova_imports"])
-    lattice_imports = load_asset(assets.lattice_imports, ASSET_TYPES["lattice_imports"])
     hooks = load_asset(assets.hooks, ASSET_TYPES["hooks"])
     return {
         "workflow_function": workflow_function,
         "workflow_function_string": workflow_function_string,
         "__doc__": doc,
         "inputs": inputs,
-        "named_args": named_args,
-        "named_kwargs": named_kwargs,
-        "cova_imports": cova_imports,
-        "lattice_imports": lattice_imports,
         "metadata": {
             "hooks": hooks,
         },
