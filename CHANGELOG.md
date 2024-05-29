@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.235.0-rc.0] - 2024-05-29
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
 ### Changed
 
 - Updated Slurm plugin docs to note possible SSH limitation
