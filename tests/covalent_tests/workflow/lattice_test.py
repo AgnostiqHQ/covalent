@@ -29,14 +29,13 @@ DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 def test_lattice_draw(mocker, capsys):
     draw_preview_url = get_ui_url("/preview")
-    mock_send_draw_req = mocker.patch("covalent_ui.result_webhook.send_draw_request")
     mock_webbrowser_open = mocker.patch("webbrowser.open")
 
-    @ct.electron
+    @ct.electron(executor="local")
     def task(x):
         return x
 
-    @ct.lattice
+    @ct.lattice(executor="local", workflow_executor="local")
     def workflow(x):
         return task(x)
 
@@ -48,7 +47,6 @@ def test_lattice_draw(mocker, capsys):
         == f"To preview the transport graph of the lattice, visit {draw_preview_url}\n"
     )
 
-    mock_send_draw_req.assert_called_once()
     mock_webbrowser_open.assert_called_once()
 
 

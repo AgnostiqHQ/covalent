@@ -851,16 +851,6 @@ def wait(child, parents):
         return child
 
 
-@electron
-def to_decoded_electron_collection(**x):
-    """Interchanges order of serialize -> collection"""
-    collection = list(x.values())[0]
-    if isinstance(collection, list):
-        return TransportableObject.deserialize_list(collection)
-    elif isinstance(collection, dict):
-        return TransportableObject.deserialize_dict(collection)
-
-
 # Copied from runner.py
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
     import os
