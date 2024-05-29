@@ -22,7 +22,7 @@ import requests
 import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.utils import get_ui_url
+from covalent._shared_files.utils import get_named_params, get_ui_url
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
 app_log = logger.app_log
@@ -78,8 +78,11 @@ def send_draw_request(lattice) -> None:
 
     graph = lattice.transport_graph.get_internal_graph_copy()
 
-    named_args = lattice.named_args.get_deserialized()
-    named_kwargs = lattice.named_kwargs.get_deserialized()
+    inputs = lattice.inputs.get_deserialized()
+    fn = lattice.workflow_function.get_deserialized()
+    args = inputs["args"]
+    kwargs = inputs["kwargs"]
+    named_args, named_kwargs = get_named_params(fn, args, kwargs)
 
     draw_request = json.dumps(
         {

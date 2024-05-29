@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from ..executor import BaseExecutor
     from ..triggers import BaseTrigger
 
-from .._shared_files.utils import get_imports, get_serialized_function_str
+from .._shared_files.utils import get_serialized_function_str
 
 consumable_constraints = []
 
@@ -81,10 +81,7 @@ class Lattice:
         self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
         self.inputs = None
-        self.named_args = None
-        self.named_kwargs = None
         self.electron_outputs = {}
-        self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
@@ -105,8 +102,6 @@ class Lattice:
             attributes["transport_graph"] = self.transport_graph.serialize_to_json()
 
         attributes["inputs"] = self.inputs.to_dict()
-        attributes["named_args"] = self.named_args.to_dict()
-        attributes["named_kwargs"] = self.named_kwargs.to_dict()
 
         attributes["electron_outputs"] = {}
         for node_name, output in self.electron_outputs.items():
@@ -121,8 +116,6 @@ class Lattice:
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
 
-        attributes["named_kwargs"] = TransportableObject.from_dict(attributes["named_kwargs"])
-        attributes["named_args"] = TransportableObject.from_dict(attributes["named_args"])
         attributes["inputs"] = TransportableObject.from_dict(attributes["inputs"])
 
         if attributes["transport_graph"]:
@@ -209,9 +202,6 @@ class Lattice:
         new_kwargs = dict(named_kwargs.items())
 
         self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
-        self.named_args = TransportableObject(named_args)
-        self.named_kwargs = TransportableObject(named_kwargs)
-        self.lattice_imports, self.cova_imports = get_imports(workflow_function)
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "hooks"}

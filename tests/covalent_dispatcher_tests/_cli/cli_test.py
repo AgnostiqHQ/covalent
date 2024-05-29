@@ -61,7 +61,6 @@ def test_cli_commands():
         "db",
         "deploy",
         "logs",
-        "migrate-legacy-result-object",
         "purge",
         "restart",
         "start",

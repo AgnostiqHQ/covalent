@@ -19,7 +19,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from .asset import AssetSchema
 from .common import StatusEnum
@@ -91,6 +91,8 @@ class ElectronAssets(BaseModel):
     # user dependent assets
     hooks: AssetSchema
 
+    _custom: Optional[Dict[str, AssetSchema]] = None
+
 
 class ElectronMetadata(BaseModel):
     task_group_id: int
@@ -103,6 +105,8 @@ class ElectronMetadata(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
 
+    _custom: Optional[Dict] = None
+
     # For use by redispatch
     def reset(self):
         self.status = StatusEnum.NEW_OBJECT
@@ -114,12 +118,3 @@ class ElectronSchema(BaseModel):
     id: int
     metadata: ElectronMetadata
     assets: ElectronAssets
-    custom_assets: Optional[Dict[str, AssetSchema]] = None
-
-    @field_validator("custom_assets")
-    def check_custom_asset_keys(cls, v):
-        if v is not None:
-            for key in v:
-                if key in ASSET_FILENAME_MAP:
-                    raise ValueError(f"Asset {key} conflicts with built-in key")
-        return v
