@@ -41,11 +41,7 @@ class LatticeAssetKey(str, Enum):
     workflow_function_string = "workflow_function_string"
     doc = "doc"
     inputs = "inputs"
-    named_args = "named_args"
-    named_kwargs = "named_kwargs"
     hooks = "hooks"
-    cova_imports = "cova_imports"
-    lattice_imports = "lattice_imports"
 
 
 class ElectronAssetKey(str, Enum):
