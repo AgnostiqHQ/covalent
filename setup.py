@@ -219,6 +219,7 @@ setup_info = {
         "aws": ["boto3>=1.20.48"],
         "azure": ["azure-identity>=1.13.0", "azure-storage-blob>=12.16.0"],
         "braket": ["amazon-braket-pennylane-plugin>=1.17.4", "boto3>=1.28.5"],
+        "cloud": ["covalent-cloud"],
         "gcp": ["google-auth>=2.16.2", "google-cloud-storage>=2.7.0"],
         "mysql": ["mysqlclient>=2.1.1"],
         "postgres": ["psycopg2-binary>=2.9.5"],
