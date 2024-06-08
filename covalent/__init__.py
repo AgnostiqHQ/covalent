@@ -52,7 +52,7 @@ from ._workflow.electron import wait  # nopycln: import
 from .executor.utils import get_context  # nopycln: import
 
 try:
-    # try to load qelectron modules 
+    # try to load qelectron modules
     from ._workflow.qelectron import qelectron  # nopycln: import
     from .quantum import QCluster  # nopycln: import
 except:
