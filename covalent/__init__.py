@@ -51,9 +51,12 @@ from ._workflow import (  # nopycln: import
 from ._workflow.electron import wait  # nopycln: import
 from .executor.utils import get_context  # nopycln: import
 
-with contextlib.suppress(ImportError):
+try:
+    # try to load qelectron modules 
     from ._workflow.qelectron import qelectron  # nopycln: import
     from .quantum import QCluster  # nopycln: import
+except:
+    pass
 
 __all__ = [s for s in dir() if not s.startswith("_")]
 
