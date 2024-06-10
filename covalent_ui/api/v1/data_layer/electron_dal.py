@@ -105,9 +105,11 @@ class Electrons:
                         "job_id": circuit["circuit_id"],
                         "start_time": circuit["save_time"],
                         "executor": circuit["result_metadata"]["executor_name"],
-                        "status": "COMPLETED"
-                        if len(circuit["result"]) != 0 and len(circuit["result_metadata"]) != 0
-                        else "RUNNING",
+                        "status": (
+                            "COMPLETED"
+                            if len(circuit["result"]) != 0 and len(circuit["result_metadata"]) != 0
+                            else "RUNNING"
+                        ),
                     },
                     jobs.values(),
                 )
@@ -164,39 +166,49 @@ class Electrons:
             selected_job["result"] = str(selected_job["result"])[1:-1]
             job_overview = {
                 "overview": {
-                    "job_name": selected_job["circuit_name"]
-                    if "circuit_name" in selected_job
-                    else None,
-                    "backend": selected_job["result_metadata"]["executor_backend_name"]
-                    if "result_metadata" in selected_job
-                    and "executor_backend_name" in selected_job["result_metadata"]
-                    else None,
-                    "time_elapsed": selected_job["execution_time"]
-                    if "execution_time" in selected_job
-                    else None,
+                    "job_name": (
+                        selected_job["circuit_name"] if "circuit_name" in selected_job else None
+                    ),
+                    "backend": (
+                        selected_job["result_metadata"]["executor_backend_name"]
+                        if "result_metadata" in selected_job
+                        and "executor_backend_name" in selected_job["result_metadata"]
+                        else None
+                    ),
+                    "time_elapsed": (
+                        selected_job["execution_time"]
+                        if "execution_time" in selected_job
+                        else None
+                    ),
                     "result": selected_job["result"] if "result" in selected_job else None,
-                    "status": "COMPLETED"
-                    if len(selected_job["result"]) != 0
-                    and len(selected_job["result_metadata"]) != 0
-                    else "RUNNING",
-                    "start_time": selected_job["save_time"]
-                    if "save_time" in selected_job
-                    else None,
+                    "status": (
+                        "COMPLETED"
+                        if len(selected_job["result"]) != 0
+                        and len(selected_job["result_metadata"]) != 0
+                        else "RUNNING"
+                    ),
+                    "start_time": (
+                        selected_job["save_time"] if "save_time" in selected_job else None
+                    ),
                 },
                 "circuit": {
                     "total_qbits": None,
                     "depth": None,
-                    "circuit_diagram": selected_job["circuit_diagram"]
-                    if "circuit_diagram" in selected_job
-                    else None,
+                    "circuit_diagram": (
+                        selected_job["circuit_diagram"]
+                        if "circuit_diagram" in selected_job
+                        else None
+                    ),
                 },
                 "executor": {
-                    "name": selected_job["qexecutor"]["name"]
-                    if "qexecutor" in selected_job and "name" in selected_job["qexecutor"]
-                    else None,
-                    "executor": str(selected_job["qexecutor"])
-                    if "qexecutor" in selected_job
-                    else None,
+                    "name": (
+                        selected_job["qexecutor"]["name"]
+                        if "qexecutor" in selected_job and "name" in selected_job["qexecutor"]
+                        else None
+                    ),
+                    "executor": (
+                        str(selected_job["qexecutor"]) if "qexecutor" in selected_job else None
+                    ),
                 },
             }
 

@@ -69,7 +69,6 @@ class TaskSpec(BaseModel):
 
 
 class ResourceMap(BaseModel):
-
     """Map resource identifiers to URIs.
 
     The resources may be loaded in the compute environment from these

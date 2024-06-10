@@ -28,7 +28,6 @@ from ..quantum.qclient.core import middleware
 
 
 class QEDevice(QubitDevice):
-
     """
     The purpose of this device is to redirect circuit execution through Covalent's
     Quantum Executors and to enable asynchronous execution.

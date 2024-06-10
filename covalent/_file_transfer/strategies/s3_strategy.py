@@ -27,7 +27,6 @@ log_stack_info = logger.log_stack_info
 
 
 class S3(FileTransferStrategy):
-
     """
     Implements Base FileTransferStrategy class to upload/download files from S3 Bucket.
     """
