@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Ignoring all errors when importing qelectrons instead of only `ImportError`
+
 ## [0.235.0-rc.0] - 2024-05-29
 
 ### Authors
