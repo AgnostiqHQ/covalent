@@ -429,6 +429,11 @@ class Electron:
             active_lattice.replace_electrons[name] = replacement_electron
             return bound_electron
 
+        # Avoid direct attribute access since that might trigger
+        # Electron.__getattr__ when executors build sublattices
+        # constructed with older versions of Covalent
+        function_string = self.__dict__.get("_function_string")
+
         # Handle sublattices by injecting _build_sublattice_graph node
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
@@ -443,7 +448,6 @@ class Electron:
             )
 
             name = sublattice_prefix + self.function.__name__
-            function_string = self._function_string
             bound_electron = sub_electron(
                 self.function, json.dumps(parent_metadata), *args, **kwargs
             )
@@ -464,7 +468,7 @@ class Electron:
             name=self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
-            function_string=self._function_string,
+            function_string=function_string,
             task_group_id=self.task_group_id if self.packing_tasks else None,
         )
         self.task_group_id = self.task_group_id if self.packing_tasks else self.node_id
@@ -847,16 +851,6 @@ def wait(child, parents):
         return child
 
 
-@electron
-def to_decoded_electron_collection(**x):
-    """Interchanges order of serialize -> collection"""
-    collection = list(x.values())[0]
-    if isinstance(collection, list):
-        return TransportableObject.deserialize_list(collection)
-    elif isinstance(collection, dict):
-        return TransportableObject.deserialize_dict(collection)
-
-
 # Copied from runner.py
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
     import os
@@ -867,6 +861,8 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)
+
+    DISABLE_LEGACY_SUBLATTICES = os.environ.get("COVALENT_DISABLE_LEGACY_SUBLATTICES") == "1"
 
     try:
         # Attempt multistage sublattice dispatch. For now we require
@@ -891,5 +887,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     except Exception as ex:
         # Fall back to legacy sublattice handling
+        if DISABLE_LEGACY_SUBLATTICES:
+            raise
         print("Falling back to legacy sublattice handling")
         return sub.serialize_to_json()

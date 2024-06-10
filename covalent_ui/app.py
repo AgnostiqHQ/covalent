@@ -133,7 +133,6 @@ if __name__ == "__main__":
         app_name,
         host=host,
         port=port,
-        debug=DEBUG,
         reload=RELOAD,
         log_config=log_config(),
     )

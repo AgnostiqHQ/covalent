@@ -61,8 +61,8 @@ def test_database_trigger_observe(mocker, where_clauses, database_trigger):
     database_trigger.where_clauses = where_clauses
     database_trigger.trigger = mocker.MagicMock()
 
-    mock_db_engine = mocker.patch("covalent.triggers.database_trigger.create_engine")
-    mock_session = mocker.patch("covalent.triggers.database_trigger.Session")
+    mock_db_engine = mocker.patch("sqlalchemy.create_engine")
+    mock_session = mocker.patch("sqlalchemy.orm.Session")
     mock_event = mocker.patch("covalent.triggers.database_trigger.Event")
     mock_sleep = mocker.patch("covalent.triggers.database_trigger.time.sleep")
 

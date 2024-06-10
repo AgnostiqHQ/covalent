@@ -206,7 +206,7 @@ def test_register_sublattice(mocker, app, client, mock_manifest):
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
     resp = client.post(
-        "/api/v2/dispatches/parent_dispatch/subdispatches",
+        "/api/v2/dispatches/parent_dispatch/sublattices",
         data=mock_manifest.json(),
     )
 
