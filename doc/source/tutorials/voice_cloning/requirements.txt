@@ -5,7 +5,7 @@ pydub==0.25.1
 pytube==15.0.0
 scipy==1.11.3
 soundfile==0.12.1
-streamlit==1.28.1
+streamlit==1.30.0
 torch==2.1.0
 torchaudio==2.1.0
 transformers==4.38.0
