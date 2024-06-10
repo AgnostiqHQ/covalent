@@ -54,9 +54,9 @@ class QElectronInfo(BaseModel):
     description: Optional[str] = None
     device_name: str  # name of the original device, e.g. "default.qubit"
     device_import_path: str  # used to inherit type converters and other methods
-    device_shots: Union[
-        None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]
-    ] = None  # optional default for execution devices
+    device_shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]] = (
+        None  # optional default for execution devices
+    )
     device_shots_type: Any = None
     device_wires: int  # this can not be reliably inferred from tapes alone
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
