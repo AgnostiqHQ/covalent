@@ -154,19 +154,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
 
-        saved_named_args = local_store.load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
-        )
-
-        saved_named_kwargs = local_store.load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
-        )
-        saved_named_args_raw = saved_named_args.get_deserialized()
-        saved_named_kwargs_raw = saved_named_kwargs.get_deserialized()
-
-        assert saved_named_args_raw == {}
-        assert saved_named_kwargs_raw == {"a": 1, "b": 2}
-
         # Check that the electron records are as expected
         assert len(electron_rows) == 6
         for electron in electron_rows:

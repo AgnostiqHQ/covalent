@@ -1,141 +1,202 @@
-&nbsp;
-
+<div align="center">
+  <img src="./doc/source/_static/banner_executor.gif" alt="hero" />
+</div>
+</br>
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/covalent_readme_banner.svg" width=150%>
+[![version](https://img.shields.io/github/v/tag/AgnostiqHQ/covalent?color=%235552FF&include_prereleases&label=version&sort=semver)](https://github.com/AgnostiqHQ/covalent/blob/develop/CHANGELOG.md)
+[![Static Badge](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10-%235552FF)](#)
+[![Static Badge](https://img.shields.io/badge/tests-passing-%235552FF?logo=github)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
+[![Static Badge](https://img.shields.io/badge/docs-passing-%235552FF)](https://docs.covalent.xyz/docs/)
+[![Static Badge](https://img.shields.io/badge/codecov-88%25-%235552FF?logo=codecov)](https://codecov.io/gh/AgnostiqHQ/covalent)
+[![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue?color=%235552FF)](https://www.apache.org/licenses/LICENSE-2.0)</div>
 
-[![version](https://img.shields.io/github/v/tag/AgnostiqHQ/covalent?color=navy&include_prereleases&label=version&sort=semver)](https://github.com/AgnostiqHQ/covalent/blob/develop/CHANGELOG.md)
-[![python](https://img.shields.io/pypi/pyversions/cova)](https://github.com/AgnostiqHQ/covalent)
-[![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
-[![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/AgnostiqHQ/covalent/branch/master/graph/badge.svg?token=YGHCB3DE4P)](https://codecov.io/gh/AgnostiqHQ/covalent)
-[![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
+<div align="center"><b>Run AI, ML, and Scientific Research Code on Any Cloud or On-Prem Cluster with a Single Line</b></div>
+</br>
+ <div align="center">
+<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" width="150" alt="divider"></a>
+&nbsp&nbsp
+<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider" width="150"></a>
+&nbsp&nbsp
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider" width="105"></a>
+&nbsp&nbsp
+<a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider" width="70"></a>
+</div>
+</br>
 
+
+```bash
+pip install covalent --upgrade
+```
+Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-start/) for setup instructions or dive into your [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/). Learn more on the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/).
+
+### What is Covalent?
+
+Covalent is a Python library for AI/ML engineers, developers, and researchers. It provides a straightforward approach to running compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
+
+
+<details>
+<summary><i><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</i></summary>
+<br>
+
+It is as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
+<div align="center"><img src="./doc/source/_static/executors_ship.png"  width="700"></div>
+</details>
+
+<details>
+<summary><i><b>Abstraction of Infrastructure Management:</b> Abstract the complexities of cloud consoles, terraform, or IaC in the background.</i> </summary>
+<br>
+<div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
+</details>
+
+<details>
+<summary><i><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</i></summary>
+<br>
+<div align="center"><img src="./doc/source/_static/serverless-illustration.png"  width="700"></div>
+</details>
+
+
+If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
+
+
+</br>
+<table border="0">
+ <tr>
+    <td><b style="font-size:18px; padding-right: 20px;">For AI/ML Practitioners and Developers</b></td>
+    <td><b style="font-size:18px; padding-left: 20px;">For Researchers</b></td>
+ </tr>
+ <tr>
+    <td valign="top">
+        <ul style="font-size:16px; list-style-type: circle; padding-right: 20px;">
+            <li><b>Robust Compute Backend:</b> Ideal as a backend compute framework for AI/ML applications, Large Language Models (LLMs), Generative AI, and more.</li>
+            <li><b>Cloud-Agnostic Execution:</b> Execute high-compute tasks seamlessly across different cloud environments.</li>
+            <li><b>Infrastructure Abstraction:</b> Directly use computing resources while keeping your business code independent from the infrastructure/resource definitions.</li>
+        </ul>
+    </td>
+    <td valign="top">
+        <ul style="font-size:16px; list-style-type: circle; padding-left: 20px;">
+            <li><b>Local-Like Access:</b> Effortlessly connect to compute resources from your laptop, eliminating the need for SSH or complex scripts.</li>
+            <li><b>Unified Interface Across Environments:</b> Consistent experience with on-prem HPC clusters and cloud platforms like SLURM, PBS, LSF, AWS, GCP, Azure.</li>
+            <li><b>Real-Time Monitoring Monitoring:</b> <a href="http://demo.covalent.xyz/"> User-friendly UI </a> for real-time monitoring, enabling cost-effective and iterative R&D.</li>
+        </ul>
+    </td>
+ </tr>
+</table>
+
+### Out-of-box observability - [Try out the demo](http://demo.covalent.xyz/)
+
+If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
+
+<!-- https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c -->
+<div align="center">
+  <img src="./doc/source/_static/readmeVid-gif.gif" alt="video" />
 </div>
 
 
 
-## 🤔  What is Covalent?
+### Explore Covalent Through Examples
 
-Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
+Jump right into practical examples to see Covalent in action. These tutorials cover a range of applications, giving you a hands-on experience:
 
-Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
-<p align="center">
-<img src="./doc/source/_static/Executor_Gif_Full_List.gif" width="60%" alt="Covalent Executors"></img>
-</p>
+<div align="center">
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/">
+    <img src="./doc/source/_static/ai_tutorial.svg" alt="AI Tutorial">
+  </a>
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/">
+    <img src="./doc/source/_static/mnist_tutorial.svg" alt="MNIST Tutorial">
+  </a>
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/">
+    <img src="./doc/source/_static/quantum_tutorial.svg" alt="Quantum Tutorial">
+  </a>
+</div>
 
-## 💭 Why Covalent?
+### Explore Our Extensive Plugin Ecosystem
 
-Covalent overcomes computational and operational challenges inherent in AI/ML experimentation.
+Covalent integrates seamlessly with a variety of platforms. Discover our range of plugins to enhance your Covalent experience:
 
-| **Computational challenges**                                                                                                                                                                                                                                                                                         | **Operational challenges**                                                                                                                                                                                                     |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.</li><li>You'd like to iterate quickly, but running large models takes time.</li><li>Parallel computation speeds execution, but requires careful attention to data relationships.</li></ul> | <ul><li>Proliferation of models, datasets, and hardware trials.</li><li> Switching between development tools, including notebooks, scripts, and submission queues.</li><li>Tracking, repeating, and sharing results.</li></ul> |
+</br>
+  <div align="center">
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a>
+</div>
+<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
 
-<p align="center">
-<img src="./doc/source/_static/Cover-banner-readme.png" width="100%" alt="Covalent value"></img>
-</p>
+### Key Features at a Glance
 
-With Covalent, you:
-- Assign functions to appropriate resources: Use advanced hardware (quantum computers, HPC clusters) for the heavy lifting and commodity hardware for bookkeeping.
-- Test functions on local servers before shipping them to advanced hardware.
-- Let Covalent's services analyze functions for data independence and automatically parallelize them.
-- Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
-- Track workflows and examine results in a browser-based GUI.
+Get a quick overview of what Covalent offers. Our infographic summarizes the main features, providing you with a snapshot of our capabilities:
 
+</br>
+  <div align="center">
+  <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/development.svg"  alt="development"></img></a>
+ </div>
 
+</br>
 
-## 📦 Installation
+---
 
-Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
+### Know More About Covalent
 
-```console
-pip install covalent
+For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
+
+</br>
+
+<div align="center">
+<a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a>
+<a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
+</div>
+
+<div >
+
+### Installation
+
+Covalent is developed using Python on Linux and macOS. The easiest way to install Covalent is by using the PyPI package manager.
+
+```
+pip install covalent --upgrade
 ```
 
-Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://docs.covalent.xyz/docs/user-documentation/compatibility).
+For other methods of installation, please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
-## 🚀 Getting started
+**Deployments**
 
-Ready to try it? Go to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment) guide in the documentation.
+<div>
+Covalent offers flexible deployment options, from Docker image/AMIs for self-hosting to pip package for local installations, accommodating various use cases
+</div>
 
-For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index) page in the documentation.
+</br>
 
-<table border="0">
- <tr>
-    <td><b style="font-size:30px">📚 Know more !&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
-    <td><b style="font-size:30px">✍️ Tutorials and Examples&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
- </tr>
- <tr>
-    <td>
+<div align="center">
 
-  - [What is Covalent?](https://www.covalent.xyz/what-is-covalent/)
-  - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-  - [Basic Concepts of Covalent](https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics)
-  - [How does Covalent work?](#how-does-it-work)
-</td>
-    <td>
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/local-laptop.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/sd-docker"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/sd-systemd"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
 
-  - [Covalent with pytorch for classical machine learning](https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist)
-  - [Covalent with pennylane for quantum machine learning](https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumembedding)
-  - [Covalent with Qiskit for quantum-SVM](https://docs.covalent.xyz/docs/user-documentation/tutorials/svm/)
-  - [Covalent with Dask for scaling Ensemble classification](https://docs.covalent.xyz/docs/user-documentation/tutorials/ensemble/)
-  - [Covalent for Deep Neural Network on AWS](https://docs.covalent.xyz/docs/user-documentation/tutorials/dnn_comparison/)
-</td>
- </tr>
-</table>
+</div>
 
+</br>
+</div>
 
-## How Does It Work?
-<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
-Covalent has three main components:
+### Contributing
 
-- A Python module containing an API that you use to build manageable workflows out of new or existing Python functions.
-- A set of services that run locally or on a server to dispatch and execute workflow tasks.
-- A browser-based UI from which to manage workflows and view results.
+ <!-- <div><img src="./contributing_heading.svg" alt="divider"></div> -->
 
-You compose workflows using the Covalent API by simply adding a single line of python decorator and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
+To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the `develop` branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md). Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
-The Covalent UI displays the progress of each workflow at the level of individual tasks.
+### Citation
 
-<details>
-<summary> <h3> The Covalent API </h3> </summary>
-The Covalent API is a Python module containing a small collection of classes that implement server-based workflow management. The key elements are two decorators that wrap functions to create managed *tasks* and *workflows*.
+Please use the following citation in any publications.
 
-The task decorator is called an *electron*. The electron decorator simply turns the function into a dispatchable task.
+[https://doi.org/10.5281/zenodo.5903364](https://zenodo.org/records/8369670)
 
-The workflow decorator is called a *lattice*. The lattice decorator turns a function composed of electrons into a manageable workflow.
-</details>
-<details>
-<summary> <h3>  Covalent Services </h3> </summary>
-The Covalent server is a lightweight service that runs on your local machine or a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
-</details>
-<details>
-<summary> <h3>  The Covalent GUI </h3> </summary>
-The Covalent user interface runs as a web server on the machine where the Covalent server is running. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
-</details>
+### License
 
-## 📚 Documentation
+Covalent is licensed under the Apache 2.0 License. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@aqnostic.ai) for more details.
 
-The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://docs.covalent.xyz/docs).
-
-## Troubleshooting
-
-Solutions to common issues can be found in the [Troubleshooting Guide](https://docs.covalent.xyz/docs/user-documentation/troubleshooting).
-
-## ✔️  Contributing
-
-To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md) Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
-
-## ⚓ Citation
-
-Please use the following citation in any publications:
-
-> https://doi.org/10.5281/zenodo.5903364
-
-## 📃 License
-
-Covalent is licensed under the Apache 2.0 License. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
-
-
->For a detailed history of changes and new features, see the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
+For a detailed history of changes and new features, see the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).

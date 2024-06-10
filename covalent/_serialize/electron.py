@@ -210,8 +210,8 @@ def _get_node_custom_assets(node_attrs: dict) -> Dict[str, AssetSchema]:
 def serialize_node(node_id: int, node_attrs: dict, node_storage_path) -> ElectronSchema:
     meta = _serialize_node_metadata(node_attrs, node_storage_path)
     assets = _serialize_node_assets(node_attrs, node_storage_path)
-    custom_assets = _get_node_custom_assets(node_attrs)
-    return ElectronSchema(id=node_id, metadata=meta, assets=assets, custom_assets=custom_assets)
+    assets._custom = _get_node_custom_assets(node_attrs)
+    return ElectronSchema(id=node_id, metadata=meta, assets=assets)
 
 
 def deserialize_node(e: ElectronSchema, metadata_only: bool = False) -> dict:

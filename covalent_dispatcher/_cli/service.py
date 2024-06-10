@@ -27,6 +27,7 @@ import socket
 import sys
 import time
 import traceback
+import warnings
 from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
@@ -50,11 +51,11 @@ from rich.status import Status
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
+from sqlalchemy import exc as sa_exc
 
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
-from .migrate import migrate_pickled_result_object
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -66,6 +67,9 @@ MIGRATION_COMMAND_MSG = (
 )
 ZOMBIE_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in zombie status"
 STOPPED_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in stopped status"
+
+# Ignore SQLAlchemy warnings
+warnings.simplefilter("ignore", category=sa_exc.SAWarning)
 
 
 def print_header(console):
@@ -780,17 +784,6 @@ def logs() -> None:
             f"{UI_LOGFILE} not found. Restart the server to create a new log file.",
             style="bold red",
         )
-
-
-@click.command()
-@click.argument("result_pickle_path")
-def migrate_legacy_result_object(result_pickle_path) -> None:
-    """Migrate a legacy result object
-
-    Example: `covalent migrate-legacy-result-object result.pkl`
-    """
-
-    migrate_pickled_result_object(result_pickle_path)
 
 
 # Cluster CLI handlers (client side wrappers for the async handlers exposed
