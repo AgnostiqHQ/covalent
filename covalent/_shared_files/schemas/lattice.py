@@ -18,7 +18,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from .asset import AssetSchema
 from .transport_graph import TransportGraphSchema
@@ -39,10 +39,6 @@ LATTICE_ASSET_KEYS = {
     "workflow_function_string",
     "__doc__",
     "inputs",
-    "named_args",
-    "named_kwargs",
-    "cova_imports",
-    "lattice_imports",
     # user dependent assets
     "hooks",
 }
@@ -83,13 +79,17 @@ class LatticeAssets(BaseModel):
     workflow_function_string: AssetSchema
     doc: AssetSchema  # __doc__
     inputs: AssetSchema
-    named_args: AssetSchema
-    named_kwargs: AssetSchema
-    cova_imports: AssetSchema
-    lattice_imports: AssetSchema
+
+    # Deprecated
+    named_args: AssetSchema = AssetSchema(size=0)
+    named_kwargs: AssetSchema = AssetSchema(size=0)
+    cova_imports: AssetSchema = AssetSchema(size=0)
+    lattice_imports: AssetSchema = AssetSchema(size=0)
 
     # lattice.metadata
     hooks: AssetSchema
+
+    _custom: Optional[Dict[str, AssetSchema]] = None
 
 
 class LatticeMetadata(BaseModel):
@@ -101,18 +101,11 @@ class LatticeMetadata(BaseModel):
     python_version: Optional[str] = None
     covalent_version: Optional[str] = None
 
+    _custom: Optional[Dict] = None
+
 
 class LatticeSchema(BaseModel):
     metadata: LatticeMetadata
     assets: LatticeAssets
-    custom_assets: Optional[Dict[str, AssetSchema]] = None
 
     transport_graph: TransportGraphSchema
-
-    @field_validator("custom_assets")
-    def check_custom_asset_keys(cls, v):
-        if v is not None:
-            for key in v:
-                if key in ASSET_FILENAME_MAP:
-                    raise ValueError(f"Asset {key} conflicts with built-in key")
-        return v

@@ -57,12 +57,8 @@ LATTICE_FUNCTION_STRING_FILENAME = LATTICE_FILENAMES["workflow_function_string"]
 LATTICE_DOCSTRING_FILENAME = LATTICE_FILENAMES["doc"]
 LATTICE_ERROR_FILENAME = LATTICE_FILENAMES["error"]
 LATTICE_INPUTS_FILENAME = LATTICE_FILENAMES["inputs"]
-LATTICE_NAMED_ARGS_FILENAME = LATTICE_FILENAMES["named_args"]
-LATTICE_NAMED_KWARGS_FILENAME = LATTICE_FILENAMES["named_kwargs"]
 LATTICE_RESULTS_FILENAME = LATTICE_FILENAMES["result"]
 LATTICE_HOOKS_FILENAME = LATTICE_FILENAMES["hooks"]
-LATTICE_COVA_IMPORTS_FILENAME = LATTICE_FILENAMES["cova_imports"]
-LATTICE_LATTICE_IMPORTS_FILENAME = LATTICE_FILENAMES["lattice_imports"]
 LATTICE_STORAGE_TYPE = "file"
 
 CUSTOM_ASSETS_FIELD = "custom_asset_keys"
@@ -108,12 +104,8 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("doc", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
         ("error", LATTICE_ERROR_FILENAME, result.error),
         ("inputs", LATTICE_INPUTS_FILENAME, result.lattice.inputs),
-        ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
-        ("named_kwargs", LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
         ("result", LATTICE_RESULTS_FILENAME, result._result),
         ("hooks", LATTICE_HOOKS_FILENAME, result.lattice.metadata["hooks"]),
-        ("cova_imports", LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
-        ("lattice_imports", LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
         digest, size = local_store.store_file(data_storage_path, filename, data)
         asset_record_kwargs = {
@@ -161,12 +153,8 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "workflow_executor_data": json.dumps(result.lattice.metadata["workflow_executor_data"]),
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
-        "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
-        "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
         "results_filename": LATTICE_RESULTS_FILENAME,
         "hooks_filename": LATTICE_HOOKS_FILENAME,
-        "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
-        "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
         "results_dir": results_dir,
         "root_dispatch_id": result.root_dispatch_id,
         "python_version": result.lattice.python_version,

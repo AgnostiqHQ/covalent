@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import tempfile
 from copy import deepcopy
 from functools import wraps
@@ -45,6 +46,9 @@ log_stack_info = logger.log_stack_info
 
 dispatch_cache_dir = Path(get_config("sdk.dispatch_cache_dir"))
 dispatch_cache_dir.mkdir(parents=True, exist_ok=True)
+
+
+BASE_ENDPOINT = os.getenv("COVALENT_DISPATCH_BASE_ENDPOINT", "/api/v2/dispatches")
 
 
 def get_redispatch_request_body_v2(
@@ -540,10 +544,10 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr = format_server_url()
 
         stripped = strip_local_uris(manifest) if push_assets else manifest
-        endpoint = "/api/v2/dispatches"
+        endpoint = BASE_ENDPOINT
 
         if parent_dispatch_id:
-            endpoint = f"{endpoint}/{parent_dispatch_id}/subdispatches"
+            endpoint = f"{BASE_ENDPOINT}/{parent_dispatch_id}/sublattices"
 
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
@@ -596,7 +600,7 @@ class LocalDispatcher(BaseDispatcher):
         number_uploaded = 0
         for i, asset in enumerate(assets):
             if not asset.remote_uri or not asset.uri:
-                app_log.debug(f"Skipping asset {i+1} out of {total}")
+                app_log.debug(f"Skipping asset {i + 1} out of {total}")
                 continue
             if asset.remote_uri.startswith(local_scheme_prefix):
                 copy_file_locally(asset.uri, asset.remote_uri)
@@ -604,7 +608,7 @@ class LocalDispatcher(BaseDispatcher):
             else:
                 _upload_asset(asset.uri, asset.remote_uri)
                 number_uploaded += 1
-            app_log.debug(f"Uploaded asset {i+1} out of {total}.")
+            app_log.debug(f"Uploaded asset {i + 1} out of {total}.")
         app_log.debug(f"uploaded {number_uploaded} assets.")
 
 
@@ -615,6 +619,7 @@ def _upload_asset(local_uri, remote_uri):
     else:
         local_path = local_uri
 
+    filesize = os.path.getsize(local_path)
     with open(local_path, "rb") as reader:
         app_log.debug(f"uploading to {remote_uri}")
         f = furl(remote_uri)
@@ -624,6 +629,11 @@ def _upload_asset(local_uri, remote_uri):
         dispatcher_addr = f"{scheme}://{host}:{port}"
         endpoint = str(f.path)
         api_client = APIClient(dispatcher_addr)
+        if f.query:
+            endpoint = f"{endpoint}?{f.query}"
 
-        r = api_client.put(endpoint, data=reader)
+        # Workaround for Requests bug when streaming from empty files
+        data = reader.read() if filesize < 50 else reader
+
+        r = api_client.put(endpoint, headers={"Content-Length": str(filesize)}, data=data)
         r.raise_for_status()
