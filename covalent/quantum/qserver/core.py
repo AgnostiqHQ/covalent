@@ -25,12 +25,12 @@ from typing import Callable, List, Tuple
 
 from pennylane.tape import QuantumScript
 
-from ..._shared_files.qinfo import QElectronInfo, QNodeSpecs
-from ..._shared_files.utils import (
+from ..._shared_files.qelectron_utils import (
     cloudpickle_deserialize,
     cloudpickle_serialize,
     select_first_executor,
 )
+from ..._shared_files.qinfo import QElectronInfo, QNodeSpecs
 from ...executor.utils import get_context
 from ..qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from .database import Database

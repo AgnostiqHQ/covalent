@@ -7,6 +7,144 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.235.1-rc.0] - 2024-06-10
+
+### Authors
+
+- Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: kessler-frost <sankalp@agnostiq.ai>
+
+
+### Fixed
+
+- Ignoring all errors when importing qelectrons instead of only `ImportError`
+
+## [0.235.0-rc.0] - 2024-05-29
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Slurm plugin docs to note possible SSH limitation
+- Updated Slurm plugin docs to remove `sshproxy` section
+- API base endpoint is now configurable from an environment variable
+- Removed unused lattice attributes to reduce asset uploads
+
+### Fixed
+
+- Improved handling of Covalent version mismatches between client and
+  executor environments
+  
+### Removed
+
+- Removed obsolete `migrate-pickled-result-object` command
+
+### Operations
+
+- Allow installing a specific commit sha to ease testing
+
+## [0.234.1-rc.0] - 2024-05-10
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Fixed
+
+- Sublattice electron function strings are now parsed correctly
+- The keys of dictionary inputs to electrons no longer need be strings.
+- Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
+
+### Operations
+
+- Fixed nightly workflow's calling of other workflows.
+- Fixed input values for other workflows in `nightly-tests` workflow.
+
+### Operations
+
+- Removing author email from changelog action
+- Fixed nightly worfkflow's calling of other workflows.
+
+## [0.234.0-rc.0] - 2024-02-07
+
+### Authors
+
+- Andrew S. Rosen (@Andrew_S_Rosen)
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- FilipBolt <filipbolt@gmail.com>
+- sriranjanivenkatesan <116076079+sriranjanivenkatesan@users.noreply.github.com>
+- Co-authored-by: batchumanish <manish.batchu@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: batchumanish <“manish.batchu@psiog.com”>
+- Co-authored-by: batchumanish <126003896+batchumanish@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+### Operations
+
+- Added qelectron tests to the `tests` workflow
+- Split the `nightly` workflow into 4 manually triggerable workflows, `nightly-tests`, `man_0_assign_version`, `man_1_push_to_master`, and `man_2_create_prerelease` to be run in this order.
+- Now only the `nightly-tests` workflow will be run on a daily basis, and the other 3 workflows will be run manually.
+- Removed `conda` releases from `release.yml`.
+- When pushing to `master`, now the version numbers of `develop` and `master` will be compared in `man_1_push_to_master`.
+- Upgraded checkout action to v4 in `release.yml`.
+- Fixing the if condition for the manual workflows.
+- Added pre-release creation as part of `nightly-tests` workflow.
+
+### Added
+
+- Added CRM method to handle Python to TF value conversion (e.g. None->null, True->true, False->false).
+- Added `pennylane` as a requirement in tests due to the tutorials using it
+
+### Changed
+
+- Updated RTD notebooks to fix their behavior
+- Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
+- Revamped README
+- Reorganized `qelectron` tests
+- Made qelectron an opt-in feature using `covalent[quantum]` extra
+
+### Removed
+
+- Removed unused file transfer how to guides
+- Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+- Removed `validate_args` and `validate_region` method from `deploy_group` CLI as they were specific to AWS
+
+### Docs
+
+- Added voice cloning tutorial
+
+### Fixed
+
+- Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
+- Fixed the SQLAlchemy warning that used to show up at every fresh server start
+- Fixed deploy commands' default value of plugins not being propagated to the tfvars file
+
+## [0.233.0-rc.0] - 2024-01-07
+
+### Authors
+
+- Andrew S. Rosen (@Andrew_S_Rosen)
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+
 ### Added
 
 - Added feature to use custom python files as modules to be used in the electron function
@@ -24,12 +162,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pack deps, call_before, and call_after assets into one file.
 - Changed handling of tuples and sets when building the transport graph - they will be converted to electron lists as well for now
 - `qelectron_db`, `qelectron_data_exists`, `python_version`, and `covalent_version`
-   are now optional in the pydantic model definitions.
+  are now optional in the pydantic model definitions.
 
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
-- Handled RecursionError on get results for a long running workflow
+- Handled RecursionError on get results for a long running workflow.
+- Fixed functional tests.
 
 ### Operations
 
@@ -42,7 +181,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Operations
 
@@ -77,7 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -104,8 +242,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-
-
 ### Added
 
 - Programmatic equivalents of CLI commands `covalent start` and `covalent stop`
@@ -123,7 +259,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
 - Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func
-- Changed code at line 218 in covalent/_shared_files/utils.py
+- Changed code at line 218 in covalent/\_shared_files/utils.py
 - Fixed usage of deprecated pydantic validation methods
 - Fixed qelectron_db retrieval in result object
 - Fixed editability of Qelectron on settings page - UI changes
@@ -184,7 +320,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
@@ -243,7 +379,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -333,7 +469,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -375,7 +511,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Andrew S. Rosen (@Andrew_S_Rosen)
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
@@ -396,7 +532,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Andrew S. Rosen (@Andrew_S_Rosen)
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
@@ -458,7 +594,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 

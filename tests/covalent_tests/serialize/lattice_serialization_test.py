@@ -89,10 +89,10 @@ def test_serialize_lattice_custom_assets():
 
     with tempfile.TemporaryDirectory() as d:
         manifest = serialize_lattice(workflow, d)
-        assert ["custom_lat_asset"] == list(manifest.custom_assets.keys())
+        assert ["custom_lat_asset"] == list(manifest.assets._custom.keys())
 
         node_0 = manifest.transport_graph.nodes[0]
-        assert "custom_electron_asset" in node_0.custom_assets
+        assert "custom_electron_asset" in node_0.assets._custom
 
         node_1 = manifest.transport_graph.nodes[1]
-        assert not node_1.custom_assets
+        assert not node_1.assets._custom

@@ -70,10 +70,9 @@ async def test_send_update():
     assert response is None
 
 
-@pytest.mark.skip(reason="Test is breaking, need to fix see PR #1728")
 def test_send_draw_request():
     """Test draw request"""
-    workflow = get_mock_simple_workflow()
-    lattice = Lattice.deserialize_from_json(workflow.serialize_to_json())
+    lattice = get_mock_simple_workflow()
+    lattice.build_graph(3)
     response = send_draw_request(lattice)
     assert response is None

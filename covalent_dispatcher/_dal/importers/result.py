@@ -72,7 +72,6 @@ def import_result(
     # Main case: insert new lattice, electron, edge, and job records
 
     storage_path = os.path.join(base_path, dispatch_id)
-    os.makedirs(storage_path)
 
     lattice_record_kwargs = _get_result_meta(res, storage_path, electron_id)
     lattice_record_kwargs.update(_get_lattice_meta(res.lattice, storage_path))
@@ -143,6 +142,7 @@ def _connect_result_to_electron(
         fields={"id", "cancel_requested"},
         equality_filters={"id": parent_electron_record.job_id},
         membership_filters={},
+        for_update=True,
     )[0]
     cancel_requested = parent_job_record.cancel_requested
 

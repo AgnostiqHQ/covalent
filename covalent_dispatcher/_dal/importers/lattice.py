@@ -24,16 +24,12 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
-    LATTICE_COVA_IMPORTS_FILENAME,
     LATTICE_DOCSTRING_FILENAME,
     LATTICE_ERROR_FILENAME,
     LATTICE_FUNCTION_FILENAME,
     LATTICE_FUNCTION_STRING_FILENAME,
     LATTICE_HOOKS_FILENAME,
     LATTICE_INPUTS_FILENAME,
-    LATTICE_LATTICE_IMPORTS_FILENAME,
-    LATTICE_NAMED_ARGS_FILENAME,
-    LATTICE_NAMED_KWARGS_FILENAME,
     LATTICE_RESULTS_FILENAME,
     LATTICE_STORAGE_TYPE,
     LatticeAssets,
@@ -71,12 +67,8 @@ def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
         "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
-        "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
-        "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
         "results_filename": LATTICE_RESULTS_FILENAME,
         "hooks_filename": LATTICE_HOOKS_FILENAME,
-        "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
-        "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
     }
     kwargs.update(legacy_kwargs)
     return kwargs
@@ -94,6 +86,10 @@ def import_lattice_assets(
 
     # Register built-in assets
     for asset_key, asset in lat.assets:
+        # Deal with these later
+        if asset_key == "_custom":
+            continue
+
         storage_path, object_key = object_store.get_uri_components(
             dispatch_id=dispatch_id,
             node_id=None,
@@ -118,8 +114,8 @@ def import_lattice_assets(
         asset.remote_uri = f"file://{local_uri}"
 
     # Register custom assets
-    if lat.custom_assets:
-        for asset_key, asset in lat.custom_assets.items():
+    if lat.assets._custom:
+        for asset_key, asset in lat.assets._custom.items():
             object_key = f"{asset_key}.data"
             local_uri = os.path.join(storage_path, object_key)
 

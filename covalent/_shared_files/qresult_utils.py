@@ -23,7 +23,7 @@ from pennylane.measurements import ExpectationMP
 from pennylane.tape import QuantumTape
 
 from .._workflow.qdevice import QEDevice
-from .utils import get_original_shots
+from .qelectron_utils import get_original_shots
 
 
 def re_execute(
