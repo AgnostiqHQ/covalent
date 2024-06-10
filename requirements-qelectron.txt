@@ -1,0 +1,4 @@
+lmdbm>=0.0.5
+mpire>=2.7.1
+orjson>=3.8.10
+pennylane>=0.31.1,<0.33.0

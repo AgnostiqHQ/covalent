@@ -1,0 +1,66 @@
+# Copyright 2024 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: nightly-tests
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  license:
+    name: License Scanner
+    uses: ./.github/workflows/license.yml
+
+  tests:
+    name: Unit and Functional Tests
+    needs:
+      - license
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit # pragma: allowlist secret
+
+  assign_version:
+    name: Assign Version
+    needs:
+      - tests
+    uses: ./.github/workflows/man_0_assign_version.yml
+    secrets: inherit # pragma: allowlist secret
+    with:
+      nightly_tests_failed: false
+
+  push_to_master:
+    name: Push to Master
+    needs:
+      - assign_version
+    uses: ./.github/workflows/man_1_push_to_master.yml
+    secrets: inherit # pragma: allowlist secret
+    with:
+      assign_version_failed: false
+
+  create_prerelease:
+    name: Create a Prerelease
+    needs:
+      - push_to_master
+    uses: ./.github/workflows/man_2_create_prerelease.yml
+    secrets: inherit # pragma: allowlist secret
+    with:
+      push_to_master_failed: false

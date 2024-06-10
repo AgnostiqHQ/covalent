@@ -28,6 +28,9 @@ site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 with open("VERSION") as f:
     version = f.read().strip()
 
+# Allow installing a particular commit for testing
+commit_sha = os.getenv("COVALENT_COMMIT_SHA")
+artifact_id = commit_sha if commit_sha else f"v{version}"
 
 requirements_file = "requirements.txt"
 exclude_modules = [
@@ -54,6 +57,11 @@ else:
 
 with open(requirements_file) as f:
     required = f.read().splitlines()
+
+# By default we don't install qelectron requirements
+# and only install them as an extra
+with open("requirements-qelectron.txt") as f:
+    qelectron_reqs = f.read().splitlines()
 
 
 def recursively_append_files(directory: str):
@@ -197,7 +205,7 @@ setup_info = {
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
-    "download_url": f"https://github.com/AgnostiqHQ/covalent/archive/v{version}.tar.gz",
+    "download_url": f"https://github.com/AgnostiqHQ/covalent/archive/{artifact_id}.tar.gz",
     "license": "Apache License 2.0",
     "author": "Agnostiq",
     "author_email": "support@agnostiq.ai",
@@ -220,6 +228,7 @@ setup_info = {
             "qiskit-ibm-provider==0.6.1",
             "qiskit-ibm-runtime==0.10.0",
         ],
+        "quantum": qelectron_reqs,
     },
     "classifiers": [
         "Development Status :: 4 - Beta",

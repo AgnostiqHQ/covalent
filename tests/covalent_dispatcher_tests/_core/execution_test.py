@@ -116,7 +116,7 @@ async def test_get_task_inputs(mocker, test_db):
 
     @ct.lattice
     def dict_workflow(arg):
-        return dict_task(arg)
+        return dict_task(arg=arg)
 
     #    1   2
     #     \   \
@@ -167,20 +167,36 @@ async def test_get_task_inputs(mocker, test_db):
     # dict-type inputs
 
     dict_workflow.build_graph({"a": 1, "b": 2})
-    serialized_args = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
 
     # Nodes 0=task, 1=:electron_dict:, 2=1, 3=2
+    # Nodes 0=task, 1=:electron_dict:, 2=["a" (3), "b" (4)], 5=[1 (6), 2 (7)]
+
     sdkres = Result(lattice=dict_workflow, dispatch_id="asdf_dict_workflow")
     result_object = get_mock_srvresult(sdkres, test_db)
     tg = result_object.lattice.transport_graph
-    tg.set_node_value(2, "output", ct.TransportableObject(1))
-    tg.set_node_value(3, "output", ct.TransportableObject(2))
+
+    tg.set_node_value(1, "output", ct.TransportableObject("node_1_output"))
+    tg.set_node_value(3, "output", ct.TransportableObject("a"))
+    tg.set_node_value(4, "output", ct.TransportableObject("b"))
+    tg.set_node_value(6, "output", ct.TransportableObject(1))
+    tg.set_node_value(7, "output", ct.TransportableObject(2))
 
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
-    task_inputs = await _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
-    expected_inputs = {"args": [], "kwargs": serialized_args}
+    serialized_kwargs = {"arg": ct.TransportableObject("node_1_output")}
+    task_inputs = await _get_task_inputs(0, tg.get_node_value(0, "name"), result_object)
+    expected_inputs = {"args": [], "kwargs": serialized_kwargs}
+
+    serialized_args = [ct.TransportableObject("a"), ct.TransportableObject("b")]
+    task_inputs = await _get_task_inputs(2, tg.get_node_value(2, "name"), result_object)
+    expected_inputs = {"args": serialized_args, "kwargs": {}}
+
+    assert task_inputs == expected_inputs
+
+    serialized_args = [ct.TransportableObject(1), ct.TransportableObject(2)]
+    task_inputs = await _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
+    expected_inputs = {"args": serialized_args, "kwargs": {}}
 
     assert task_inputs == expected_inputs
 
