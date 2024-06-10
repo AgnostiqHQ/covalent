@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -42,6 +43,7 @@ jobs:
               - '.github/actions/changelog/action.yml'
             dist:
               - '.github/actions/changelog/dist/**'
+
       - name: Latest tag
         id: get-latest-tag
         uses: ./.github/actions/describe
@@ -49,6 +51,7 @@ jobs:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           branch: develop
           stable: false
+
       - name: Update version number
         id: changelog
         uses: ./.github/actions/changelog
@@ -57,6 +60,7 @@ jobs:
           version-path: VERSION
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           basehead: ${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}
+
       - name: Commit
         if: ${{ steps.changelog.outputs.message != 'noop' }}
         uses: EndBug/add-and-commit@v9

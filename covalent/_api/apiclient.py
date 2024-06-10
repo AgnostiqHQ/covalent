@@ -33,7 +33,7 @@ class CovalentAPIClient:
         self.adapter = adapter
         self.auto_raise = auto_raise
 
-    def prepare_headers(self, **kwargs):
+    def prepare_headers(self, kwargs):
         extra_headers = CovalentAPIClient.get_extra_headers()
         headers = kwargs.get("headers", {})
         if headers:
@@ -42,7 +42,7 @@ class CovalentAPIClient:
         return headers
 
     def get(self, endpoint: str, **kwargs):
-        headers = self.prepare_headers(**kwargs)
+        headers = self.prepare_headers(kwargs)
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -62,7 +62,7 @@ class CovalentAPIClient:
         return r
 
     def put(self, endpoint: str, **kwargs):
-        headers = self.prepare_headers()
+        headers = self.prepare_headers(kwargs)
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -81,7 +81,7 @@ class CovalentAPIClient:
         return r
 
     def post(self, endpoint: str, **kwargs):
-        headers = self.prepare_headers()
+        headers = self.prepare_headers(kwargs)
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -100,7 +100,7 @@ class CovalentAPIClient:
         return r
 
     def delete(self, endpoint: str, **kwargs):
-        headers = self.prepare_headers()
+        headers = self.prepare_headers(kwargs)
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
