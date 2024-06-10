@@ -5,7 +5,7 @@ diffusers==0.19.3
 emoji==2.8.0
 Pillow==9.5.0
 sentencepiece==0.1.99
-streamlit==1.25.0
+streamlit==1.30.0
 torch==2.0.1
-transformers==4.31.0
+transformers==4.36.0
 xformers==0.0.21

@@ -6,16 +6,14 @@ const readline = require("readline");
 
 const check_author = (author, authors) => {
   if (
-    typeof author === "object" &&
-    "email" in author &&
-    !authors.includes(author.email)
+    typeof author === "object"
   ) {
-    return "- " + author.name + " <" + author.email + ">\n";
+    return "- " + author.name + "\n";
   } else if (
     typeof author === "string" &&
     !authors.includes(author.split(/[<>]/)[1])
   ) {
-    return "- " + author + "\n";
+    return "- " + author.split(/[<>]/)[1].trim() + "\n";
   } else {
     return "";
   }

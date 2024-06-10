@@ -51,7 +51,9 @@ def import_transport_graph(
     # Propagate parent electron id's `cancel_requested` property to the sublattice electrons
     if electron_id is not None:
         parent_e_record = Electron.meta_type.get_by_primary_key(session, electron_id)
-        job_record = Job.get_by_primary_key(session=session, primary_key=parent_e_record.job_id)
+        job_record = Job.get_by_primary_key(
+            session=session, primary_key=parent_e_record.job_id, for_update=True
+        )
         cancel_requested = job_record.cancel_requested
     else:
         cancel_requested = False

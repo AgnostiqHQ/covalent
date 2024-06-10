@@ -17,7 +17,7 @@
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel
 
@@ -54,6 +54,8 @@ class ResultMetadata(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
 
+    _custom: Optional[Dict] = None
+
     # For use by redispatch
     def reset(self):
         self.dispatch_id = ""
@@ -66,6 +68,8 @@ class ResultMetadata(BaseModel):
 class ResultAssets(BaseModel):
     result: AssetSchema
     error: AssetSchema
+
+    _custom: Optional[Dict[str, AssetSchema]] = None
 
 
 class ResultSchema(BaseModel):

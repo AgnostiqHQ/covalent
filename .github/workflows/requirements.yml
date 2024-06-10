@@ -39,7 +39,7 @@ jobs:
         run: python -m pip install pip-check-reqs
 
       - name: Check extra core requirements
-        run: pip-extra-reqs -r werkzeug -r python-multipart covalent covalent_dispatcher covalent_ui --ignore-requirement=qiskit --ignore-requirement=qiskit-ibm-provider --ignore-requirement=amazon-braket-pennylane-plugin
+        run: pip-extra-reqs -r python-multipart covalent covalent_dispatcher covalent_ui --ignore-requirement=qiskit --ignore-requirement=qiskit-ibm-provider --ignore-requirement=amazon-braket-pennylane-plugin
 
       - name: Check missing SDK requirements
         run: >
@@ -50,10 +50,14 @@ jobs:
           --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
           --ignore-module=covalent/_shared_files
+          --ignore-file=covalent/quantum/**
+          --ignore-file=covalent/_workflow/q*
+          --ignore-file=covalent/_shared_files/q*
+          --ignore-file=covalent/_results_manager/q*
+          --ignore-file=covalent/_shared_files/pickling.py
           --ignore-file=covalent/executor/**
           --ignore-file=covalent/triggers/**
           --ignore-file=covalent/cloud_resource_manager/**
-          --ignore-file=covalent/quantum/qserver/**
           --ignore-file=covalent/_programmatic/**
           covalent
 

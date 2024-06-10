@@ -18,7 +18,7 @@
 import os
 import re
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -516,34 +516,3 @@ Node Outputs
         """
 
         return self._result
-
-
-def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
-    """
-    Given a string representing a function, comment out any Covalent-related decorators.
-
-    Args
-        function_string: A string representation of a workflow function.
-
-    Returns:
-        The function string with Covalent-related decorators commented out.
-    """
-
-    has_cova_decorator = False
-    in_decorator = 0
-    function_lines = function_string.split("\n")
-    for i in range(len(function_lines)):
-        line = function_lines[i].strip()
-        if in_decorator > 0:
-            function_lines[i] = f"# {function_lines[i]}"
-            in_decorator += line.count("(")
-            in_decorator -= line.count(")")
-        elif line.startswith("@"):
-            decorator_name = line.split("@")[1].split(".")[0].split("(")[0]
-            if decorator_name in cova_imports:
-                function_lines[i] = f"# {function_lines[i]}"
-                has_cova_decorator = True
-                in_decorator += line.count("(")
-                in_decorator -= line.count(")")
-
-    return "\n".join(function_lines) if has_cova_decorator else function_string

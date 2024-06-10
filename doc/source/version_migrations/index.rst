@@ -52,20 +52,4 @@ If you are using Covalent v0.110.2 or later you can upgrade to Covalent v0.177.0
      $ covalent start
      Covalent server has started at http://localhost:48008
 
-
-6. Use the data migration tool to migrate any workflows you want to port to the new version of Covalent.
-
-   For example, for a workflow with dispatch ID :code:`e0ba03a2-fdc0-474e-9997-7fa8e82932c5`:
-
-  .. code:: bash
-
-     $ covalent migrate-legacy-result-object ./results/e0ba03a2-fdc0-474e-9997-7fa8e82932c5/result.pkl
-     Processing result object for dispatch e0ba03a2-fdc0-474e-9997-7fa8e82932c5
-     Processing node 0
-     Processing node 1
-     Processing node 2
-     Processing node 3
-     Processed transport graph
-     Processed lattice
-
-7. Navigate to the UI (http://localhost:48008) to view your workflows.
+6. Navigate to the UI (http://localhost:48008) to view your workflows.
