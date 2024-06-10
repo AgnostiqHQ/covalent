@@ -83,9 +83,6 @@ def test_lattice_attributes(test_db, mocker):
     workflow_function = lat.get_value("workflow_function").get_deserialized()
     assert workflow_function(42) == 42
 
-    res.lattice.lattice_imports == lat.get_value("lattice_imports")
-    res.lattice.cova_imports == lat.get_value("cova_imports")
-
 
 def test_lattice_restricted_attributes(test_db, mocker):
     res = get_mock_result()

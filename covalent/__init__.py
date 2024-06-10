@@ -51,7 +51,8 @@ from ._workflow import (  # nopycln: import
 from ._workflow.electron import wait  # nopycln: import
 from .executor.utils import get_context  # nopycln: import
 
-with contextlib.suppress(ImportError):
+with contextlib.suppress(Exception):
+    # try to load qelectron modules
     from ._workflow.qelectron import qelectron  # nopycln: import
     from .quantum import QCluster  # nopycln: import
 

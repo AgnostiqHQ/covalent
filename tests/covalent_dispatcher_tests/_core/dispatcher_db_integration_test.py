@@ -104,7 +104,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     @ct.lattice
     def dict_workflow(arg):
-        return dict_task(arg)
+        return dict_task(arg=arg)
 
     #    1   2
     #     \   \
@@ -159,7 +159,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     # dict-type inputs
 
-    # Nodes 0=task, 1=:electron_dict:, 2=1, 3=2
+    # Nodes 0=task, 1=:electron_dict:, 2=["a" (3), "b" (4)], 5=[1 (6), 2 (7)]
     dict_workflow.build_graph({"a": 1, "b": 2})
     abstract_args = {"a": 2, "b": 3}
     tg = dict_workflow.transport_graph
@@ -173,9 +173,30 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     )
 
     task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 0, tg.get_node_value(0, "name")
+    )
+    expected_inputs = {"args": [], "kwargs": {"arg": 1}}
+
+    assert task_inputs == expected_inputs
+
+    task_inputs = await _get_abstract_task_inputs(
         result_object.dispatch_id, 1, tg.get_node_value(1, "name")
     )
-    expected_inputs = {"args": [], "kwargs": abstract_args}
+    expected_inputs = {"args": [2, 5], "kwargs": {}}
+
+    assert task_inputs == expected_inputs
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 2, tg.get_node_value(2, "name")
+    )
+    expected_inputs = {"args": [3, 4], "kwargs": {}}
+
+    assert task_inputs == expected_inputs
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 5, tg.get_node_value(5, "name")
+    )
+    expected_inputs = {"args": [6, 7], "kwargs": {}}
 
     assert task_inputs == expected_inputs
 

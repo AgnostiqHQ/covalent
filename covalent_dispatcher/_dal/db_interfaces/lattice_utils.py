@@ -28,10 +28,6 @@ ATTRIBUTES = {
     "name",
     "doc",
     "inputs",
-    "named_args",
-    "named_kwargs",
-    "cova_imports",
-    "lattice_imports",
 }
 
 METADATA_KEYS = lattice.LATTICE_METADATA_KEYS.copy()
@@ -68,10 +64,6 @@ _asset_record_map = {
     "workflow_function_string": "function_string_filename",
     "doc": "docstring_filename",
     "inputs": "inputs_filename",
-    "named_args": "named_args_filename",
-    "named_kwargs": "named_kwargs_filename",
-    "cova_imports": "cova_imports_filename",
-    "lattice_imports": "lattice_imports_filename",
     "executor_data": "executor_data_filename",
     "workflow_executor_data": "workflow_executor_data_filename",
     "hooks": "hooks_filename",

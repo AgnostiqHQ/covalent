@@ -133,6 +133,10 @@ def import_electron_assets(
     asset_recs = {}
 
     for asset_key, asset in e.assets:
+        # Register these later
+        if asset_key == "_custom":
+            continue
+
         node_storage_path, object_key = object_store.get_uri_components(
             dispatch_id,
             e.id,
@@ -157,8 +161,8 @@ def import_electron_assets(
         asset.remote_uri = f"file://{local_uri}"
 
     # Register custom assets
-    if e.custom_assets:
-        for asset_key, asset in e.custom_assets.items():
+    if e.assets._custom:
+        for asset_key, asset in e.assets._custom.items():
             object_key = f"{asset_key}.data"
             local_uri = os.path.join(node_storage_path, object_key)
 
