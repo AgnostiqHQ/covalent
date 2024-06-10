@@ -191,7 +191,7 @@ async def register(manifest: ResultSchema) -> ResultSchema:
         ) from e
 
 
-@router.post("/dispatches/{dispatch_id}/subdispatches", status_code=201)
+@router.post("/dispatches/{dispatch_id}/sublattices", status_code=201)
 async def register_subdispatch(
     manifest: ResultSchema,
     dispatch_id: str,

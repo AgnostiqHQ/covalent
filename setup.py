@@ -28,6 +28,9 @@ site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 with open("VERSION") as f:
     version = f.read().strip()
 
+# Allow installing a particular commit for testing
+commit_sha = os.getenv("COVALENT_COMMIT_SHA")
+artifact_id = commit_sha if commit_sha else f"v{version}"
 
 requirements_file = "requirements.txt"
 exclude_modules = [
@@ -202,7 +205,7 @@ setup_info = {
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
-    "download_url": f"https://github.com/AgnostiqHQ/covalent/archive/v{version}.tar.gz",
+    "download_url": f"https://github.com/AgnostiqHQ/covalent/archive/{artifact_id}.tar.gz",
     "license": "Apache License 2.0",
     "author": "Agnostiq",
     "author_email": "support@agnostiq.ai",

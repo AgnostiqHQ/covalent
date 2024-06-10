@@ -33,7 +33,6 @@ from covalent._workflow.electron import (
     _build_sublattice_graph,
     filter_null_metadata,
     get_serialized_function_str,
-    to_decoded_electron_collection,
 )
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, encode_metadata
@@ -236,20 +235,6 @@ def test_wait_for_post_processing_when_returning_waiting_electron():
             64,
         ]
         assert workflow_2.workflow_function.get_deserialized()() == 64
-
-
-def test_collection_node_helper_electron():
-    """Unit test for `to_decoded_electron_collection`"""
-
-    list_collection = [
-        TransportableObject.make_transportable(1),
-        TransportableObject.make_transportable(2),
-    ]
-
-    dict_collection = {"a": list_collection[0], "b": list_collection[1]}
-    assert to_decoded_electron_collection(x=list_collection) == [1, 2]
-
-    assert to_decoded_electron_collection(x=dict_collection) == {"a": 1, "b": 2}
 
 
 def test_injected_inputs_are_not_in_tg():

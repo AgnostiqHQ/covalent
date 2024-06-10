@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.235.1-rc.0] - 2024-06-10
+
+### Authors
+
+- Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: kessler-frost <sankalp@agnostiq.ai>
+
+
+### Fixed
+
+- Ignoring all errors when importing qelectrons instead of only `ImportError`
+
+## [0.235.0-rc.0] - 2024-05-29
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Updated Slurm plugin docs to note possible SSH limitation
+- Updated Slurm plugin docs to remove `sshproxy` section
+- API base endpoint is now configurable from an environment variable
+- Removed unused lattice attributes to reduce asset uploads
+
+### Fixed
+
+- Improved handling of Covalent version mismatches between client and
+  executor environments
+  
+### Removed
+
+- Removed obsolete `migrate-pickled-result-object` command
+
+### Operations
+
+- Allow installing a specific commit sha to ease testing
+
 ## [0.234.1-rc.0] - 2024-05-10
 
 ### Authors

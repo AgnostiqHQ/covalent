@@ -20,7 +20,6 @@ import copy
 from datetime import datetime
 
 import networkx as nx
-import simplejson
 
 import covalent.executor as covalent_executor
 from covalent._shared_files import logger
@@ -123,38 +122,6 @@ def result_encoder(obj):
     if isinstance(obj, datetime):
         return obj.isoformat()
     return str(obj)
-
-
-def encode_result(result_obj):
-    lattice = result_obj.lattice
-
-    result_string = result_obj.encoded_result.json
-    if not result_string:
-        result_string = result_obj.encoded_result.object_string
-
-    named_args = {k: v.object_string for k, v in lattice.named_args.items()}
-    named_kwargs = {k: v.object_string for k, v in lattice.named_kwargs.items()}
-    result_dict = {
-        "dispatch_id": result_obj.dispatch_id,
-        "status": result_obj.status,
-        "result": result_string,
-        "start_time": result_obj.start_time,
-        "end_time": result_obj.end_time,
-        "results_dir": result_obj.results_dir,
-        "error": result_obj.error,
-        "lattice": {
-            "function_string": lattice.workflow_function_string,
-            "doc": lattice.__doc__,
-            "name": lattice.__name__,
-            "inputs": encode_dict({**named_args, **named_kwargs}),
-            "metadata": extract_metadata(lattice.metadata),
-        },
-        "graph": extract_graph(result_obj.lattice.transport_graph._graph),
-    }
-
-    jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
-
-    return jsonified_result
 
 
 class DispatchDB:
