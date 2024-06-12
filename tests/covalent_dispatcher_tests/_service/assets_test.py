@@ -16,6 +16,7 @@
 
 """Unit tests for the FastAPI asset endpoints"""
 
+import base64
 import tempfile
 from contextlib import contextmanager
 from typing import Generator
@@ -704,7 +705,7 @@ def test_get_pickle_offsets():
 
         start, end = _get_tobj_pickle_offsets(f"file://{write_file.name}")
 
-        assert data[start:].decode("utf-8") == tobj.get_serialized()
+        assert data[start:] == base64.b64decode(tobj.get_serialized().encode("utf-8"))
 
 
 def test_generate_partial_file_slice():
