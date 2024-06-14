@@ -22,9 +22,9 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
-from requests import Response
 
 import covalent as ct
+from covalent._api.apiclient import CovalentAPIClient
 from covalent._results_manager.results_manager import (
     MissingLatticeRecordError,
     Result,
@@ -105,24 +105,23 @@ def test_cancel_with_multiple_task_ids(mocker):
 
 
 def test_result_export(mocker):
+    import json
+
     with tempfile.TemporaryDirectory() as staging_dir:
         test_manifest = get_test_manifest(staging_dir)
 
     dispatch_id = "test_result_export"
 
-    mock_body = {"id": "test_result_export", "status": "COMPLETED"}
-
+    mock_response_body = json.loads(test_manifest.model_dump_json())
     mock_client = MagicMock()
-    mock_response = Response()
+    mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_response.json = MagicMock(return_value=mock_body)
+    mock_response.json = MagicMock(return_value=mock_response_body)
 
     mocker.patch("covalent._api.apiclient.requests.Session.get", return_value=mock_response)
-
+    apiclient = CovalentAPIClient("http://localhost:48008")
     endpoint = f"/api/v2/dispatches/{dispatch_id}"
-    assert mock_body == _get_result_export_from_dispatcher(
-        dispatch_id, wait=False, status_only=True
-    )
+    assert test_manifest == _get_result_export_from_dispatcher(dispatch_id, apiclient)
 
 
 def test_result_manager_assets_local_copies():
@@ -176,11 +175,7 @@ def test_get_result(mocker):
         # local file copies from server_dir to results_dir.
         manifest = get_test_manifest(server_dir)
 
-        mock_result_export = {
-            "id": dispatch_id,
-            "status": "COMPLETED",
-            "result_export": manifest.dict(),
-        }
+        mock_result_export = manifest
         mocker.patch(
             "covalent._results_manager.results_manager._get_result_export_from_dispatcher",
             return_value=mock_result_export,
@@ -208,17 +203,9 @@ def test_get_result_sublattice(mocker):
             # Sublattice manifest
             sub_manifest = get_test_manifest(server_dir_sub)
 
-            mock_result_export = {
-                "id": dispatch_id,
-                "status": "COMPLETED",
-                "result_export": manifest.dict(),
-            }
+            mock_result_export = manifest
 
-            mock_subresult_export = {
-                "id": sub_dispatch_id,
-                "status": "COMPLETED",
-                "result_export": sub_manifest.dict(),
-            }
+            mock_subresult_export = sub_manifest
 
             exports = {dispatch_id: mock_result_export, sub_dispatch_id: mock_subresult_export}
 
@@ -277,10 +264,10 @@ def test_get_result_RecursionError(mocker):
 def test_get_status_only(mocker):
     """Check get_result when status_only=True"""
 
-    dispatch_id = "test_get_result_st"
+    dispatch_id = "test_get_status_only"
     mock_get_result_export = mocker.patch(
-        "covalent._results_manager.results_manager._get_result_export_from_dispatcher",
-        return_value={"id": dispatch_id, "status": "RUNNING"},
+        "covalent._results_manager.results_manager._query_dispatch_status",
+        return_value="RUNNING",
     )
 
     status_report = get_result(dispatch_id, status_only=True)

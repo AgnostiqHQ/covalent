@@ -17,12 +17,13 @@
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
 import re
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.schemas.result import StatusEnum
 
 range_regex = "bytes=([0-9]+)-([0-9]*)"
 range_pattern = re.compile(range_regex)
@@ -56,12 +57,6 @@ class ElectronAssetKey(str, Enum):
     qelectron_db = "qelectron_db"
 
 
-class ExportResponseSchema(BaseModel):
-    id: str
-    status: str
-    result_export: Optional[ResultSchema] = None
-
-
 class AssetRepresentation(str, Enum):
     string = "string"
     b64pickle = "object"
@@ -78,3 +73,26 @@ class DispatchStatusSetSchema(BaseModel):
 
     # For cancellation, an optional list of task ids to cancel
     task_ids: Optional[List] = []
+
+
+class BulkGetMetadata(BaseModel):
+    count: int
+
+
+class DispatchSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    dispatch_id: str
+    root_dispatch_id: Optional[str] = None
+    status: StatusEnum
+    name: Optional[str] = None
+    electron_num: Optional[int] = None
+    completed_electron_num: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+
+class BulkDispatchGetSchema(BaseModel):
+    dispatches: List[DispatchSummary]
+    metadata: BulkGetMetadata

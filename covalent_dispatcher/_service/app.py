@@ -20,11 +20,11 @@
 import asyncio
 import json
 from contextlib import asynccontextmanager
-from typing import List, Optional, Union
-from uuid import UUID
+from typing import List, Union
 
-from fastapi import APIRouter, FastAPI, HTTPException, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
+from typing_extensions import Annotated
 
 import covalent_dispatcher.entry_point as dispatcher
 from covalent._shared_files import logger
@@ -38,7 +38,13 @@ from .._dal.result import Result, get_result_object
 from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
 from .heartbeat import Heartbeat
-from .models import DispatchStatusSetSchema, ExportResponseSchema, TargetDispatchStatus
+from .models import (
+    BulkDispatchGetSchema,
+    BulkGetMetadata,
+    DispatchStatusSetSchema,
+    DispatchSummary,
+    TargetDispatchStatus,
+)
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -96,31 +102,6 @@ async def cancel_all_with_status(status: RESULT_STATUS):
         for record in records:
             dispatch_id = record.dispatch_id
             await dispatcher.cancel_running_dispatch(dispatch_id)
-
-
-@router.post("/dispatches/submit")
-async def submit(request: Request) -> UUID:
-    """
-    Function to accept the submit request of
-    new dispatch and return the dispatch id
-    back to the client.
-
-    Args:
-        None
-
-    Returns:
-        dispatch_id: The dispatch id in a json format
-                     returned as a Fast API Response object.
-    """
-    try:
-        data = await request.json()
-        data = json.dumps(data).encode("utf-8")
-        return await dispatcher.make_dispatch(data)
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to submit workflow: {e}",
-        ) from e
 
 
 async def start(dispatch_id: str):
@@ -266,74 +247,74 @@ async def set_dispatch_status(dispatch_id: str, desired_status: DispatchStatusSe
         return await cancel(dispatch_id, desired_status.task_ids)
 
 
+@router.get("/dispatches", response_model_exclude_unset=True)
+def get_dispatches_bulk(
+    dispatch_id: Annotated[Union[List[str], None], Query()] = None,
+    status: Annotated[Union[List[str], None], Query()] = None,
+    latest: bool = True,
+    offset: int = 0,
+    count: int = 10,
+    status_only: bool = False,
+) -> BulkDispatchGetSchema:
+    dispatch_controller = Result.meta_type
+
+    if status_only:
+        fields = ["dispatch_id", "status"]
+    else:
+        fields = [
+            "dispatch_id",
+            "root_dispatch_id",
+            "status",
+            "name",
+            "electron_num",
+            "completed_electron_num",
+            "created_at",
+            "updated_at",
+            "completed_at",
+        ]
+
+    summaries = []
+    with workflow_db.session() as session:
+        in_filters = {}
+        if dispatch_id is not None:
+            in_filters["dispatch_id"] = dispatch_id
+        if status is not None:
+            in_filters["status"] = status
+
+        results = dispatch_controller.get(
+            session,
+            fields=fields,
+            equality_filters={"is_active": True},
+            membership_filters=in_filters,
+            sort_fields=["created_at"],
+            reverse=latest,
+            offset=offset,
+            max_items=count,
+        )
+        for res in results:
+            dispatch_id = res.dispatch_id
+            summary = DispatchSummary.model_validate(res)
+            summaries.append(summary)
+
+    bulk_meta = BulkGetMetadata(count=len(results))
+    return BulkDispatchGetSchema(dispatches=summaries, metadata=bulk_meta)
+
+
 @router.get("/dispatches/{dispatch_id}")
-async def export_result(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-) -> ExportResponseSchema:
-    """Export all metadata about a registered dispatch
-
-    Args:
-        `dispatch_id`: The dispatch's unique id.
-
-    Returns:
-        {
-            id: `dispatch_id`,
-            status: status,
-            result_export: manifest for the result
-        }
-
-    The manifest `result_export` has the same schema as that which is
-    submitted to `/register`.
-
-    """
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        None,
-        _export_result_sync,
-        dispatch_id,
-        wait,
-        status_only,
-    )
-
-
-def _export_result_sync(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-) -> ExportResponseSchema:
+def export_manifest(dispatch_id: str) -> ResultSchema:
     result_object = _try_get_result_object(dispatch_id)
     if not result_object:
         return JSONResponse(
             status_code=404,
             content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
         )
-    status = str(result_object.get_value("status", refresh=False))
 
-    if not wait or status in [
-        str(RESULT_STATUS.COMPLETED),
-        str(RESULT_STATUS.FAILED),
-        str(RESULT_STATUS.CANCELLED),
-    ]:
-        output = {
-            "id": dispatch_id,
-            "status": status,
-        }
-        if not status_only:
-            output["result_export"] = export_result_manifest(dispatch_id)
-
-        return output
-
-    response = JSONResponse(
-        status_code=503,
-        content={"message": "Result not ready to read yet. Please wait for a couple of seconds."},
-        headers={"Retry-After": "2"},
-    )
-    return response
+    return export_result_manifest(dispatch_id)
 
 
 def _try_get_result_object(dispatch_id: str) -> Union[Result, None]:
     try:
-        res = get_result_object(
-            dispatch_id, bare=True, keys=["id", "dispatch_id", "status"], lattice_keys=["id"]
-        )
+        res = get_result_object(dispatch_id, bare=True)
     except KeyError:
         res = None
     return res

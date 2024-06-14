@@ -74,42 +74,6 @@ def test_dispatch_when_no_server_is_running(mocker):
     mock_print.assert_called_once_with(message)
 
 
-def test_dispatcher_dispatch_single(mocker):
-    """test dispatching a lattice with submit api"""
-
-    @ct.electron
-    def task(a, b, c):
-        return a + b + c
-
-    @ct.lattice
-    def workflow(a, b):
-        return task(a, b, c=4)
-
-    # test when api raises an implicit error
-
-    dispatch_id = "test_dispatcher_dispatch_single"
-    # multistage = False
-    mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value=False)
-
-    mock_submit_callable = MagicMock(return_value=dispatch_id)
-    mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
-        return_value=mock_submit_callable,
-    )
-
-    mock_reg_tr = mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
-    )
-    mock_start = mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.start", return_value=dispatch_id
-    )
-
-    assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
-
-    mock_submit_callable.assert_called()
-    mock_start.assert_called()
-
-
 def test_dispatcher_dispatch_multi(mocker):
     """test dispatching a lattice with multistage api"""
 
@@ -131,12 +95,6 @@ def test_dispatcher_dispatch_multi(mocker):
         return_value=mock_register_callable,
     )
 
-    mock_submit_callable = MagicMock(return_value=dispatch_id)
-    mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
-        return_value=mock_submit_callable,
-    )
-
     mock_reg_tr = mocker.patch(
         "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
     )
@@ -146,7 +104,6 @@ def test_dispatcher_dispatch_multi(mocker):
 
     assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
 
-    mock_submit_callable.assert_not_called()
     mock_register_callable.assert_called()
     mock_start.assert_called()
 
@@ -172,12 +129,6 @@ def test_dispatcher_dispatch_with_triggers(mocker):
         return_value=mock_register_callable,
     )
 
-    mock_submit_callable = MagicMock(return_value=dispatch_id)
-    mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
-        return_value=mock_submit_callable,
-    )
-
     mock_reg_tr = mocker.patch(
         "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
     )
@@ -188,41 +139,6 @@ def test_dispatcher_dispatch_with_triggers(mocker):
     assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
     mock_reg_tr.assert_called()
     mock_start.assert_not_called()
-
-
-def test_dispatcher_submit_api(mocker):
-    """test dispatching a lattice with submit api"""
-
-    @ct.electron
-    def task(a, b, c):
-        return a + b + c
-
-    @ct.lattice
-    def workflow(a, b):
-        return task(a, b, c=4)
-
-    # test when api raises an implicit error
-    r = Response()
-    r.status_code = 404
-    r.url = "http://dummy"
-    r.reason = "dummy reason"
-
-    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
-
-    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
-        dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
-        assert dispatch_id is None
-
-    # test when api doesn't raise an implicit error
-    r = Response()
-    r.status_code = 201
-    r.url = "http://dummy"
-    r._content = b"abcde"
-
-    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
-
-    dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
-    assert dispatch_id == "abcde"
 
 
 def test_dispatcher_start(mocker):
