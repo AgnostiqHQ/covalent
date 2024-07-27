@@ -14,11 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: kessler-frost <sankalp@agnostiq.ai>
+- Co-authored-by: n4n5 <its.just.n4n5@gmail.com>
 
 
 ### Fixed
 
 - Ignoring all errors when importing qelectrons instead of only `ImportError`
+- Add a `__main__.py` file to use covalent as python package
 
 ## [0.235.0-rc.0] - 2024-05-29
 
