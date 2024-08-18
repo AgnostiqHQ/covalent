@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for doing `pip install covalent[cloud]`
 
+## [0.235.1-rc.0] - 2024-06-10
+
+### Authors
+
+- Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: kessler-frost <sankalp@agnostiq.ai>
+
+
+### Fixed
+
+- Ignoring all errors when importing qelectrons instead of only `ImportError`
+
 ## [0.235.0-rc.0] - 2024-05-29
 
 ### Authors
