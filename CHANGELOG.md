@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Addedd
+
+- Added support for doing `pip install covalent[cloud]`
+
 ## [0.235.1-rc.0] - 2024-06-10
 
 ### Authors
@@ -26,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -57,7 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
-
 
 ### Fixed
 
