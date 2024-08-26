@@ -2,7 +2,7 @@
 Compatibility
 =============
 
-Covalent is primarily developed using Python 3.8 on MacOS and Linux. It has been tested in a variety of environments. The following tables list combinations of Python versions and operating systems that have been tested with release versions of Covalent.
+Covalent is primarily developed using Python 3.10 on MacOS and Linux. It has been tested in a variety of environments. The following tables list combinations of Python versions and operating systems that have been tested with release versions of Covalent.
 
 v0.202.0
 ********

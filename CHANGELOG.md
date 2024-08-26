@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Added support for Python 3.11
+- Removed official support for Python 3.8
+
 ## [0.235.1-rc.0] - 2024-06-10
 
 ### Authors
@@ -39,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved handling of Covalent version mismatches between client and
   executor environments
-  
+
 ### Removed
 
 - Removed obsolete `migrate-pickled-result-object` command
