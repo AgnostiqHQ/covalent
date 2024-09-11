@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for Python 3.11
 - Removed official support for Python 3.8
+- Improved memory overhead for operations involving TransportableObject
 
 ## [0.235.1-rc.0] - 2024-06-10
 
