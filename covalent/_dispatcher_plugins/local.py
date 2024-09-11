@@ -23,6 +23,8 @@ from typing import Callable, Dict, List, Optional, Union
 
 from furl import furl
 
+from covalent._file_transfer import File, FileTransfer
+
 from .._api.apiclient import CovalentAPIClient as APIClient
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result, get_result_manager
@@ -36,7 +38,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
-from .._shared_files.utils import copy_file_locally, format_server_url
+from .._shared_files.utils import format_server_url
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
 from .base import BaseDispatcher
@@ -521,7 +523,41 @@ class LocalDispatcher(BaseDispatcher):
         """Prepare a built-out lattice for submission"""
 
         result_object = Result(lattice)
-        return serialize_result(result_object, storage_path)
+        manifest = serialize_result(result_object, storage_path)
+        LocalDispatcher.transfer_local_assets_to_remote(manifest, storage_path)
+        return manifest
+
+    @staticmethod
+    def transfer_local_assets_to_remote(manifest: ResultSchema, storage_path) -> ResultSchema:
+        """Transfer assets from temporary staging directory to remote storage.
+
+        This will be used when building sublattice graphs in an
+        executor. The executor will deposit the workflow assets at a
+        location mutually agreed upon between the orchestrator and the
+        executor plugin.
+
+        """
+        remote_uri_prefix = os.environ.get("COVALENT_STAGING_URI_PREFIX", None)
+        if not remote_uri_prefix:
+            return manifest
+
+        local_prefix = "file://"
+
+        assets = extract_assets(manifest)
+
+        for asset in assets:
+            # Don't upload empty files
+            if asset.size > 0:
+                local_object_key = asset.uri[len(local_prefix) :]
+                asset.remote_uri = f"{remote_uri_prefix}{local_object_key}"
+
+        LocalDispatcher._upload(assets)
+
+        for asset in assets:
+            asset.uri = asset.remote_uri
+            asset.remote_uri = ""
+
+        return manifest
 
     @staticmethod
     def register_manifest(
@@ -602,17 +638,17 @@ class LocalDispatcher(BaseDispatcher):
             if not asset.remote_uri or not asset.uri:
                 app_log.debug(f"Skipping asset {i + 1} out of {total}")
                 continue
-            if asset.remote_uri.startswith(local_scheme_prefix):
-                copy_file_locally(asset.uri, asset.remote_uri)
-                number_uploaded += 1
             else:
-                _upload_asset(asset.uri, asset.remote_uri)
+                _transfer_asset(asset.uri, asset.remote_uri)
                 number_uploaded += 1
             app_log.debug(f"Uploaded asset {i + 1} out of {total}.")
         app_log.debug(f"uploaded {number_uploaded} assets.")
 
 
-def _upload_asset(local_uri, remote_uri):
+# Future improvement: we can probably fold this functionality
+# into the HTTP file transfer strategy
+def _put_asset(local_uri, remote_uri):
+    """Upload asset to an http PUT endpoint."""
     scheme_prefix = "file://"
     if local_uri.startswith(scheme_prefix):
         local_path = local_uri[len(scheme_prefix) :]
@@ -637,3 +673,18 @@ def _upload_asset(local_uri, remote_uri):
 
         r = api_client.put(endpoint, headers={"Content-Length": str(filesize)}, data=data)
         r.raise_for_status()
+
+
+def _transfer_asset(local_uri, remote_uri):
+    """Attempt to upload asset using a generalized file transfer."""
+
+    http_prefix = "http://"
+    https_prefix = "https://"
+    if remote_uri.startswith(http_prefix) or remote_uri.startswith(https_prefix):
+        _put_asset(local_uri, remote_uri)
+
+    else:
+        local_obj = File(local_uri)
+        remote_obj = File(remote_uri)
+        _, transfer_callable = FileTransfer(local_obj, remote_obj).cp()
+        transfer_callable()

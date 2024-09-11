@@ -18,9 +18,36 @@ from typing import Optional, Union
 
 from .enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order
 from .file import File
+from .strategies.gcloud_strategy import GCloud
 from .strategies.http_strategy import HTTP
+from .strategies.s3_strategy import S3
 from .strategies.shutil_strategy import Shutil
 from .strategies.transfer_strategy_base import FileTransferStrategy
+
+# TODO: make this pluggable similar to executor plugins
+_strategy_type_map = {
+    FileTransferStrategyTypes.Shutil: Shutil,
+    FileTransferStrategyTypes.S3: S3,
+    FileTransferStrategyTypes.HTTP: HTTP,
+    FileTransferStrategyTypes.GCloud: GCloud,
+}
+
+
+def _guess_transfer_strategy(from_file: File, to_file: File) -> FileTransferStrategy:
+    # Handle the following cases automatically
+    # Local-Remote (except HTTP destination)
+    # Remote-local
+    # Local-local
+
+    if (
+        from_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
+        and to_file.mapped_strategy_type != FileTransferStrategyTypes.HTTP
+    ):
+        return _strategy_type_map[to_file.mapped_strategy_type]
+    elif to_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil:
+        return _strategy_type_map[from_file.mapped_strategy_type]
+    else:
+        raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
 
 
 class FileTransfer:
@@ -58,15 +85,8 @@ class FileTransfer:
         # assign explicit strategy or default to strategy based on from_file & to_file schemes
         if strategy:
             self.strategy = strategy
-        elif (
-            from_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
-            and to_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
-        ):
-            self.strategy = Shutil()
-        elif from_file.mapped_strategy_type == FileTransferStrategyTypes.HTTP:
-            self.strategy = HTTP()
         else:
-            raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
+            self.strategy = _guess_transfer_strategy(from_file, to_file)()
 
         self.to_file = to_file
         self.from_file = from_file
