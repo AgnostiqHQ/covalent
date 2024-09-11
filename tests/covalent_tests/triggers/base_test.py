@@ -17,7 +17,6 @@
 from unittest import mock
 
 import pytest
-from fastapi.responses import JSONResponse
 
 from covalent.triggers import BaseTrigger
 
@@ -46,7 +45,6 @@ def test_register(mocker):
 @pytest.mark.parametrize(
     "use_internal_func, mock_status",
     [
-        (True, JSONResponse("mock")),
         (True, {"status": "mocked-status"}),
         (False, {"status": "mocked-status"}),
     ],
@@ -61,26 +59,14 @@ def test_get_status(mocker, use_internal_func, mock_status):
     base_trigger.use_internal_funcs = use_internal_func
 
     if use_internal_func:
-        mocker.patch("covalent_dispatcher._service.app.export_result")
-
-        mock_fut_res = mock.Mock()
-        mock_fut_res.result.return_value = mock_status
-        mock_run_coro = mocker.patch(
-            "covalent.triggers.base.asyncio.run_coroutine_threadsafe", return_value=mock_fut_res
+        mock_bulk_get_res = mock.Mock()
+        mock_bulk_get_res.dispatches = [mock.Mock()]
+        mock_bulk_get_res.dispatches[0].status = mock_status["status"]
+        mocker.patch(
+            "covalent_dispatcher._service.app.get_dispatches_bulk", return_value=mock_bulk_get_res
         )
 
-        if not isinstance(mock_status, dict):
-            mock_json_loads = mocker.patch(
-                "covalent.triggers.base.json.loads", return_value={"status": "mocked-status"}
-            )
-
         status = base_trigger._get_status()
-
-        mock_run_coro.assert_called_once()
-        mock_fut_res.result.assert_called_once()
-
-        if not isinstance(mock_status, dict):
-            mock_json_loads.assert_called_once()
 
     else:
         mock_get_status = mocker.patch("covalent.get_result", return_value=mock_status)

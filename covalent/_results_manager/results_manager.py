@@ -19,12 +19,11 @@ from __future__ import annotations
 
 import contextlib
 import os
+import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from furl import furl
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
 
 from .._api.apiclient import CovalentAPIClient
 from .._serialize.common import load_asset
@@ -40,9 +39,9 @@ from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._shared_files.utils import copy_file_locally, format_server_url
 from .result import Result
-from .wait import EXTREME
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -139,12 +138,20 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 # Multi-part
 
 
+def _query_dispatch_status(dispatch_id: str, api_client: CovalentAPIClient):
+    endpoint = "/api/v2/dispatches"
+    resp = api_client.get(endpoint, params={"dispatch_id": dispatch_id, "status_only": True})
+    resp.raise_for_status()
+    dispatches = resp.json()["dispatches"]
+    if len(dispatches) == 0:
+        raise MissingLatticeRecordError
+
+    return dispatches[0]["status"]
+
+
 def _get_result_export_from_dispatcher(
-    dispatch_id: str,
-    wait: bool = False,
-    status_only: bool = False,
-    dispatcher_addr: str = None,
-) -> Dict:
+    dispatch_id: str, api_client: CovalentAPIClient
+) -> ResultSchema:
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
@@ -161,24 +168,13 @@ def _get_result_export_from_dispatcher(
         MissingLatticeRecordError: If the result is not found.
     """
 
-    if dispatcher_addr is None:
-        dispatcher_addr = format_server_url()
-
-    retries = int(EXTREME) if wait else 5
-
-    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
-    api_client = CovalentAPIClient(dispatcher_addr, adapter=adapter, auto_raise=False)
-
     endpoint = f"/api/v2/dispatches/{dispatch_id}"
-    response = api_client.get(
-        endpoint,
-        params={"wait": wait, "status_only": status_only},
-    )
+    response = api_client.get(endpoint)
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
     export = response.json()
-    return export
+    return ResultSchema.model_validate(export)
 
 
 # Function to download default assets
@@ -346,11 +342,17 @@ class ResultManager:
         wait: bool = False,
         dispatcher_addr: str = None,
     ) -> "ResultManager":
-        export = _get_result_export_from_dispatcher(
-            dispatch_id, wait, status_only=False, dispatcher_addr=dispatcher_addr
-        )
+        if dispatcher_addr is None:
+            dispatcher_addr = format_server_url()
 
-        manifest = ResultSchema.model_validate(export["result_export"])
+        api_client = CovalentAPIClient(dispatcher_addr)
+        if wait:
+            status = Status(_query_dispatch_status(dispatch_id, api_client))
+            while not RESULT_STATUS.is_terminal(status):
+                time.sleep(1)
+                status = Status(_query_dispatch_status(dispatch_id, api_client))
+
+        manifest = _get_result_export_from_dispatcher(dispatch_id, api_client)
 
         # sort the nodes
         manifest.lattice.transport_graph.nodes.sort(key=lambda x: x.id)
@@ -408,14 +410,15 @@ def _get_result_multistage(
 
     """
 
+    if dispatcher_addr is None:
+        dispatcher_addr = format_server_url()
+
+    api_client = CovalentAPIClient(dispatcher_addr)
     try:
         if status_only:
-            return _get_result_export_from_dispatcher(
-                dispatch_id=dispatch_id,
-                wait=wait,
-                status_only=status_only,
-                dispatcher_addr=dispatcher_addr,
-            )
+            status = _query_dispatch_status(dispatch_id, api_client)
+            return {"id": dispatch_id, "status": status}
+
         rm = get_result_manager(dispatch_id, results_dir, wait, dispatcher_addr)
         _get_default_assets(rm)
 
@@ -496,23 +499,14 @@ def get_result(
         The Result object from the Covalent server
 
     """
-    max_attempts = int(os.getenv("COVALENT_GET_RESULT_RETRIES", 10))
-    num_attempts = 0
-    while num_attempts < max_attempts:
-        try:
-            return _get_result_multistage(
-                dispatch_id=dispatch_id,
-                wait=wait,
-                dispatcher_addr=dispatcher_addr,
-                status_only=status_only,
-                results_dir=results_dir,
-                workflow_output=workflow_output,
-                intermediate_outputs=intermediate_outputs,
-                sublattice_results=sublattice_results,
-                qelectron_db=qelectron_db,
-            )
-
-        except RecursionError as re:
-            app_log.error(re)
-            num_attempts += 1
-    raise RuntimeError("Timed out waiting for result. Please retry or check dispatch.")
+    return _get_result_multistage(
+        dispatch_id=dispatch_id,
+        wait=wait,
+        dispatcher_addr=dispatcher_addr,
+        status_only=status_only,
+        results_dir=results_dir,
+        workflow_output=workflow_output,
+        intermediate_outputs=intermediate_outputs,
+        sublattice_results=sublattice_results,
+        qelectron_db=qelectron_db,
+    )

@@ -17,10 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Generic, Type, TypeVar
+from typing import Generic, List, Optional, Sequence, Type, TypeVar, Union
 
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.engine import Row
+from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import Select, desc
 
 from .._db import models
 
@@ -50,11 +52,16 @@ class Record(Generic[T]):
         cls,
         session: Session,
         *,
+        stmt: Optional[Select] = None,
         fields: list,
         equality_filters: dict,
         membership_filters: dict,
         for_update: bool = False,
-    ):
+        sort_fields: List[str] = [],
+        reverse: bool = True,
+        offset: int = 0,
+        max_items: Optional[int] = None,
+    ) -> Union[Sequence[Row], Sequence[T]]:
         """Bulk ORM-enabled SELECT.
 
         Args:
@@ -64,19 +71,40 @@ class Record(Generic[T]):
             membership_filters: Dict{field_name: value_list}
             for_update: Whether to lock the selected rows
 
+        Returns:
+            A list of SQLAlchemy Rows or whole ORM entities depending
+        on whether only a subset of fields is specified.
+
         """
-        stmt = select(cls.model)
+        if stmt is None:
+            if len(fields) > 0:
+                entities = [getattr(cls.model, attr) for attr in fields]
+                stmt = select(*entities)
+            else:
+                stmt = select(cls.model)
+
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.model, attr) == val)
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(cls.model, attr).in_(vals))
-        if len(fields) > 0:
-            attrs = [getattr(cls.model, f) for f in fields]
-            stmt = stmt.options(load_only(*attrs))
         if for_update:
             stmt = stmt.with_for_update()
+        for attr in sort_fields:
+            if reverse:
+                stmt = stmt.order_by(desc(getattr(cls.model, attr)))
+            else:
+                stmt = stmt.order_by(getattr(cls.model, attr))
 
-        return session.scalars(stmt).all()
+        stmt = stmt.offset(offset)
+        if max_items:
+            stmt = stmt.limit(max_items)
+
+        if len(fields) == 0:
+            # Return whole ORM entities
+            return session.scalars(stmt).all()
+        else:
+            # Return a named tuple containing the selected cols
+            return session.execute(stmt).all()
 
     @classmethod
     def get_by_primary_key(

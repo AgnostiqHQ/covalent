@@ -551,3 +551,84 @@ def test_result_filters_parent_electron_updates(test_db, mocker):
     assert third_update
 
     assert subl_node.get_value("output").get_deserialized() == 42
+
+
+def test_result_controller_bulk_get(test_db, mocker):
+    record_1 = models.Lattice(
+        dispatch_id="dispatch_1",
+        root_dispatch_id="dispatch_1",
+        name="dispatch_1",
+        status="NEW_OBJECT",
+        electron_num=5,
+        completed_electron_num=0,
+    )
+
+    record_2 = models.Lattice(
+        dispatch_id="dispatch_2",
+        root_dispatch_id="dispatch_2",
+        name="dispatch_2",
+        status="NEW_OBJECT",
+        electron_num=25,
+        completed_electron_num=0,
+    )
+
+    record_3 = models.Lattice(
+        dispatch_id="dispatch_3",
+        root_dispatch_id="dispatch_2",
+        name="dispatch_3",
+        status="COMPLETED",
+        electron_num=25,
+        completed_electron_num=25,
+    )
+
+    with test_db.session() as session:
+        session.add(record_1)
+        session.add(record_2)
+        session.add(record_3)
+        session.commit()
+
+    dispatch_controller = Result.meta_type
+
+    with test_db.session() as session:
+        results = dispatch_controller.get(
+            session,
+            fields=["dispatch_id"],
+            equality_filters={},
+            membership_filters={},
+        )
+        assert len(results) == 3
+
+    with test_db.session() as session:
+        results = dispatch_controller.get_toplevel_dispatches(
+            session,
+            fields=["dispatch_id"],
+            equality_filters={},
+            membership_filters={},
+        )
+        assert len(results) == 2
+
+    with test_db.session() as session:
+        results = dispatch_controller.get(
+            session,
+            fields=["dispatch_id"],
+            equality_filters={},
+            membership_filters={},
+            sort_fields=["name"],
+            reverse=False,
+            max_items=1,
+        )
+        assert len(results) == 1
+        assert results[0].dispatch_id == "dispatch_1"
+
+    with test_db.session() as session:
+        results = dispatch_controller.get(
+            session,
+            fields=["dispatch_id"],
+            equality_filters={},
+            membership_filters={},
+            sort_fields=["name"],
+            max_items=2,
+            offset=1,
+        )
+        assert len(results) == 2
+        assert results[0].dispatch_id == "dispatch_2"

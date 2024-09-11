@@ -15,8 +15,6 @@
 # limitations under the License.
 
 
-import asyncio
-import json
 from abc import abstractmethod
 
 import requests
@@ -108,17 +106,12 @@ class BaseTrigger:
         """
 
         if self.use_internal_funcs:
-            from covalent_dispatcher._service.app import export_result
+            from covalent_dispatcher._service.app import get_dispatches_bulk
 
-            response = asyncio.run_coroutine_threadsafe(
-                export_result(self.lattice_dispatch_id, status_only=True),
-                self.event_loop,
-            ).result()
-
-            if isinstance(response, dict):
-                return response["status"]
-
-            return json.loads(response.body.decode()).get("status")
+            response = get_dispatches_bulk(
+                dispatch_id=[self.lattice_dispatch_id], status_only=True
+            )
+            return response.dispatches[0].status
 
         from .. import get_result
 
