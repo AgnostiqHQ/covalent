@@ -69,7 +69,7 @@ def test_lattice_workflow_executor_settings():
 
     assert not workflow.metadata["workflow_executor"]
     workflow.build_graph(1)
-    assert workflow.metadata["workflow_executor"] == DEFAULT_METADATA_VALUES["workflow_executor"]
+    assert workflow.metadata["workflow_executor"] == workflow.metadata["executor"]
     workflow_2.build_graph(1)
     assert workflow_2.metadata["workflow_executor"] == "custom_postprocessor"
 

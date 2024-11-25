@@ -204,16 +204,22 @@ class Lattice:
         self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
 
         # Set any lattice metadata not explicitly set by the user
-        constraint_names = {"executor", "workflow_executor", "hooks"}
+        constraint_names = {"executor", "hooks"}
         new_metadata = {
             name: DEFAULT_METADATA_VALUES[name]
             for name in constraint_names
             if self.metadata[name] is None
         }
+
         new_metadata = encode_metadata(new_metadata)
 
         for k, v in new_metadata.items():
             self.metadata[k] = v
+
+        # Copy lattice default executor to workflow_executor if the latter is not set
+        if self.metadata["workflow_executor"] is None:
+            self.metadata["workflow_executor"] = self.metadata["executor"]
+            self.metadata["workflow_executor_data"] = self.metadata["executor_data"]
 
         # Check whether task packing is enabled
         self._task_packing = get_config("sdk.task_packing") == "true"

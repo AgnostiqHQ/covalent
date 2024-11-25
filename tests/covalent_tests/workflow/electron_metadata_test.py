@@ -17,7 +17,7 @@
 """Unit tests to test whether electrons inherit lattice metadata correctly"""
 
 
-from covalent._shared_files.defaults import get_default_executor, postprocess_prefix
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._workflow.transport import _TransportGraph
 
 
@@ -51,7 +51,8 @@ def test_electrons_get_lattice_metadata_1():
         metadata = tg.get_node_value(node_id, "metadata")
         node_name = tg.get_node_value(node_id, "name")
         if node_name.startswith(postprocess_prefix):
-            assert metadata["executor"] == get_default_executor()
+            # workflow_executor defaults to lattice-default executor
+            assert metadata["executor"] == "awslambda"
         elif "parameter" not in node_name:
             assert metadata["executor"] == "electron_executor"
             assert metadata["hooks"]["deps"]["bash"] == electron_bash_dep.to_dict()
