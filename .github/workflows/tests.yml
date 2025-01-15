@@ -30,7 +30,7 @@ on:
       commit_sha:
         description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
-        default: ''
+        default: ""
         required: false
 
 jobs:
@@ -118,7 +118,7 @@ jobs:
       - name: Generate environment variables
         run: |
           if ${{ matrix.os == 'ubuntu-latest'
-            && contains(matrix.container, 'debian11-py38')
+            && contains(matrix.container, 'debian12-py310')
             && matrix.backend == 'dask' }} ; then
             RECOMMENDED_PLATFORM=true
           fi
@@ -172,7 +172,7 @@ jobs:
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: actions/setup-node@v3
         with:
-          node-version-file: 'covalent_ui/webapp/.nvmrc'
+          node-version-file: "covalent_ui/webapp/.nvmrc"
 
       - name: Build webapp
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
