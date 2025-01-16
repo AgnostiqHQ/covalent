@@ -21,13 +21,12 @@ Defines executors and provides a "manager" to get all available executors
 import contextlib
 import glob
 import importlib
+import importlib.metadata
 import inspect
 import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Union
-
-import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
@@ -214,7 +213,7 @@ class _ExecutorManager:
             None
         """
 
-        entry_points = pkg_resources.iter_entry_points("covalent.executor.executor_plugins")
+        entry_points = importlib.metadata.entry_points(group="covalent.executor.executor_plugins")
         for entry in entry_points:
             the_module = entry.load()
             self._populate_executor_map_from_module(the_module)

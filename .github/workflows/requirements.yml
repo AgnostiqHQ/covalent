@@ -47,7 +47,6 @@ jobs:
           --ignore-module=covalent_ui.*
           --ignore-module=covalent.*
           --ignore-module=urllib3.*
-          --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
           --ignore-module=covalent/_shared_files
           --ignore-file=covalent/quantum/**
