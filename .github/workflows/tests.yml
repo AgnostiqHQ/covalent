@@ -64,8 +64,6 @@ jobs:
       COVALENT_SERVER_IFACE_ANY: true
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
-    outputs:
-      codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
       - name: Check out the default branch
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
@@ -309,85 +307,6 @@ jobs:
       - name: Dump Covalent logs
         run: covalent logs
 
-      - name: Upload SDK report to Codecov
-        id: upload-sdk-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && (github.event_name == 'workflow_call'
-          || steps.sdk-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./sdk_coverage.xml
-          flags: SDK
-          name: "SDK Unit Tests"
-          fail_ci_if_error: true
-
-      - name: Upload Dispatcher report to Codecov
-        id: upload-dispatcher-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && (github.event_name == 'workflow_call'
-          || steps.dispatcher-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./dispatcher_coverage.xml
-          flags: Dispatcher
-          name: "Dispatcher Unit Tests"
-          fail_ci_if_error: true
-
-      - name: Upload Functional report to Codecov
-        id: upload-functional-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && steps.functional-coverage.outcome == 'success'
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./functional_tests_coverage.xml
-          flags: Functional_Tests
-          name: "Functional Tests"
-          fail_ci_if_error: true
-
-      - name: Upload UI backend report to Codecov
-        id: upload-ui-backend-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && (github.event_name == 'workflow_call'
-          || steps.ui-backend-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./ui_backend_coverage.xml
-          flags: UI_Backend
-          name: "UI Backend Unit Tests"
-          fail_ci_if_error: true
-
-      - name: Upload UI frontend report to Codecov
-        id: upload-ui-frontend-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && (github.event_name == 'workflow_call'
-          || steps.ui-frontend-tests.outcome == 'success')
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./covalent_ui/webapp/coverage/clover.xml
-          flags: UI_Frontend
-          name: "UI Frontend Unit Tests"
-          fail_ci_if_error: true
-
-      - name: Local Codecov
-        id: local-codecov
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && github.event_name == 'workflow_call'
-        run: |
-          if ${{ steps.upload-sdk-report.outcome == 'skipped'
-            && steps.upload-dispatcher-report.outcome == 'skipped'
-            && steps.upload-functional-report.outcome == 'skipped'
-            && steps.upload-ui-backend-report.outcome == 'skipped'
-            && steps.upload-ui-frontend-report.outcome  == 'skipped' }} ; then
-            local_codecov=true
-          fi
-          echo "::set-output name=local_codecov::${local_codecov}"
-
       - name: Alert Slack
         if: >
           github.event_name == 'workflow_call'
@@ -400,19 +319,3 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
-
-  codecov_patch:
-    needs: tests
-    name: "codecov/patch"
-    if: needs.tests.outputs.codecov == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No report needed."
-
-  codecov_project:
-    needs: tests
-    name: "codecov/project"
-    if: needs.tests.outputs.codecov == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No report needed."
