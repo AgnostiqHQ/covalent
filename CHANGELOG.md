@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Disabled codecov in CI
+- Removed qelectron tests from CI
+- Updated recommended platform to Python 3.12
 
 ### Fixed
 
