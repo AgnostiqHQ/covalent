@@ -230,16 +230,6 @@ jobs:
           covalent cluster --info
           covalent cluster --logs
 
-      - name: Run functional tests and measure coverage
-        id: functional-tests
-        if: env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-
-      - name: Generate functional test coverage report
-        id: functional-coverage
-        if: steps.functional-tests.outcome == 'success'
-        run: coverage xml -o functional_tests_coverage.xml
-
       - name: Run SDK tests and measure coverage
         id: sdk-tests
         if: >
@@ -263,6 +253,16 @@ jobs:
         id: dispatcher-coverage
         if: steps.dispatcher-tests.outcome == 'success'
         run: coverage xml -o dispatcher_coverage.xml
+
+      - name: Run functional tests and measure coverage
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+
+      - name: Generate functional test coverage report
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
+        run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
         id: ui-backend-tests
