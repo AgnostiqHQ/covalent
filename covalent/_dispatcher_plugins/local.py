@@ -129,8 +129,6 @@ class LocalDispatcher(BaseDispatcher):
             Wrapper function which takes the inputs of the workflow as arguments
         """
 
-        multistage = get_config("sdk.multistage_dispatch") == "true"
-
         # Extract triggers here
         if "triggers" in orig_lattice.metadata:
             triggers_data = orig_lattice.metadata.pop("triggers")
@@ -155,14 +153,7 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
-            if multistage:
-                dispatch_id = LocalDispatcher.register(orig_lattice, dispatcher_addr)(
-                    *args, **kwargs
-                )
-            else:
-                dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(
-                    *args, **kwargs
-                )
+            dispatch_id = LocalDispatcher.register(orig_lattice, dispatcher_addr)(*args, **kwargs)
 
             if triggers_data:
                 LocalDispatcher.register_triggers(triggers_data, dispatch_id)
@@ -234,61 +225,6 @@ class LocalDispatcher(BaseDispatcher):
                 LocalDispatcher.upload_assets(manifest)
 
                 return dispatch_id
-
-        return wrapper
-
-    @staticmethod
-    def submit(
-        orig_lattice: Lattice,
-        dispatcher_addr: str = None,
-    ) -> Callable:
-        """
-        Wrapping the dispatching functionality to allow input passing
-        and server address specification.
-
-        Afterwards, send the lattice to the dispatcher server and return
-        the assigned dispatch id.
-
-        Args:
-            orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
-
-        Returns:
-            Wrapper function which takes the inputs of the workflow as arguments
-        """
-
-        if dispatcher_addr is None:
-            dispatcher_addr = format_server_url()
-
-        @wraps(orig_lattice)
-        def wrapper(*args, **kwargs) -> str:
-            """
-            Send the lattice to the dispatcher server and return
-            the assigned dispatch id.
-
-            Args:
-                *args: The inputs of the workflow.
-                **kwargs: The keyword arguments of the workflow.
-
-            Returns:
-                The dispatch id of the workflow.
-            """
-
-            if not isinstance(orig_lattice, Lattice):
-                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
-                app_log.error(message)
-                raise TypeError(message)
-
-            lattice = deepcopy(orig_lattice)
-
-            lattice.build_graph(*args, **kwargs)
-
-            # Serialize the transport graph to JSON
-            json_lattice = lattice.serialize_to_json()
-            endpoint = "/api/v2/dispatches/submit"
-            r = APIClient(dispatcher_addr).post(endpoint, data=json_lattice)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
 
         return wrapper
 

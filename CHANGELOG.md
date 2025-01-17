@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Disabled codecov in CI
+
+### Fixed
+
+- `get_result(wait=True)` no longer times out
+
 ### Changed
 
-- Added support for Python 3.11
-- Removed official support for Python 3.8
+- Added support for Python 3.11 and 3.12
+- Removed official support for Python 3.8 and 3.9
 
 ## [0.235.1-rc.0] - 2024-06-10
 
@@ -24,7 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Ignoring all errors when importing qelectrons instead of only `ImportError`
-
 ## [0.235.0-rc.0] - 2024-05-29
 
 ### Authors

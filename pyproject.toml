@@ -15,7 +15,7 @@
 # limitations under the License.
 
 [tool.black]
-target_version = ['py38']
+target_version = ['py310']
 line-length = 99
 include = '\.pyi?$'
 exclude = '''
@@ -27,7 +27,7 @@ exclude = '''
 '''
 
 [tool.isort]
-py_version = 38
+py_version = 310
 line_length = 99
 multi_line_output = 3
 include_trailing_comma = true

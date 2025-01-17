@@ -175,7 +175,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
             with self.session() as session:
                 electron_rec = Electron.get_db_records(
                     session,
-                    keys={"id", "parent_lattice_id"},
+                    keys=ELECTRON_KEYS,
                     equality_filters={"id": self._electron_id},
                     membership_filters={},
                 )[0]
@@ -343,7 +343,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
             A dictionary {"failed": [node_ids], "cancelled": [node_ids]}
         """
         with self.session() as session:
-            query_keys = {"parent_lattice_id", "node_id", "name", "status"}
+            query_keys = {"id", "parent_lattice_id", "node_id", "name", "status"}
             records = Electron.get_db_records(
                 session,
                 keys=query_keys,

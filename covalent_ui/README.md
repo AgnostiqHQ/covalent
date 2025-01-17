@@ -41,7 +41,7 @@ yarn build
 yarn start
 ```
 ## Run server
-Recomended python version is 3.8
+Recomended python version is 3.10
 ```shell
 cd covalent_ui
 python app.py

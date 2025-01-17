@@ -68,9 +68,10 @@ def test_import_result(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         res = get_mock_result(dispatch_id, sdk_dir)
         filtered_res = import_result(res, srv_dir, None)
 
@@ -131,15 +132,17 @@ def test_import_previously_imported_result(mocker, test_db):
         "covalent_dispatcher._dal.importers.result._filter_remote_uris"
     )
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         res = get_mock_result(dispatch_id, sdk_dir)
         import_result(res, srv_dir, None)
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         sub_res = get_mock_result(sub_dispatch_id, sdk_dir)
         sub_res.metadata.root_dispatch_id = dispatch_id
         import_result(sub_res, srv_dir, None)
@@ -166,9 +169,10 @@ def test_import_subdispatch_cancel_req(mocker, test_db):
         "covalent_dispatcher._dal.importers.result._filter_remote_uris"
     )
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         res = get_mock_result(dispatch_id, sdk_dir)
         import_result(res, srv_dir, None)
 
@@ -178,9 +182,10 @@ def test_import_subdispatch_cancel_req(mocker, test_db):
         )
         session.commit()
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         sub_res = get_mock_result(sub_dispatch_id, sdk_dir)
         sub_res.metadata.root_dispatch_id = dispatch_id
         srv_res = get_result_object(dispatch_id, bare=True)
@@ -218,9 +223,10 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
         "covalent_dispatcher._dal.importers.result.copy_asset_meta"
     )
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         manifest = get_mock_result(dispatch_id, sdk_dir)
 
         redispatch_manifest = copy.deepcopy(manifest)
@@ -271,9 +277,10 @@ def test_import_result_with_custom_assets(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         manifest = get_mock_result(dispatch_id, sdk_dir)
         manifest.lattice.assets._custom = {"custom_lattice_asset": AssetSchema(size=0)}
         manifest.lattice.transport_graph.nodes[0].assets._custom = {

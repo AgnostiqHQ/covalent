@@ -66,9 +66,10 @@ def test_export_result(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
-        prefix="covalent-"
-    ) as srv_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir,
+        tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
+    ):
         manifest = get_mock_manifest(dispatch_id, sdk_dir)
         received_manifest = manifest.copy(deep=True)
         filtered_res = import_result(received_manifest, srv_dir, None)
