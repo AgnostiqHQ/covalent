@@ -68,7 +68,10 @@ def test_import_export_manifest(test_db, mocker):
     res._root_dispatch_id = dispatch_id
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
-    with tempfile.TemporaryDirectory() as sdk_tmp_dir, tempfile.TemporaryDirectory() as srv_tmp_dir:
+    with (
+        tempfile.TemporaryDirectory() as sdk_tmp_dir,
+        tempfile.TemporaryDirectory() as srv_tmp_dir,
+    ):
         manifest = serialize_result(res, sdk_tmp_dir)
         received_manifest = manifest.copy(deep=True)
 
