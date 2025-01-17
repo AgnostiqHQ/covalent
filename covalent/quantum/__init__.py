@@ -14,4 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .qcluster import QCluster, Simulator
+import sys
+
+if sys.version_info.major == 3 and sys.version_info.minor < 12:
+    from .qcluster import QCluster, Simulator
+else:
+    raise ImportError("Error: QElectrons are not supported in Python >=3.12")
