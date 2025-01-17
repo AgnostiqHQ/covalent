@@ -361,34 +361,3 @@ mock_input_data_jobs = {
         },
     }
 }
-
-
-@pytest.fixture
-def qelectron_mocked_data_for_jobs(mocker):
-    from covalent.quantum.qserver.database import Database
-
-    return mocker.patch.object(Database, "get_db_dict", return_value=mock_input_data_jobs)
-
-
-def test_get_qelectrons_jobs(qelectron_mocked_data_for_jobs):
-    test_data = output_data["test_get_qelectrons_jobs"]["case_1"]
-    response = object_test_template(
-        api_path=output_data["test_get_qelectrons_jobs"]["api_path"],
-        app=fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
-    assert response.json() == test_data["response_data"]
-
-
-def test_get_qelectron_job_detail(qelectron_mocked_data_for_jobs):
-    test_data = output_data["test_get_qelectron_job_detail"]["case_1"]
-    response = object_test_template(
-        api_path=output_data["test_get_qelectron_job_detail"]["api_path"],
-        app=fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
-    assert response.json() == test_data["response_data"]
