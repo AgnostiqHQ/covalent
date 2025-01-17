@@ -599,15 +599,6 @@ def test_result_controller_bulk_get(test_db, mocker):
         assert len(results) == 3
 
     with test_db.session() as session:
-        results = dispatch_controller.get_toplevel_dispatches(
-            session,
-            fields=["dispatch_id"],
-            equality_filters={},
-            membership_filters={},
-        )
-        assert len(results) == 2
-
-    with test_db.session() as session:
         results = dispatch_controller.get(
             session,
             fields=["dispatch_id"],

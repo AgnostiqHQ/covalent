@@ -21,7 +21,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
@@ -45,41 +44,6 @@ RESULT_KEYS = list(_meta_record_map.keys())
 
 class ResultMeta(Record[models.Lattice]):
     model = models.Lattice
-
-    @classmethod
-    def get_toplevel_dispatches(
-        cls,
-        session: Session,
-        *,
-        fields: list,
-        equality_filters: dict,
-        membership_filters: dict,
-        for_update: bool = False,
-        sort_fields: List[str] = [],
-        reverse: bool = True,
-        offset: int = 0,
-        max_items: int = 10,
-    ):
-        if len(fields) > 0:
-            entities = [getattr(cls.model, attr) for attr in fields]
-            stmt = select(*entities)
-        else:
-            stmt = select(cls.model)
-
-        stmt = stmt.where(models.Lattice.root_dispatch_id == models.Lattice.dispatch_id)
-
-        return cls.get(
-            session=session,
-            stmt=stmt,
-            fields=fields,
-            equality_filters=equality_filters,
-            membership_filters=membership_filters,
-            for_update=for_update,
-            sort_fields=sort_fields,
-            reverse=reverse,
-            offset=offset,
-            max_items=max_items,
-        )
 
 
 class ResultAsset(Record[models.LatticeAsset]):
