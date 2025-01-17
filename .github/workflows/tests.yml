@@ -111,7 +111,7 @@ jobs:
       - name: Generate environment variables
         run: |
           if ${{ matrix.os == 'ubuntu-latest'
-            && contains(matrix.container, 'debian12-py312')
+            && contains(matrix.container, 'debian12-py310')
             && matrix.backend == 'dask' }} ; then
             RECOMMENDED_PLATFORM=true
           fi
