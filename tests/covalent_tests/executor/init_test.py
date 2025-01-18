@@ -48,7 +48,7 @@ def test_executor_manager_generate_plugins_list(mocker):
     init_mock = mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
 
     em = _ExecutorManager()
-    init_mock.called_once_with()
+    init_mock.assert_called_once_with()
 
     load_executors_mock = mocker.patch("covalent.executor._ExecutorManager._load_executors")
 
