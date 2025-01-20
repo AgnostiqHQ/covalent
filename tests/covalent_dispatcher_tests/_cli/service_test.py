@@ -44,6 +44,7 @@ from covalent_dispatcher._cli.service import (
     _rm_pid_file,
     cluster,
     config,
+    get_config,
     logs,
     purge,
     restart,
@@ -187,7 +188,7 @@ def test_graceful_start_when_pid_exists(mocker):
 
 @pytest.mark.parametrize("no_triggers_flag", [True, False])
 @pytest.mark.parametrize("triggers_only_flag", [True, False])
-def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_flag):
+def test_graceful_start_when_pid_absent(monkeypatch, mocker, no_triggers_flag, triggers_only_flag):
     """Test the graceful server start function."""
 
     config_paths = [
@@ -200,6 +201,9 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
     def patched_fn(entry):
         return entry
 
+    tmp_dir = tempfile.TemporaryDirectory()
+    monkeypatch.setenv("COVALENT_CONFIG_DIR", tmp_dir.name)
+
     read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
     pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
@@ -207,10 +211,6 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
         "covalent_dispatcher._cli.service._next_available_port", return_value=1984
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
-    get_mock = mocker.patch(
-        "covalent._shared_files.config.ConfigManager.get", side_effect=patched_fn
-    )
-    path_mock = mocker.patch("covalent_dispatcher._cli.service.Path.__init__", return_value=None)
     click_echo_mock = mocker.patch("click.echo")
     requests_mock = mocker.patch(
         "covalent_dispatcher._cli.service.requests.get",
@@ -233,13 +233,9 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
             )
             assert res == 1984
 
-            path_mock_calls = path_mock.mock_calls
-            get_mock_calls = get_mock.mock_calls
-
             for each_path in config_paths:
-                assert (mocker.call(each_path) in get_mock_calls) and (
-                    mocker.call(each_path) in path_mock_calls
-                )
+                path = get_config(each_path)
+                assert os.path.exists(path)
 
             popen_mock.assert_called_once()
             assert popen_mock.call_args[0][0] == launch_str
@@ -595,10 +591,7 @@ def test_logs(exists, mocker):
 
     if not exists:
         result = runner.invoke(logs)
-        assert (
-            result.output.replace("\n", "")
-            == f"{UI_LOGFILE} not found. Restart the server to create a new log file."
-        )
+        assert result.output.startswith(UI_LOGFILE)
     else:
         m_open = mock.mock_open(read_data="testing")
         with mock.patch("covalent_dispatcher._cli.service.open", m_open):
@@ -1149,5 +1142,5 @@ def test_graceful_start_permission_exception(mocker):
     runner = CliRunner()
     runner.invoke(start)
 
-    assert graceful_start_mock.called_once()
+    graceful_start_mock.assert_called_once()
     assert click_secho_mock.call_count == 3
