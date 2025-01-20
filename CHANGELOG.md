@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `get_result(wait=True)` no longer times out
+- Fixed tests on mac
 
 ### Changed
 
