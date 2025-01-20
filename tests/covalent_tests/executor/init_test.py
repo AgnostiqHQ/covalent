@@ -62,14 +62,14 @@ def test_executor_manager_generate_plugins_list(mocker):
     )
 
     em.generate_plugins_list()
-    os_path_join_mock.assert_called_once_with("covalent", "executor_plugins")
+    os_path_join_mock.assert_called_with("covalent", "executor_plugins")
     get_config_mock.assert_called_once_with("sdk.executor_dir")
 
     assert load_executors_mock.mock_calls == [
         mocker.call("pkg_plugins_path"),
         mocker.call("user_plugins_path"),
     ]
-    load_installed_plugins_mock.called_once_with()
+    load_installed_plugins_mock.assert_called_once_with()
 
 
 def test_get_executor(mocker):
