@@ -31,7 +31,7 @@ def test_bash_decorator():
         return None
 
     deps_bash = DepsBash(["whoami"])
-    deps_pip = DepsPip(packages=["cloudpickle==2.0.0"])
+    deps_pip = DepsPip(packages=["cloudpickle>=2.0"])
     call_before = DepsCall(call_hook)
     call_after = DepsCall(call_hook)
     source_file = Path("/tmp/src.txt")
@@ -63,7 +63,7 @@ def test_bash_decorator():
         ct.leptons.bash(
             task2,
             files=[ct.fs.FileTransfer(str(source_file), str(dest_file2), order=Order.AFTER)],
-            deps_pip=["cloudpickle==2.0.0"],
+            deps_pip=["cloudpickle>=2.0.0"],
         )(3)
 
     source_file.touch()

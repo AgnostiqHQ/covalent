@@ -27,7 +27,7 @@ from covalent import DepsBash, DepsCall, DepsPip
 def test_deps_workflow():
     """Test the deps functionality."""
 
-    deps_pip = DepsPip(packages=["numpy==1.23.1"])
+    deps_pip = DepsPip(packages=["numpy>=2.0"])
     deps_bash = DepsBash(commands=["echo $HOME >> /tmp/deps_bash_test.txt"])
 
     def deps_call():

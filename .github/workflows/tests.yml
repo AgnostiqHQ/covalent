@@ -89,11 +89,6 @@ jobs:
             sdk:
             - 'covalent/**'
             - 'tests/covalent_tests/**'
-            qelectron:
-            - 'covalent/executor/quantum_plugins/**'
-            - 'covalent/executor/qbase.py'
-            - 'covalent/quantum/**'
-            - 'tests/qelectron_tests/**'
             dispatcher:
             - 'covalent_dispatcher/**'
             - 'tests/covalent_dispatcher_tests/**'
@@ -138,7 +133,6 @@ jobs:
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
           echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
-          echo "COVALENT_DISABLE_QELECTRON_TESTS=true" >> $GITHUB_ENV
 
       - name: Set up Python
         if: >
@@ -164,7 +158,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
-          pip install --no-cache-dir -r ./requirements-qelectron.txt
 
       - name: Set up Node
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
@@ -237,16 +230,6 @@ jobs:
           covalent cluster --info
           covalent cluster --logs
 
-      - name: Run functional tests and measure coverage
-        id: functional-tests
-        if: env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-
-      - name: Generate functional test coverage report
-        id: functional-coverage
-        if: steps.functional-tests.outcome == 'success'
-        run: coverage xml -o functional_tests_coverage.xml
-
       - name: Run SDK tests and measure coverage
         id: sdk-tests
         if: >
@@ -259,18 +242,6 @@ jobs:
         if: steps.sdk-tests.outcome == 'success'
         run: coverage xml -o sdk_coverage.xml
 
-      - name: Run Qelectron tests and measure coverage
-        id: qelectron-tests
-        if: >
-          (steps.modified-files.outputs.qelectron == 'true'
-          || env.BUILD_AND_RUN_ALL) && env.COVALENT_DISABLE_QELECTRON_TESTS != 'true'
-        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/qelectron_tests/core_tests --cov=covalent_qelectron --cov-config=.coveragerc
-
-      - name: Generate Qelectron coverage report
-        id: qelectron-coverage
-        if: steps.qelectron-tests.outcome == 'success' && env.COVALENT_DISABLE_QELECTRON_TESTS != 'true'
-        run: coverage xml -o qelectron_coverage.xml
-
       - name: Run dispatcher tests and measure coverage
         id: dispatcher-tests
         if: >
@@ -282,6 +253,16 @@ jobs:
         id: dispatcher-coverage
         if: steps.dispatcher-tests.outcome == 'success'
         run: coverage xml -o dispatcher_coverage.xml
+
+      - name: Run functional tests and measure coverage
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+
+      - name: Generate functional test coverage report
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
+        run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run UI backend tests and measure coverage
         id: ui-backend-tests

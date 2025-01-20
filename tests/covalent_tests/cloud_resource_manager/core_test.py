@@ -106,14 +106,14 @@ def test_get_executor_module(mocker):
     test_executor_name = "test_executor"
     test_executor_module = "test_executor_module"
 
-    mock_import_module = mocker.patch(
-        "covalent.cloud_resource_manager.core.importlib.import_module",
-        return_value=test_executor_module,
-    )
-
     mocker.patch(
         "covalent.cloud_resource_manager.core._executor_manager.executor_plugins_map",
         return_value={test_executor_name: "test"},
+    )
+
+    mock_import_module = mocker.patch(
+        "covalent.cloud_resource_manager.core.importlib.import_module",
+        return_value=test_executor_module,
     )
 
     returned_module = get_executor_module(test_executor_name)
