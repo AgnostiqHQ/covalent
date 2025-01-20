@@ -138,9 +138,6 @@ class TestS3Strategy:
             "covalent._file_transfer.strategies.s3_strategy.os.path.relpath",
             return_value="mock_path",
         )
-        mocker.patch(
-            "covalent._file_transfer.strategies.s3_strategy.os.path.join", return_value="mock_join"
-        )
 
         to_folder = Folder("s3://mock-bucket/")
         from_folder = Folder("/tmp/")
@@ -156,5 +153,5 @@ class TestS3Strategy:
         callable_func = S3(**self.MOCK_STRATEGY_CONFIG).upload(from_folder, to_folder)
         callable_func()
         boto3_client_mock().upload_file.assert_called_once_with(
-            "/tmp/mock_join", bucket_name, "mock_join"
+            "/tmp/mock_path/test.csv", bucket_name, "mock_path/test.csv"
         )
