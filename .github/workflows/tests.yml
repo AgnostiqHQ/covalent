@@ -204,6 +204,30 @@ jobs:
         if: steps.build-dist.outcome == 'success'
         run: pip install dist/covalent-*.tar.gz
 
+      - name: Run SDK tests and measure coverage
+        id: sdk-tests
+        if: >
+          steps.modified-files.outputs.sdk == 'true'
+          || env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+
+      - name: Generate SDK coverage report
+        id: sdk-coverage
+        if: steps.sdk-tests.outcome == 'success'
+        run: coverage xml -o sdk_coverage.xml
+
+      - name: Run dispatcher tests and measure coverage
+        id: dispatcher-tests
+        if: >
+          steps.modified-files.outputs.dispatcher == 'true'
+          || env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+
+      - name: Generate dispatcher coverage report
+        id: dispatcher-coverage
+        if: steps.dispatcher-tests.outcome == 'success'
+        run: coverage xml -o dispatcher_coverage.xml
+
       - name: Start Covalent dispatcher server
         if: env.BUILD_AND_RUN_ALL
         id: covalent_start
@@ -229,30 +253,6 @@ jobs:
           covalent status
           covalent cluster --info
           covalent cluster --logs
-
-      - name: Run SDK tests and measure coverage
-        id: sdk-tests
-        if: >
-          steps.modified-files.outputs.sdk == 'true'
-          || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
-
-      - name: Generate SDK coverage report
-        id: sdk-coverage
-        if: steps.sdk-tests.outcome == 'success'
-        run: coverage xml -o sdk_coverage.xml
-
-      - name: Run dispatcher tests and measure coverage
-        id: dispatcher-tests
-        if: >
-          steps.modified-files.outputs.dispatcher == 'true'
-          || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
-
-      - name: Generate dispatcher coverage report
-        id: dispatcher-coverage
-        if: steps.dispatcher-tests.outcome == 'success'
-        run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
         id: functional-tests

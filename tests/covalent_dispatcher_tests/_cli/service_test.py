@@ -100,11 +100,15 @@ def test_python_path_in_venv():
         venv.create(tmp_dir, with_pip=False)
         custom_env = os.environ.copy()
         # equivalent of source venv/bin/activate
-        custom_env["VIRTUAL_ENV"] = tmp_dir
+        custom_env["VIRTUAL_ENV"] = os.path.realpath(tmp_dir)
         custom_env["PATH"] = f"{tmp_dir}/bin:$PATH"
-        check_path_cmd = ["python", "-c", "import sys; print(sys.executable)"]
+        check_path_cmd = [
+            "python",
+            "-c",
+            "import os; import sys; print(os.path.realpath(sys.executable))",
+        ]
         res = subprocess.run(check_path_cmd, check=True, capture_output=True, env=custom_env)
-        assert res.stdout.decode().startswith(tmp_dir)
+        assert res.stdout.decode().startswith(os.path.realpath(tmp_dir))
 
 
 def test_read_pid_nonexistent_file():
