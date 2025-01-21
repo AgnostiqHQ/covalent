@@ -12,10 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disabled codecov in CI
 - Removed qelectron tests from CI
 - Updated recommended platform to Python 3.12
+- Run local executor tests for PRs
 
 ### Fixed
 
 - `get_result(wait=True)` no longer times out
+- Fixed tests on mac
 
 ### Changed
 
