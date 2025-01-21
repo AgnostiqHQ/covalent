@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Added framework for building sublattices inside new-style executors
+- Improve automatic file transfer strategy selection
+
 ## [0.238.0-rc.0] - 2025-03-05
 
 ### Authors
