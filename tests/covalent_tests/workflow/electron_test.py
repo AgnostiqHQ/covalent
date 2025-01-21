@@ -17,6 +17,7 @@
 """Unit tests for electron"""
 
 import json
+import tempfile
 from unittest.mock import ANY, MagicMock
 
 import flake8
@@ -140,6 +141,53 @@ def test_build_sublattice_graph(mocker):
 
     assert lat.metadata.workflow_executor == parent_metadata["workflow_executor"]
     assert lat.metadata.workflow_executor_data == parent_metadata["workflow_executor_data"]
+
+
+def test_build_sublattice_graph_staging_uri(mocker):
+    """Test that building a sublattice graph with staging uri."""
+
+    dispatch_id = "test_build_sublattice_graph_staging_uri"
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
+        "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
+        "results_dir": None,
+    }
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        mock_environ = {
+            "COVALENT_DISPATCH_ID": dispatch_id,
+            "COVALENT_STAGING_URI_PREFIX": f"file://{tmp_dir}",
+        }
+        mocker.patch("os.environ", mock_environ)
+        json_manifest = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
+        # Check that asset uris start with the staging prefix
+        manifest = ResultSchema.model_validate_json(json_manifest)
+        for key, asset in manifest.assets:
+            if asset.size > 0:
+                assert asset.uri.startswith(mock_environ["COVALENT_STAGING_URI_PREFIX"])
+
+        for key, asset in manifest.lattice.assets:
+            if asset.size > 0:
+                assert asset.uri.startswith(mock_environ["COVALENT_STAGING_URI_PREFIX"])
 
 
 def test_build_sublattice_graph_fallback(mocker):

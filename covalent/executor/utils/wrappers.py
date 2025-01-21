@@ -365,8 +365,8 @@ def run_task_group_alt(
     task_ids = task_group_metadata["node_ids"]
     gid = task_group_metadata["task_group_id"]
 
+    os.environ["COVALENT_STAGING_URI_PREFIX"] = f"file://{results_dir}/staging"
     os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
-    os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
