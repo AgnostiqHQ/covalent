@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - workflow_executor now defaults to the lattice-default executor
 
+### Operations
+
+- Use legacy OpenSSL providers in release.yml build environment. This is a TEMPORARY patch until we can
+update the UI dependencies.
+
 ## [0.236.0-rc.0] - 2025-01-21
 
 ### Authors

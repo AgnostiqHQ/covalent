@@ -177,6 +177,8 @@ jobs:
           node-version: 20
 
       - name: Build Webapp
+        env:
+          NODE_OPTIONS: "--openssl-legacy-provider"
         run: |
           cd ./covalent_ui/webapp
           yarn install
