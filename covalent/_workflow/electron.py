@@ -208,18 +208,11 @@ class Electron:
         # enclosing lattice's workflow_executor.
 
         metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
-        executor = metadata["workflow_executor"]
-        executor_data = metadata["workflow_executor_data"]
-
         op_electron = Electron(func_for_op, metadata=metadata)
 
         if active_lattice := active_lattice_manager.get_active_lattice():
-            executor = active_lattice.metadata.get(
-                "workflow_executor", metadata["workflow_executor"]
-            )
-            executor_data = active_lattice.metadata.get(
-                "workflow_executor_data", metadata["workflow_executor_data"]
-            )
+            executor = active_lattice.metadata["workflow_executor"]
+            executor_data = active_lattice.metadata["workflow_executor_data"]
             op_electron.metadata["executor"] = executor
             op_electron.metadata["executor_data"] = executor_data
 

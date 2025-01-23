@@ -198,5 +198,3 @@ class DefaultMetadataValues:
     executor: str = field(default_factory=get_default_executor)
     executor_data: Dict = field(default_factory=dict)
     hooks: Dict = field(default_factory=dict)
-    workflow_executor: str = field(default_factory=get_default_executor)
-    workflow_executor_data: Dict = field(default_factory=dict)
