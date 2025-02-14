@@ -47,7 +47,6 @@ ELECTRON_FUNCTION_STRING_FILENAME = ELECTRON_FILENAMES["function_string"]
 ELECTRON_VALUE_FILENAME = ELECTRON_FILENAMES["value"]
 ELECTRON_STDOUT_FILENAME = ELECTRON_FILENAMES["stdout"]
 ELECTRON_STDERR_FILENAME = ELECTRON_FILENAMES["stderr"]
-ELECTRON_QELECTRON_DB_FILENAME = ELECTRON_FILENAMES["qelectron_db"]
 ELECTRON_ERROR_FILENAME = ELECTRON_FILENAMES["error"]
 ELECTRON_RESULTS_FILENAME = ELECTRON_FILENAMES["output"]
 ELECTRON_HOOKS_FILENAME = ELECTRON_FILENAMES["hooks"]
@@ -254,16 +253,6 @@ def _electron_data(
             except KeyError:
                 node_output = TransportableObject(None)
 
-            try:
-                node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
-            except KeyError:
-                node_qelectron_data_exists = False
-
-            try:
-                node_qelectron_data = tg.get_node_value(node_id, "qelectron_db")
-            except KeyError:
-                node_qelectron_data = bytes()
-
             executor = tg.get_node_value(node_id, "metadata")["executor"]
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
             completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
@@ -281,7 +270,6 @@ def _electron_data(
                 ),
                 ("stdout", ELECTRON_STDOUT_FILENAME, node_stdout),
                 ("stderr", ELECTRON_STDERR_FILENAME, node_stderr),
-                ("qelectron_db", ELECTRON_QELECTRON_DB_FILENAME, node_qelectron_data),
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
@@ -334,7 +322,6 @@ def _electron_data(
                 "stderr_filename": ELECTRON_STDERR_FILENAME,
                 "error_filename": ELECTRON_ERROR_FILENAME,
                 "hooks_filename": ELECTRON_HOOKS_FILENAME,
-                "qelectron_data_exists": node_qelectron_data_exists,
                 "job_id": job_row.id,
                 "created_at": timestamp,
                 "updated_at": timestamp,

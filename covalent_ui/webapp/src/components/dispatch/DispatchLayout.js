@@ -32,12 +32,10 @@ import { resetLatticeState } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
-import QElectronDrawer from '../common/QElectronDrawer'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [openQelectronDrawer, setOpenQelectronDrawer] = useState(false)
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const [prettify, setPrettify] = useState(true)
   const latDetailError = useSelector(
@@ -119,23 +117,8 @@ export function DispatchLayout() {
         <DispatchDrawerContents />
       </LatticeDrawer>
 
-      {
-        <QElectronDrawer
-          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
-          openQelectronDrawer={openQelectronDrawer}
-          dispatchId={
-            sublatticesDispatchId
-              ? sublatticesDispatchId?.dispatchId
-              : dispatchId
-          }
-          electronId={selectedElectron?.node_id}
-        />
-      }
       {Object.keys(graph_result).length !== 0 ? (
         <NodeDrawer
-          setOpenQelectronDrawer={setOpenQelectronDrawer}
-          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
-          openQelectronDrawer={openQelectronDrawer}
           prettify={prettify}
           node={selectedElectron}
           graph={graph_result}

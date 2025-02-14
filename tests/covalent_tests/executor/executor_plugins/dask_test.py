@@ -444,16 +444,13 @@ def test_run_task_group_alt():
     result_file = tempfile.NamedTemporaryFile()
     stdout_file = tempfile.NamedTemporaryFile()
     stderr_file = tempfile.NamedTemporaryFile()
-    qelectron_db_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
 
     run_task_group_alt(
         task_specs=[task_spec.dict()],
         resources=resources.dict(),
-        output_uris=[
-            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
-        ],
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url="http://localhost:48008",
@@ -545,16 +542,13 @@ def test_run_task_group_alt_exception():
     result_file = tempfile.NamedTemporaryFile()
     stdout_file = tempfile.NamedTemporaryFile()
     stderr_file = tempfile.NamedTemporaryFile()
-    qelectron_db_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
 
     run_task_group_alt(
         task_specs=[task_spec.model_dump()],
         resources=resources.model_dump(),
-        output_uris=[
-            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
-        ],
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url="http://localhost:48008",

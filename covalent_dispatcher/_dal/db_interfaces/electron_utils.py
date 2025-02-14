@@ -35,7 +35,6 @@ _meta_record_map = {
     "status": "status",
     "executor": "executor",
     "executor_data": "executor_data",
-    "qelectron_data_exists": "qelectron_data_exists",
 }
 
 _db_meta_record_map = {

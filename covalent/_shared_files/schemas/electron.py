@@ -33,7 +33,6 @@ ELECTRON_METADATA_KEYS = {
     # user dependent metadata
     "executor",
     "executor_data",
-    "qelectron_data_exists",
 }
 
 ELECTRON_ASSET_KEYS = {
@@ -44,7 +43,6 @@ ELECTRON_ASSET_KEYS = {
     "error",
     "stdout",
     "stderr",
-    "qelectron_db",
     # user dependent assets
     "hooks",
 }
@@ -54,9 +52,6 @@ ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
 ELECTRON_VALUE_FILENAME = "value.tobj"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_QELECTRON_DB_FILENAME = (
-    "data.mdb"  # This NEEDS to be data.mdb so that the qelectron's Database class can find it
-)
 ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.tobj"
 ELECTRON_HOOKS_FILENAME = "hooks.json"
@@ -72,7 +67,6 @@ ASSET_FILENAME_MAP = {
     "output": ELECTRON_RESULTS_FILENAME,
     "stdout": ELECTRON_STDOUT_FILENAME,
     "stderr": ELECTRON_STDERR_FILENAME,
-    "qelectron_db": ELECTRON_QELECTRON_DB_FILENAME,
     "error": ELECTRON_ERROR_FILENAME,
     "hooks": ELECTRON_HOOKS_FILENAME,
 }
@@ -86,7 +80,6 @@ class ElectronAssets(BaseModel):
     error: Optional[AssetSchema] = None
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
-    qelectron_db: Optional[AssetSchema] = None
 
     # user dependent assets
     hooks: AssetSchema
@@ -99,7 +92,6 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    qelectron_data_exists: Optional[bool] = None
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None

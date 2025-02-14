@@ -8,8 +8,6 @@ The following API documentation describes how to use Covalent.
 
 - The :ref:`covalent_server` manages workflow dispatch, orchestration, and metadata
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
-- :ref:`qelectrons_api` are used to customize and track quantum circuit execution
-- :ref:`qclusters_api` are used to distribute Quantum Electrons across multiple quantum backends.
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`file_transfer` is used to queue remote or local file transfer operations prior or post electron execution.
 - :ref:`file_transfer_strategies` are used to perform download/upload/copy operations over various protocols.
@@ -69,26 +67,6 @@ Lattice
 
 .. autoclass:: covalent._workflow.lattice.Lattice
     :members:
-
-----------------------------------------------------------------
-
-.. _qelectrons_api:
-
-Quantum Electrons
-"""""""""""""""""""""""""""
-
-.. autodecorator:: covalent.qelectron
-
-
-----------------------------------------------------------------
-
-.. _qclusters_api:
-
-Quantum Clusters
-"""""""""""""""""""""""""""
-
-.. autopydantic_model:: covalent.executor.QCluster
-
 
 ----------------------------------------------------------------
 

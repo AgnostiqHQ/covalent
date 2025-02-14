@@ -40,7 +40,6 @@ ASSET_TYPES = {
     "value": AssetType.TRANSPORTABLE,
     "output": AssetType.TRANSPORTABLE,
     "hooks": AssetType.JSONABLE,
-    "qelectron_db": AssetType.BYTES,
     "stdout": AssetType.TEXT,
     "stderr": AssetType.TEXT,
     "error": AssetType.TEXT,
@@ -52,7 +51,6 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
     name = node_attrs["name"]
     executor = node_attrs["metadata"]["executor"]
     executor_data = node_attrs["metadata"]["executor_data"]
-    qelectron_data_exists = node_attrs["metadata"]["qelectron_data_exists"]
 
     # Optional
     status = node_attrs.get("status", RESULT_STATUS.NEW_OBJECT)
@@ -70,7 +68,6 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
         name=name,
         executor=executor,
         executor_data=executor_data,
-        qelectron_data_exists=qelectron_data_exists,
         status=str(status),
         start_time=start_time,
         end_time=end_time,
@@ -88,7 +85,6 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
         "metadata": {
             "executor": meta.executor,
             "executor_data": meta.executor_data,
-            "qelectron_data_exists": meta.qelectron_data_exists,
         },
     }
 
@@ -142,14 +138,6 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["stderr"],
     )
 
-    qelectron_db = node_attrs.get("qelectron_db", None)
-    qelectron_db_asset = save_asset(
-        qelectron_db,
-        ASSET_TYPES["qelectron_db"],
-        node_storage_path,
-        ASSET_FILENAME_MAP["qelectron_db"],
-    )
-
     node_error = node_attrs.get("error", None)
     error_asset = save_asset(
         node_error,
@@ -169,7 +157,6 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         output=output_asset,
         stdout=stdout_asset,
         stderr=stderr_asset,
-        qelectron_db=qelectron_db_asset,
         error=error_asset,
         hooks=hooks_asset,
     )
@@ -182,7 +169,6 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
     output = load_asset(ea.output, ASSET_TYPES["output"])
     stdout = load_asset(ea.stdout, ASSET_TYPES["stdout"])
     stderr = load_asset(ea.stderr, ASSET_TYPES["stderr"])
-    qelectron_db = load_asset(ea.qelectron_db, ASSET_TYPES["qelectron_db"])
     error = load_asset(ea.error, ASSET_TYPES["error"])
 
     hooks = load_asset(ea.hooks, ASSET_TYPES["hooks"])
@@ -194,7 +180,6 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
         "output": output,
         "stdout": stdout,
         "stderr": stderr,
-        "qelectron_db": qelectron_db,
         "error": error,
         "metadata": {
             "hooks": hooks,

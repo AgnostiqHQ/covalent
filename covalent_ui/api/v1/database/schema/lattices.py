@@ -97,23 +97,11 @@ class Lattice(Base):
     # Name of the file containing the serialized input data
     inputs_filename = Column(Text)
 
-    # Name of the file containing the serialized named args
-    named_args_filename = Column(Text)
-
-    # Name of the file containing the serialized named kwargs
-    named_kwargs_filename = Column(Text)
-
     # name of the file containing the serialized output
     results_filename = Column(Text)
 
     # Name of the file containing the default electron dependencies
     hooks_filename = Column(Text)
-
-    # Name of the file containing the set of cova imports
-    cova_imports_filename = Column(Text)
-
-    # Name of the file containing the set of lattice imports
-    lattice_imports_filename = Column(Text)
 
     # Results directory (will be deprecated soon)
     results_dir = Column(Text)

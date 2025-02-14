@@ -1,7 +1,6 @@
 include VERSION
 include requirements.txt
 include requirements-client.txt
-include requirements-qelectron.txt
 include covalent/py.typed
 recursive-include covalent/executor/ *
 recursive-include covalent_dispatcher/_service/ *
