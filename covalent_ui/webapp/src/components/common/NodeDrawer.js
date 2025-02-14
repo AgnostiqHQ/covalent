@@ -26,7 +26,6 @@ import {
   Paper,
   Typography,
   Skeleton,
-  SvgIcon,
   Grid,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'

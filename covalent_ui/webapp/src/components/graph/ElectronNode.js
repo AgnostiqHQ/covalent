@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Grid, Paper, Tooltip, tooltipClasses, Typography, SvgIcon } from '@mui/material'
+import { Grid, Paper, Tooltip, tooltipClasses, Typography} from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 import CopyButton from '../common/CopyButton'
