@@ -53,8 +53,6 @@ import {
   electronError,
   electronInput,
 } from '../../redux/electronSlice'
-import QElectronCard from './QElectronCard'
-import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
 import CopyButton from './CopyButton'
 import { Prettify } from '../../utils/misc'
 
@@ -64,9 +62,6 @@ export const nodeDrawerWidth = 360
 const NodeDrawer = ({
   node,
   dispatchId,
-  toggleQelectron,
-  openQelectronDrawer,
-  setOpenQelectronDrawer,
   prettify
 }) => {
   const dispatch = useDispatch()
@@ -75,12 +70,6 @@ const NodeDrawer = ({
     (state) => state.electronResults.electronList
   )
 
-  const qElectronExists = useSelector(
-    (state) => state.electronResults.electronList?.qelectron_data_exists
-  )
-  const qElectronDetails = useSelector(
-    (state) => state.electronResults.electronList?.qelectron
-  )
   const electronInputResult = useSelector(
     (state) => state.electronResults.electronInput
   )
@@ -115,7 +104,6 @@ const NodeDrawer = ({
 
   useEffect(() => {
     if (!!node) {
-      setOpenQelectronDrawer(false);
       dispatch(electronDetails({ electronId, dispatchId }))
       dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
@@ -137,15 +125,9 @@ const NodeDrawer = ({
   )
 
   const handleClose = () => {
-    setOpenQelectronDrawer(false)
     setSelectedElements([])
   }
 
-  useEffect(() => {
-    if (!node) {
-      setOpenQelectronDrawer(false)
-    }
-  })
 
   const nodeLabel = (type, name) => {
     switch (type) {
@@ -219,21 +201,6 @@ const NodeDrawer = ({
                     {prettify
                       ? Prettify(electronDetail?.name, electronDetail?.type || '')
                       : nodeLabel(electronDetail?.type, electronDetail?.name)}
-                    {qElectronExists && (
-                      <SvgIcon
-                        aria-label="view"
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          mr: 0,
-                          ml: 1.5,
-                          mt: 0.7,
-                          pr: 0,
-                        }}
-                      >
-                        <QelectronSvg />
-                      </SvgIcon>
-                    )}
                   </Typography>
                 </Grid>
                 <Grid
@@ -423,14 +390,6 @@ const NodeDrawer = ({
               </Paper>
             </>
           )}
-          {qElectronExists && (
-            <QElectronCard
-              qElectronDetails={qElectronDetails}
-              openQelectronDrawer={openQelectronDrawer}
-              toggleQelectron={toggleQelectron}
-            />
-          )}
-
         </>
       )}
     </Drawer>

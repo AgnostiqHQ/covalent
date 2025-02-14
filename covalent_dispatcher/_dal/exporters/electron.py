@@ -36,7 +36,6 @@ def _export_electron_meta(e: Electron) -> ElectronMetadata:
     name = e.get_value("name", None, refresh=False)
     executor = e.get_value("executor", None, refresh=False)
     executor_data = e.get_value("executor_data", None, refresh=False)
-    qelectron_data_exists = e.get_value("qelectron_data_exists", None, refresh=False)
     sub_dispatch_id = e.get_value("sub_dispatch_id", None, refresh=False)
     status = e.get_value("status", None, refresh=False)
     start_time = e.get_value("start_time", None, refresh=False)
@@ -47,7 +46,6 @@ def _export_electron_meta(e: Electron) -> ElectronMetadata:
         name=name,
         executor=executor,
         executor_data=executor_data,
-        qelectron_data_exists=qelectron_data_exists,
         sub_dispatch_id=sub_dispatch_id,
         status=str(status),
         start_time=start_time,

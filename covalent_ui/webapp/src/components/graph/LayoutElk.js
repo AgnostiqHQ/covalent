@@ -88,7 +88,6 @@ const mapGraphToElements = (
         sublattices_id: node.sublattice_dispatch_id
           ? node.sublattice_dispatch_id
           : null,
-        isQelectron: node?.qelectron_data_exists
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,

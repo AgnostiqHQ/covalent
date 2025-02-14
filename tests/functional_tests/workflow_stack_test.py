@@ -19,8 +19,6 @@
 import os
 import tempfile
 
-import pytest
-
 import covalent as ct
 import covalent._dispatcher_plugins.local as local
 import covalent._results_manager.results_manager as rm
@@ -533,44 +531,6 @@ def test_intermediate_electron_failure():
 
     assert workflow_result.status == Result.FAILED
     assert tg.get_node_value(0, "status") == Result.FAILED
-
-
-@pytest.mark.skip(reason="Inconsistent outcomes")
-def test_dispatch_cancellation():
-    """
-    Test whether a running dispatch can be successfully cancelled.
-    """
-
-    import numpy as np
-
-    rng = np.random.default_rng()
-
-    @ct.electron
-    def generate_random_list(size):
-        return rng.choice(size, size=size, replace=False)
-
-    @ct.electron
-    def get_sorted(unsorted_list):
-        return np.sort(unsorted_list)
-
-    @ct.lattice
-    def workflow(size=100_000_00, repetitions=10):
-        for _ in range(repetitions):
-            get_sorted(generate_random_list(size))
-        return repetitions
-
-    dispatch_id = ct.dispatch(workflow)()
-    result = rm.get_result(dispatch_id)
-
-    assert result.status in [Result.RUNNING, Result.NEW_OBJ]
-
-    rm.cancel(dispatch_id)
-
-    result = rm.get_result(dispatch_id, wait=True)
-
-    rm._delete_result(dispatch_id)
-
-    assert result.status == Result.CANCELLED
 
 
 def test_all_parameter_types_in_electron():

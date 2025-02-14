@@ -64,7 +64,6 @@ SDK_LAT_META_KEYS = {
 DEFERRED_KEYS = {
     "output",
     "result",
-    "qelectron_db",
 }
 
 
@@ -386,7 +385,6 @@ def _get_result_multistage(
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    qelectron_db: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch from a file.
@@ -403,7 +401,6 @@ def _get_result_multistage(
         workflow_output: Whether to return the workflow output. Defaults to True.
         intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
         sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
-        qelectron_db: Whether to load the bytes data of qelectron_db. Default is False.
 
     Returns:
         The Result object from the Covalent server
@@ -432,11 +429,6 @@ def _get_result_multistage(
                 rm.download_node_asset(node_id, "output")
                 rm.load_node_asset(node_id, "output")
 
-        if qelectron_db:
-            for node_id in tg._graph.nodes:
-                rm.download_node_asset(node_id, "qelectron_db")
-                rm.load_node_asset(node_id, "qelectron_db")
-
         # Fetch sublattice result objects recursively
         tg = rm.result_object.lattice.transport_graph
         for node_id in tg._graph.nodes:
@@ -451,7 +443,6 @@ def _get_result_multistage(
                     workflow_output=workflow_output,
                     intermediate_outputs=intermediate_outputs,
                     sublattice_results=sublattice_results,
-                    qelectron_db=qelectron_db,
                 )
                 tg.set_node_value(node_id, "sublattice_result", sub_result)
             else:
@@ -477,7 +468,6 @@ def get_result(
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    qelectron_db: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch.
@@ -493,7 +483,6 @@ def get_result(
         workflow_output: Whether to return the workflow output. Defaults to True.
         intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
         sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
-        qelectron_db: Whether to load the bytes data of qelectron_db. Default is False.
 
     Returns:
         The Result object from the Covalent server
@@ -508,5 +497,4 @@ def get_result(
         workflow_output=workflow_output,
         intermediate_outputs=intermediate_outputs,
         sublattice_results=sublattice_results,
-        qelectron_db=qelectron_db,
     )

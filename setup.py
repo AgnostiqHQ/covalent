@@ -58,11 +58,6 @@ else:
 with open(requirements_file) as f:
     required = f.read().splitlines()
 
-# By default we don't install qelectron requirements
-# and only install them as an extra
-with open("requirements-qelectron.txt") as f:
-    qelectron_reqs = f.read().splitlines()
-
 
 def recursively_append_files(directory: str):
     """
@@ -228,7 +223,6 @@ setup_info = {
             "qiskit-ibm-provider==0.6.1",
             "qiskit-ibm-runtime==0.10.0",
         ],
-        "quantum": qelectron_reqs,
     },
     "classifiers": [
         "Development Status :: 4 - Beta",
