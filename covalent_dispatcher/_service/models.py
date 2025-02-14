@@ -54,7 +54,6 @@ class ElectronAssetKey(str, Enum):
     error = "error"
     stdout = "stdout"
     stderr = "stderr"
-    qelectron_db = "qelectron_db"
 
 
 class AssetRepresentation(str, Enum):

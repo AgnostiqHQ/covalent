@@ -98,11 +98,6 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
-        "qelectron_db_path": os.environ.get("COVALENT_DATABASE")
-        or (
-            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
-            + "/covalent/qelectron_db"
-        ),
         "heartbeat_interval": os.environ.get("COVALENT_HEARTBEAT_INTERVAL") or 5,
         "heartbeat_file": os.environ.get("COVALENT_HEARTBEAT_FILE")
         or os.path.join(

@@ -249,10 +249,7 @@ class DaskExecutor(AsyncBaseExecutor):
             result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
-            qelectron_db_uri = os.path.join(
-                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.mdb"
-            )
-            output_uris.append((result_uri, stdout_uri, stderr_uri, qelectron_db_uri))
+            output_uris.append((result_uri, stdout_uri, stderr_uri))
 
         server_url = format_server_url()
 
@@ -312,8 +309,6 @@ class DaskExecutor(AsyncBaseExecutor):
                 stdout_size = 0
                 stderr_uri = ""
                 stderr_size = 0
-                qelectron_db_uri = ""
-                qelectron_db_size = 0
 
             else:
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
@@ -326,8 +321,6 @@ class DaskExecutor(AsyncBaseExecutor):
                     stdout_size = result_summary["stdout"]["size"]
                     stderr_uri = result_summary["stderr"]["uri"]
                     stderr_size = result_summary["stderr"]["size"]
-                    qelectron_db_uri = result_summary["qelectron_db"]["uri"]
-                    qelectron_db_size = result_summary["qelectron_db"]["size"]
                     exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
@@ -350,10 +343,6 @@ class DaskExecutor(AsyncBaseExecutor):
                     "stderr": {
                         "remote_uri": stderr_uri,
                         "size": stderr_size,
-                    },
-                    "qelectron_db": {
-                        "remote_uri": qelectron_db_uri,
-                        "size": qelectron_db_size,
                     },
                 },
             }
