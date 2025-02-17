@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Handlers for the executor proxy """
+"""Handlers for the executor proxy"""
 
 
 from covalent._shared_files import logger
