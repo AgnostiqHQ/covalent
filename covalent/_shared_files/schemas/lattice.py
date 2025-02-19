@@ -50,14 +50,10 @@ LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
 LATTICE_INPUTS_FILENAME = "inputs.tobj"
-LATTICE_NAMED_ARGS_FILENAME = "named_args.tobj"
-LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.tobj"
 LATTICE_RESULTS_FILENAME = "results.tobj"
 LATTICE_HOOKS_FILENAME = "hooks.json"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.json"
 LATTICE_CALL_AFTER_FILENAME = "call_after.json"
-LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.json"
-LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 LATTICE_STORAGE_TYPE = "file"
 
 
@@ -66,10 +62,6 @@ ASSET_FILENAME_MAP = {
     "workflow_function_string": LATTICE_FUNCTION_STRING_FILENAME,
     "doc": LATTICE_DOCSTRING_FILENAME,
     "inputs": LATTICE_INPUTS_FILENAME,
-    "named_args": LATTICE_NAMED_ARGS_FILENAME,
-    "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
-    "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
-    "lattice_imports": LATTICE_LATTICE_IMPORTS_FILENAME,
     "hooks": LATTICE_HOOKS_FILENAME,
 }
 
@@ -79,12 +71,6 @@ class LatticeAssets(BaseModel):
     workflow_function_string: AssetSchema
     doc: AssetSchema  # __doc__
     inputs: AssetSchema
-
-    # Deprecated
-    named_args: AssetSchema = AssetSchema(size=0)
-    named_kwargs: AssetSchema = AssetSchema(size=0)
-    cova_imports: AssetSchema = AssetSchema(size=0)
-    lattice_imports: AssetSchema = AssetSchema(size=0)
 
     # lattice.metadata
     hooks: AssetSchema

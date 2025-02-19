@@ -48,7 +48,6 @@ class Graph:
             electrons.completed_at,
             electrons.status,
             electrons.type,
-            electrons.qelectron_data_exists,
             electrons.executor as executor_label,
             (case when electrons.type = 'sublattice'
             then
