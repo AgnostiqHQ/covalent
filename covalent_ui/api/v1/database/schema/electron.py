@@ -48,7 +48,6 @@ class Electron(Base):
         error_filename: Name of the file containing execution information generated at runtime
         is_active: Status of the record, 1: active and 0: inactive
         job_id: ID for circuit_info
-        qelectron_data_exists: Flag that indicates if qelectron data exists in the electron
         created_at: created timestamp
         updated_at: updated timestamp
         started_at: started timestamp
@@ -117,9 +116,6 @@ class Electron(Base):
 
     # ID for circuit_info
     job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
-
-    # Flag that indicates if qelectron data exists in the electron
-    qelectron_data_exists = Column(Boolean, nullable=False, default=False)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())

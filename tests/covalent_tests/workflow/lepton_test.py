@@ -131,7 +131,7 @@ def test_lepton_init(
 
         electron_init_mock.assert_called_once_with("wrapper function")
         wrap_mock.assert_called_once_with()
-        assert set_metadata_mock.call_count == 4
+        assert set_metadata_mock.call_count == 3
 
         assert lepton.language == language
         assert lepton.function_name == function_name

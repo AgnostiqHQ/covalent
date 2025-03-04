@@ -29,7 +29,6 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 
-from covalent._shared_files.utils import get_qelectron_db_path
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
@@ -183,10 +182,7 @@ def run_task_group(
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
-
-        # Setting these to empty bytes in case the task fails
-        qelectron_db_bytes = bytes()
+        result_uri, stdout_uri, stderr_uri = output_uris[i]
 
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -242,11 +238,6 @@ def run_task_group(
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
 
-                    qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
-                    if qelectron_db_path is not None:
-                        with open(qelectron_db_path / "data.mdb", "rb") as f:
-                            qelectron_db_bytes = f.read()
-
                     outputs[task_id] = result_uri
 
                     result_summary = {
@@ -254,7 +245,6 @@ def run_task_group(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -268,7 +258,6 @@ def run_task_group(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -295,10 +284,6 @@ def run_task_group(
                             headers = {"Content-Length": os.path.getsize(stderr_uri)}
                             requests.put(upload_url, data=f)
 
-                    if qelectron_db_bytes:
-                        upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/qelectron_db"
-                        requests.put(upload_url, data=qelectron_db_bytes)
-
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
                     with open(result_path, "w") as f:
@@ -321,7 +306,6 @@ def run_task_group(
                 "output_uri": "",
                 "stdout_uri": "",
                 "stderr_uri": "",
-                "qelectron_db_uri": "",
                 "exception_occurred": True,
             }
 
@@ -369,10 +353,7 @@ def run_task_group_alt(
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
-
-        # Setting these to empty bytes in case the task fails
-        qelectron_db_bytes = bytes()
+        result_uri, stdout_uri, stderr_uri = output_uris[i]
 
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -436,19 +417,9 @@ def run_task_group_alt(
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
 
-                    # Save QElectron DB
-                    qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
-                    if qelectron_db_path is not None:
-                        with open(qelectron_db_path / "data.mdb", "rb") as f:
-                            qelectron_db_bytes = f.read()
-
-                    with open(qelectron_db_uri, "wb") as f:
-                        f.write(qelectron_db_bytes)
-
                     resources["inputs"][task_id] = result_uri
 
                     output_size = len(ser_output)
-                    qelectron_db_size = len(qelectron_db_bytes)
                     stdout.flush()
                     stderr.flush()
                     stdout_size = os.path.getsize(stdout_uri)
@@ -466,10 +437,6 @@ def run_task_group_alt(
                         "stderr": {
                             "uri": stderr_uri,
                             "size": stderr_size,
-                        },
-                        "qelectron_db": {
-                            "uri": qelectron_db_uri,
-                            "size": qelectron_db_size,
                         },
                         "exception_occurred": exception_occurred,
                     }
@@ -496,10 +463,6 @@ def run_task_group_alt(
                             "uri": stderr_uri,
                             "size": stderr_size,
                         },
-                        "qelectron_db": {
-                            "uri": "",
-                            "size": 0,
-                        },
                         "exception_occurred": exception_occurred,
                     }
 
@@ -510,7 +473,7 @@ def run_task_group_alt(
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
                     # Write the summary file containing the URIs for
-                    # the serialized result, stdout, stderr, and qelectron_db
+                    # the serialized result, stdout, stderr
                     with open(result_path, "w") as f:
                         json.dump(result_summary, f)
 
@@ -529,10 +492,6 @@ def run_task_group_alt(
                     "size": 0,
                 },
                 "stderr": {
-                    "uri": "",
-                    "size": 0,
-                },
-                "qelectron_db": {
                     "uri": "",
                     "size": 0,
                 },

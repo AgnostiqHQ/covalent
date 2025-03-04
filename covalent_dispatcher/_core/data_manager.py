@@ -54,7 +54,6 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
-    qelectron_data_exists=None,
 ):
     """
     Helper routine to prepare the node result
@@ -69,7 +68,6 @@ def generate_node_result(
         error: Error from the node
         stdout: STDOUT of a node
         stderr: STDERR generated during node execution
-        qelectron_data_exists: Whether the qelectron data exists
 
     Return(s)
         Dictionary of the inputs
@@ -85,7 +83,6 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "qelectron_data_exists": qelectron_data_exists,  # TODO: This field is now defunct, see PR #1850
     }
 
 

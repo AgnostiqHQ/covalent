@@ -50,7 +50,6 @@ def seed(engine):
                     completed_electron_num=item["completed_electron_num"],
                     docstring_filename=item["docstring_filename"],
                     hooks_filename=item["hooks_filename"],
-                    lattice_imports_filename=item["lattice_imports_filename"],
                     storage_type=item["storage_type"],
                     storage_path=os.path.dirname(__file__)
                     + "/mock_files/"
@@ -63,8 +62,6 @@ def seed(engine):
                     workflow_executor_data=json.dumps(item["workflow_executor_data"]),
                     error_filename=item["error_filename"],
                     inputs_filename=item["inputs_filename"],
-                    named_args_filename=item["named_args_filename"],
-                    named_kwargs_filename=item["named_kwargs_filename"],
                     results_filename=item["results_filename"],
                     root_dispatch_id=item["root_dispatch_id"],
                     is_active=item["is_active"],
@@ -112,7 +109,6 @@ def seed(engine):
                     started_at=convert_to_date(item["started_at"]),
                     completed_at=convert_to_date(item["completed_at"]),
                     job_id=item["job_id"],
-                    qelectron_data_exists=item["qelectron_data_exists"],
                 )
             )
 

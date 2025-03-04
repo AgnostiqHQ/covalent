@@ -205,7 +205,6 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
         error: Exception = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = None,
     ) -> bool:
         """
         Update the node result in the transport graph.
@@ -221,7 +220,6 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
             error: The error of the node if occured else None.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
-            qelectron_data_exists: Whether the qelectron data exists.
 
         Returns:
             True/False indicating whether the update succeeded
@@ -267,11 +265,6 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
 
             if stderr is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr, session)
-
-            if qelectron_data_exists is not None:
-                self.lattice.transport_graph.set_node_value(
-                    node_id, "qelectron_data_exists", qelectron_data_exists, session
-                )
 
         # Handle postprocessing node
         tg = self.lattice.transport_graph

@@ -16,7 +16,6 @@
 
 """Mock files data"""
 
-import json
 import os
 import pickle
 
@@ -51,12 +50,10 @@ def mock_files_data():
         "function": "function.pkl",
         "executor": "executor_data.pkl",
         "deps": "deps.pkl",
-        "cova_imports": "cova_imports.json",
         "error": "error.log",
         "function_docstring": "function_docstring.txt",
         "function_string": "function_string.txt",
         "inputs": "inputs.pkl",
-        "lattice_imports": "lattice_imports.txt",
     }
 
     _object_id = "gAWVNwAAAAAAAACMG2NvdmFsZW50Ll93b3JrZmxvdy5kZXBzYmFzaJSME2FwcGx5X2Jhc2hfY29tbWFuZHOUk5Qu"  # pragma: allowlist secret
@@ -79,7 +76,6 @@ def mock_files_data():
             "files": [
                 {"file_name": file_name["call_after"], "data": []},
                 {"file_name": file_name["call_before"], "data": []},
-                {"file_name": file_name["cova_imports"], "data": json.dumps(["electron", "ct"])},
                 {"file_name": file_name["deps"], "data": {}},
                 {"file_name": file_name["error"], "data": ""},
                 {"file_name": file_name["executor"], "data": {}},
@@ -102,14 +98,6 @@ def workflow(name):
                         "kwargs": {"name": TransportableObject.make_transportable("shore")},
                     },
                 },
-                {
-                    "file_name": file_name["lattice_imports"],
-                    "data": """# import covalent as ct
-
-                    """,
-                },
-                {"file_name": "named_args.pkl", "data": {}},
-                {"file_name": "named_kwargs.pkl", "data": {}},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - lattice  !!"),

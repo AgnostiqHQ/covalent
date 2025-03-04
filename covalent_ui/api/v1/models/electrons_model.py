@@ -18,34 +18,11 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Union
+from typing import Union
 
 from pydantic import BaseModel
 
 from covalent_ui.api.v1.utils.status import Status
-
-
-class Job(BaseModel):
-    job_id: Union[str, None] = None
-    start_time: Union[datetime, None] = None
-    executor: Union[str, None] = None
-    status: Union[str, None] = None
-
-
-class JobsResponse(BaseModel):
-    data: Union[List[Job], None] = None
-    msg: Union[str, None] = None
-
-
-class JobDetails(BaseModel):
-    overview: Union[dict, None] = None
-    circuit: Union[dict, None] = None
-    executor: Union[dict, None] = None
-
-
-class JobDetailsResponse(BaseModel):
-    data: Union[JobDetails, None, Dict] = None
-    msg: Union[str, None] = None
 
 
 class ElectronResponse(BaseModel):
@@ -62,8 +39,6 @@ class ElectronResponse(BaseModel):
     ended_at: Union[datetime, None] = None
     runtime: Union[int, float, None] = None
     description: Union[str, None] = None
-    qelectron_data_exists: bool = False
-    qelectron: Union[dict, None] = None
 
 
 class ElectronFileResponse(BaseModel):

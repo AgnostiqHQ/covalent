@@ -182,7 +182,6 @@ def get_electron_kwargs(
     error_filename=ERROR_FILENAME,
     hooks_filename=HOOKS_FILENAME,
     job_id=1,
-    qelectron_data_exists=False,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -210,7 +209,6 @@ def get_electron_kwargs(
         "error_filename": error_filename,
         "hooks_filename": hooks_filename,
         "job_id": job_id,
-        "qelectron_data_exists": qelectron_data_exists,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -585,7 +583,6 @@ def test_update_electrons_data(test_db, mocker):
             started_at=dt.now(timezone.utc),
             updated_at=dt.now(timezone.utc),
             completed_at=None,
-            qelectron_data_exists=False,
         )
 
     insert_electrons_data(
@@ -603,7 +600,6 @@ def test_update_electrons_data(test_db, mocker):
         started_at=cur_time,
         updated_at=cur_time,
         completed_at=None,
-        qelectron_data_exists=False,
     )
 
     with test_db.session() as session:

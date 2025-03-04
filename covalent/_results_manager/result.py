@@ -270,7 +270,6 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
-            "qelectron": self._get_node_qelectron_db_bytes(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -382,27 +381,6 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
-    def _get_node_qelectron_db_bytes(self, node_id: int) -> dict:
-        """
-        Return the entire QRlectron DB in bytes, associated with a node.
-
-        In order to use this db, the user needs to save this in an data.mdb file and
-        then use the `Database` class, found in `covalent.quantum.qserver.database` to access the data,
-        i.e.: database = Database("dirpath/containing/data.mdb")
-            database.get_db_dict(dispatch_id="dispatch_id", node_id="node_id", direct_path=True)
-
-        Args:
-            node_id: The node id.
-
-        Returns:
-            The QElectron db of said node. Will return an empty byte string if it doesn't exist.
-        """
-
-        try:
-            return self._lattice.transport_graph.get_node_value(node_id, "qelectron_db")
-        except KeyError:
-            return bytes()
-
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
@@ -438,7 +416,6 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -455,7 +432,6 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
-            qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
         Returns:
             None
@@ -496,11 +472,6 @@ Node Outputs
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
-
-        if qelectron_data_exists is not None:
-            self.lattice.transport_graph.set_node_value(
-                node_id, "qelectron_data_exists", qelectron_data_exists
-            )
 
         app_log.debug("Inside update node - SUCCESS")
 

@@ -254,18 +254,3 @@ def copy_file_locally(src_uri, dest_uri):
         raise TypeError(f"{dest_uri} is not a valid URI")
 
     shutil.copyfile(src_path, dest_path)
-
-
-def get_qelectron_db_path(dispatch_id: str, task_id: int):
-    """
-    Return the path to the Qelectron database for a given dispatch_id and task_id.
-
-    This is a proxy to qelectron_utils.get_qelectron_db_path() for removing qelectron dependency.
-    """
-
-    try:
-        from .qelectron_utils import get_qelectron_db_path
-
-        return get_qelectron_db_path(dispatch_id, task_id)
-    except ImportError:
-        return None

@@ -59,9 +59,6 @@ const defaultTheme = createTheme({
       buttonBg: '#10102C',
       executorBg: '#1E1E2E',
       outRunBg: '#0B0B11',
-      qelectronbg: '#30306780',
-      qelectronDrawerbg: '#1C1C46CC',
-      qListBg: '#08081A66',
     },
     error: {
       main: '#FF6464',
