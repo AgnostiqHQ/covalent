@@ -33,7 +33,7 @@ def transportable_object(obj):
         Decoded transportable object
     """
     if obj:
-        load_pickle = base64.b64decode(obj._object.encode("utf-8"))
+        load_pickle = base64.b64decode(obj.get_serialized().encode("utf-8"))
         return f"\npickle.loads({load_pickle})"
     return None
 
