@@ -82,16 +82,18 @@ def _get_all_assets(dispatch_id: str):
 def _pull_assets(manifest: ResultSchema) -> None:
     dispatch_id = manifest.metadata.dispatch_id
     assets = _get_all_assets(dispatch_id)
-    futs = []
+    download_count = 0
     for asset in assets["lattice"]:
         if asset.remote_uri:
+            download_count += 1
             asset.download(asset.remote_uri)
 
     for asset in assets["nodes"]:
         if asset.remote_uri:
+            download_count += 1
             asset.download(asset.remote_uri)
 
-    app_log.debug(f"imported {len(futs)} assets for dispatch {dispatch_id}")
+    app_log.debug(f"imported {download_count} assets for dispatch {dispatch_id}")
 
 
 async def import_manifest(
