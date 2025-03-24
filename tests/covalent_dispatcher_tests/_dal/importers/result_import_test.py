@@ -217,7 +217,6 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
     redispatch_id = "test_handle_redispatch_2"
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mock_copy_node_asset = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset")
     mock_copy_asset_meta = mocker.patch("covalent_dispatcher._dal.asset.copy_asset_meta")
     mock_copy_workflow_asset_meta = mocker.patch(
         "covalent_dispatcher._dal.importers.result.copy_asset_meta"
