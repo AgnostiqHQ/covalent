@@ -52,7 +52,7 @@ def register_downloader(scheme: str, cls: FileTransferStrategy):
 def register_uploader(scheme: str, cls: FileTransferStrategy):
     register_remote_scheme(scheme)
     _uploaders[scheme] = cls
-    
+
 
 def guess_transfer_strategy(from_file: File, to_file: File) -> FileTransferStrategy:
     # Handle the following cases automatically
@@ -66,19 +66,19 @@ def guess_transfer_strategy(from_file: File, to_file: File) -> FileTransferStrat
         if not strategy:
             raise AttributeError(f"Cannot guess upload strategy for remote {to_file.uri}")
         return strategy
-    
+
     # Remote-Local
     if from_file.is_remote and not to_file.is_remote:
         strategy = _downloaders.get(from_file.scheme)
         if not strategy:
             raise AttributeError(f"Cannot guess download strategy for remote {from_file.uri}")
         return strategy
-        
+
     # Local-Local
     if not from_file.is_remote and not to_file.is_remote:
         strategy = Shutil
         return strategy
-    
+
     else:
         raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
 

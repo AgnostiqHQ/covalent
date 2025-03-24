@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import os
-import requests 
+import requests
 
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
@@ -39,7 +39,7 @@ class HTTP(FileTransferStrategy):
             resp.raise_for_status()
             with open(to_filepath, "wb") as f:
                 for chunk in resp.iter_content(chunk_size=1024):
-                    f.write(chunk)            
+                    f.write(chunk)
 
         return callable
 
@@ -50,14 +50,14 @@ class HTTP(FileTransferStrategy):
         filesize = os.path.getsize(from_filepath)
 
         def callable():
-            with open(from_filepath, "rb") as reader:        
+            with open(from_filepath, "rb") as reader:
                 # Workaround for Requests bug when streaming from empty files
-                app_log.debug(f"uploading to {to_filepath}")                
+                app_log.debug(f"uploading to {to_filepath}")
                 data = reader.read() if filesize < 50 else reader
                 r = requests.put(to_filepath, headers={"Content-Length": str(filesize)}, data=data)
                 r.raise_for_status()
-                
-        return callable        
+
+        return callable
 
     # HTTP Strategy does not support server-side copy between two remote URLs
     def cp(self, from_file: File, to_file: File = File()) -> File:
