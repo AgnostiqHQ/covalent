@@ -296,7 +296,9 @@ def _electron_data(
                     "digest": None,
                     "size": 0,
                 }
-                assets["sublattice_manifest"] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
+                assets["sublattice_manifest"] = Asset.create(
+                    session, insert_kwargs=asset_record_kwargs, flush=True
+                )
 
             # Register custom assets
             node_metadata = tg.get_node_value(node_id, "metadata")

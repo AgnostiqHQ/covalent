@@ -43,10 +43,12 @@ _uploaders = {
     FileSchemes.S3.value: S3,
 }
 
+
 # For registering additional file transfer strategies
 def register_downloader(scheme: str, cls: FileTransferStrategy):
     register_remote_scheme(scheme)
     _downloaders[scheme] = cls
+
 
 def register_uploader(scheme: str, cls: FileTransferStrategy):
     register_remote_scheme(scheme)

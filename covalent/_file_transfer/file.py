@@ -33,6 +33,7 @@ _is_remote_scheme = {
     FileSchemes.File: False,
 }
 
+
 # For registering additional file transfer strategies; this will be called by
 # `register_uploader`` and `register_downloader``
 def register_remote_scheme(s: str):

@@ -46,7 +46,7 @@ class TestFile:
             ("file:///home/ubuntu/observations.csv", FileSchemes.File),
             ("s3://mybucket/observations.csv", FileSchemes.S3),
             ("globus://037f054a-15cf-11e8-b611-0ac6873fc731/observations.txt", FileSchemes.Globus),
-            ("blob://my-account.blob.core.windows.net/container/blob", FileSchemes.Blob)
+            ("blob://my-account.blob.core.windows.net/container/blob", FileSchemes.Blob),
         ],
     )
     def test_scheme_resolution(self, filepath, expected_scheme):

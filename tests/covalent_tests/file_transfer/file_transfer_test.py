@@ -44,7 +44,6 @@ class HiveTransferStrategy:
         raise NotImplementedError
 
 
-
 class TestFileTransfer:
     def test_raise_exception_valid_args(self):
         # valid filepaths should not raise errors

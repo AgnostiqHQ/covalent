@@ -173,7 +173,9 @@ def import_electron_assets(
             "remote_uri": None,
             "size": 0,
         }
-        asset_recs["sublattice_manifest"] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_recs["sublattice_manifest"] = Asset.create(
+            session, insert_kwargs=asset_kwargs, flush=False
+        )
 
     # Register custom assets
     if e.assets._custom:
