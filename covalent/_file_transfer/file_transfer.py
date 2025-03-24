@@ -16,7 +16,7 @@
 
 from typing import Optional, Union
 
-from .enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order, FileSchemes
+from .enums import FileSchemes, FileTransferStrategyTypes, FtCallDepReturnValue, Order
 from .file import File, register_remote_scheme
 from .strategies.blob_strategy import Blob
 from .strategies.gcloud_strategy import GCloud
@@ -24,7 +24,6 @@ from .strategies.http_strategy import HTTP
 from .strategies.s3_strategy import S3
 from .strategies.shutil_strategy import Shutil
 from .strategies.transfer_strategy_base import FileTransferStrategy
-
 
 _downloaders = {
     FileSchemes.File.value: Shutil,

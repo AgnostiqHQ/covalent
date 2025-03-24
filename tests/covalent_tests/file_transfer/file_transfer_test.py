@@ -25,14 +25,14 @@ from covalent._file_transfer.file_transfer import (
     FileTransfer,
     TransferFromRemote,
     TransferToRemote,
+    guess_transfer_strategy,
     register_downloader,
     register_uploader,
-    guess_transfer_strategy
 )
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._file_transfer.strategies.s3_strategy import S3
 from covalent._file_transfer.strategies.shutil_strategy import Shutil
+from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
 
 # Sample custom transfer strategy

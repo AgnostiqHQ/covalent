@@ -22,7 +22,6 @@ from furl import furl
 
 from .enums import FileSchemes, FileTransferStrategyTypes, SchemeToStrategyMap
 
-
 _is_remote_scheme = {
     FileSchemes.S3.value: True,
     FileSchemes.Blob.value: True,

@@ -15,11 +15,12 @@
 # limitations under the License.
 
 import os
+
 import requests
 
+from ..._shared_files import logger
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
-from ..._shared_files import logger
 
 app_log = logger.app_log
 
