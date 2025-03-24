@@ -32,7 +32,6 @@ from covalent._file_transfer.file_transfer import (
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
 from covalent._file_transfer.strategies.s3_strategy import S3
 from covalent._file_transfer.strategies.shutil_strategy import Shutil
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 
 
 # Sample custom transfer strategy

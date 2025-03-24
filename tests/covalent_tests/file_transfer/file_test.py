@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from covalent._file_transfer.enums import FileSchemes, FileTransferStrategyTypes
+from covalent._file_transfer.enums import FileSchemes
 from covalent._file_transfer.file import File
 
 

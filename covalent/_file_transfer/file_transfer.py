@@ -16,7 +16,7 @@
 
 from typing import Optional, Union
 
-from .enums import FileSchemes, FileTransferStrategyTypes, FtCallDepReturnValue, Order
+from .enums import FileSchemes, FtCallDepReturnValue, Order
 from .file import File, register_remote_scheme
 from .strategies.blob_strategy import Blob
 from .strategies.gcloud_strategy import GCloud

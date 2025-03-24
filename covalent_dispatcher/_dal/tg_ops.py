@@ -24,7 +24,7 @@ import networkx as nx
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import RESULT_STATUS
 
-from .asset import copy_asset, copy_asset_meta
+from .asset import copy_asset_meta
 from .electron import ASSET_KEYS, METADATA_KEYS
 from .tg import _TransportGraph
 

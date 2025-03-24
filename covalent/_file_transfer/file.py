@@ -20,7 +20,7 @@ from typing import Optional
 
 from furl import furl
 
-from .enums import FileSchemes, FileTransferStrategyTypes, SchemeToStrategyMap
+from .enums import FileSchemes
 
 _is_remote_scheme = {
     FileSchemes.S3.value: True,
