@@ -215,18 +215,18 @@ async def test_handle_completed_node_update(mocker):
         "covalent_dispatcher._core.dispatcher._handle_completed_node", return_value=next_groups
     )
     mock_decrement = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.decrement"
     )
 
     mock_increment = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.increment"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.increment"
     )
 
     async def get_task_group(dispatch_id, gid):
         return [gid]
 
     mock_get_sorted_task_groups = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._sorted_task_groups.get_task_group",
+        "covalent_dispatcher._core.dispatcher._task_group_cache.get_task_group",
         get_task_group,
     )
     mock_submit_task_group = mocker.patch(
@@ -251,7 +251,7 @@ async def test_handle_cancelled_node_update(mocker):
         "covalent_dispatcher._core.dispatcher._handle_cancelled_node",
     )
     mock_decrement = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.decrement"
     )
 
     await _handle_node_status_update(dispatch_id, node_id, status, detail)
@@ -271,7 +271,7 @@ async def test_run_handle_failed_node_update(mocker):
         "covalent_dispatcher._core.dispatcher._handle_failed_node",
     )
     mock_decrement = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.decrement"
     )
 
     await _handle_node_status_update(dispatch_id, node_id, status, detail)
@@ -293,7 +293,7 @@ async def test_run_handle_sublattice_node_update(mocker):
         "covalent_dispatcher._core.dispatcher.run_dispatch",
     )
     mock_decrement = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.decrement"
     )
     await _handle_node_status_update(dispatch_id, node_id, status, detail)
     mock_run_dispatch.assert_called_with("sub_dispatch")
@@ -320,7 +320,7 @@ async def test_handle_event(mocker, unresolved_count):
     )
 
     mock_get_unresolved = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.get_unresolved",
         return_value=unresolved_count,
     )
 
@@ -361,7 +361,7 @@ async def test_handle_event_exception(mocker):
     )
 
     mock_get_unresolved = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.get_unresolved",
         return_value=2,
     )
 
@@ -407,7 +407,7 @@ async def test_handle_event_finalize_exception(mocker):
     )
 
     mock_get_unresolved = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.get_unresolved",
         return_value=0,
     )
 
@@ -497,7 +497,7 @@ async def test_submit_initial_tasks(mocker):
         "covalent_dispatcher._core.dispatcher._initialize_caches",
     )
 
-    mock_inc = mocker.patch("covalent_dispatcher._core.dispatcher._unresolved_tasks.increment")
+    mock_inc = mocker.patch("covalent_dispatcher._core.dispatcher._workflow_run_cache.increment")
     mock_submit_task_group = mocker.patch(
         "covalent_dispatcher._core.dispatcher._submit_task_group",
     )
@@ -662,21 +662,16 @@ async def test_clear_caches(mocker):
     mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links")
     mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
     mock_unresolved_remove = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._unresolved_tasks.remove"
+        "covalent_dispatcher._core.dispatcher._workflow_run_cache.remove"
     )
-    mock_pending_remove = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._pending_parents.remove"
-    )
-
-    mock_groups_remove = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._sorted_task_groups.remove"
+    mock_task_groups_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._task_group_cache.remove"
     )
 
     await _clear_caches("dispatch")
 
     assert mock_unresolved_remove.await_count == 1
-    assert mock_pending_remove.await_count == 2
-    assert mock_groups_remove.await_count == 2
+    assert mock_task_groups_remove.await_count == 2
 
 
 @pytest.mark.asyncio

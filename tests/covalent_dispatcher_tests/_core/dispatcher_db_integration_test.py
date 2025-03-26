@@ -253,57 +253,67 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
 
 @pytest.mark.asyncio
-async def test_handle_completed_node(mocker, test_db):
+async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""
 
-    from covalent_dispatcher._core.dispatcher import _initialize_caches, _pending_parents
+    import tempfile
 
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    from covalent_dispatcher._core.dispatcher import _initialize_caches, _task_group_cache
 
-    pending_parents = {}
-    sorted_task_groups = {}
-    sdkres = get_mock_result()
-    result_object = get_mock_srvresult(sdkres, test_db)
+    # Use a file-backed test DB so that it can be accessed by multiple threads
+    with tempfile.NamedTemporaryFile(mode="w+b") as tmp_file:
+        path = tmp_file.name
+        test_db = DataStore(
+            db_URL=f"sqlite+pysqlite:///{path}",
+            initialize_db=True,
+        )
 
-    async def get_node_successors(dispatch_id: str, node_id: int):
-        return result_object.lattice.transport_graph.get_successors(node_id, ["task_group_id"])
+        mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+        mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+        mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
-    async def electron_get(dispatch_id, node_id, keys):
-        return {keys[0]: node_id}
+        pending_parents = {}
+        sorted_task_groups = {}
+        sdkres = get_mock_result()
+        result_object = get_mock_srvresult(sdkres, test_db)
 
-    mocker.patch(
-        "covalent_dispatcher._core.dispatcher.tg_utils.get_node_successors",
-        get_node_successors,
-    )
+        async def get_node_successors(dispatch_id: str, node_id: int):
+            return result_object.lattice.transport_graph.get_successors(node_id, ["task_group_id"])
 
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.electron.get",
-        electron_get,
-    )
+        async def electron_get(dispatch_id, node_id, keys):
+            return {keys[0]: node_id}
 
-    # tg edges are (1, 0), (0, 2)
-    pending_parents[0] = 1
-    pending_parents[1] = 0
-    pending_parents[2] = 1
-    sorted_task_groups[0] = [0]
-    sorted_task_groups[1] = [1]
-    sorted_task_groups[2] = [2]
+        mocker.patch(
+            "covalent_dispatcher._core.dispatcher.tg_utils.get_node_successors",
+            get_node_successors,
+        )
 
-    await _initialize_caches(result_object.dispatch_id, pending_parents, sorted_task_groups)
+        mocker.patch(
+            "covalent_dispatcher._core.data_manager.electron.get",
+            electron_get,
+        )
 
-    node_result = {"node_id": 1, "status": Result.COMPLETED}
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 0) == 1
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
+        # tg edges are (1, 0), (0, 2)
+        pending_parents[0] = 1
+        pending_parents[1] = 0
+        pending_parents[2] = 1
+        sorted_task_groups[0] = [0]
+        sorted_task_groups[1] = [1]
+        sorted_task_groups[2] = [2]
 
-    next_nodes = await _handle_completed_node(result_object.dispatch_id, 1)
-    assert next_nodes == [0]
+        await _initialize_caches(result_object.dispatch_id, pending_parents, sorted_task_groups)
 
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 0) == 0
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
-    assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
+        node_result = {"node_id": 1, "status": Result.COMPLETED}
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 0) == 1
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 1) == 0
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 2) == 1
+
+        next_nodes = await _handle_completed_node(result_object.dispatch_id, 1)
+        assert next_nodes == [0]
+
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 0) == 0
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 1) == 0
+        assert await _task_group_cache.get_pending(result_object.dispatch_id, 2) == 1
 
 
 @pytest.mark.asyncio

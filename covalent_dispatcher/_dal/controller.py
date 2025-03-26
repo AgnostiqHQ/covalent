@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Generic, List, Optional, Sequence, Type, TypeVar, Union
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import Select, desc
@@ -176,6 +176,29 @@ class Record(Generic[T]):
             kwargs[field] = col + delta
 
         stmt = update(cls.model).values(**kwargs)
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr).in_(vals))
+        session.execute(stmt)
+
+    @classmethod
+    def delete_bulk(
+        cls,
+        session: Session,
+        *,
+        equality_filters: dict,
+        membership_filters: dict,
+    ):
+        """Bulk delete.
+
+        Args:
+            session: SQLAlchemy session
+            equality_filters: Dict{field_name: value}
+            membership_filters: Dict{field_name: value_list}
+        """
+
+        stmt = delete(cls.model)
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.model, attr) == val)
         for attr, vals in membership_filters.items():

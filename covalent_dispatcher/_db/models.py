@@ -39,7 +39,10 @@ Base = declarative_base()
 
 class Lattice(Base):
     __tablename__ = "lattices"
-    __table_args__ = (UniqueConstraint("dispatch_id", name="u_dispatch_id"),)
+    __table_args__ = (
+        UniqueConstraint("dispatch_id", name="u_dispatch_id"),
+        UniqueConstraint("electron_id", name="u_electron_id"),
+    )
 
     id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(64), nullable=False)
@@ -292,3 +295,34 @@ class Asset(Base):
 
     # Size in bytes
     size = Column(Integer, nullable=True)
+
+
+# Hold state of running workflows to avoid expensive computation per electron
+
+
+class WorkflowState(Base):
+    __tablename__ = "workflowstate"
+
+    dispatch_id = Column(Text, primary_key=True)
+
+    # Counter for dispatcher to track the number of unresolved tasks (submitted - terminal)
+    num_unresolved_tasks = Column(Integer, nullable=False)
+
+
+class TaskGroupState(Base):
+    __tablename__ = "taskgroupstate"
+    __table_args__ = (Index("task_grp_idx", "dispatch_id", "task_group_id"),)
+
+    id = Column(Integer, primary_key=True)
+
+    dispatch_id = Column(Text, nullable=False)
+
+    task_group_id = Column(Integer, nullable=False)
+
+    # Number of parent tasks that have yet to complete
+    # Used by dispatcher
+    num_pending_parents = Column(Integer, nullable=False)
+
+    # JSON list of node ids in topological order
+    # Used by dispatcher
+    sorted_tasks = Column(Text, nullable=False)

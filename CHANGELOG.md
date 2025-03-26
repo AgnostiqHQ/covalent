@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Moved in-memory dispatcher state to main DB
+
 ## [0.238.0-rc.0] - 2025-03-05
 
 ### Authors

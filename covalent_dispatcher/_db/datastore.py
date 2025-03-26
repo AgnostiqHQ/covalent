@@ -17,7 +17,7 @@
 from contextlib import contextmanager
 from os import environ, path
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 from alembic import command
 from alembic.config import Config
@@ -40,6 +40,7 @@ class DataStore:
         self,
         db_URL: Optional[str] = None,
         initialize_db: bool = False,
+        declarative_base: Any = models.Base,
         **kwargs,
     ):
         if db_URL:
@@ -57,7 +58,7 @@ class DataStore:
 
         # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
-            models.Base.metadata.create_all(self.engine)
+            declarative_base.metadata.create_all(self.engine)
 
     @staticmethod
     def factory():
