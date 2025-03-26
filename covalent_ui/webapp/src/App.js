@@ -25,10 +25,9 @@ import socket from './utils/socket'
 import { setLattice } from './redux/latticePreviewSlice'
 import { socketAPI } from './redux/commonSlice'
 import theme from './utils/theme'
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
 import {DispatchLayoutValidate} from './components/dispatch/DispatchLayout'
-import TerminalLayout from './components/terminal/TerminalLayout'
 import SettingsLayout from './components/settings/SettingsLayout'
 import NotFound from './components/NotFound'
 import LogsLayout from './components/logs/LogsLayout'
@@ -85,7 +84,6 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/:dispatchId" element={<DispatchLayoutValidate />} />
             <Route path="/preview" element={<LatticePreviewLayout />} />
-            <Route path="/terminal" element={<TerminalLayout />} />
             <Route path="/settings" element={<SettingsLayout />} />
             <Route path="/logs" element={<LogsLayout />} />
             <Route path="*" element={<NotFound />} />

@@ -18,7 +18,6 @@ import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { useStoreActions, useStoreState } from 'react-flow-renderer'
 import { useParams } from 'react-router-dom'
 import LatticeGraph from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
@@ -32,6 +31,9 @@ import { resetLatticeState } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
+import '@xyflow/react/dist/style.css'
+
+const initialSelectedNodes = [];
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
@@ -63,24 +65,29 @@ export function DispatchLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const selectedElectron = useStoreState((state) => {
-    const nodeId = _.get(
-      _.find(state.selectedElements, { type: 'electron' }),
-      'id'
-    )
-    return _.find(
+  // TODO: replace
+  console.log("DEBUG: rendering DispatchLayout")
+  // Track selected flow node to control the NodeDrawer
+  const [selectedNodes, setSelectedNodes] = useState(initialSelectedNodes);
+  const handleNodeSelectionChange = (selected) => {
+    console.log("DEBUG: In handleNodeSelectionChange")
+    setSelectedNodes(selected)
+  }
+
+  const nodeId = selectedNodes.length === 1 ? selectedNodes[0].id : ''
+  const selectedElectron = _.find(
       _.get(graph_result, 'nodes'),
-      (node) => nodeId === String(_.get(node, 'id'))
-    )
-  })
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
+      (node) => nodeId === String(_.get(node, 'id')) && _.get(node, 'type') !== 'parameter'
   )
+  const handleNodeDrawerClose = () => {
+    // MIGRATION: update selected attributes of nodes and edges
+    setSelectedNodes(initialSelectedNodes)
+  }
 
   // unselect on change of dispatch
   useEffect(() => {
-    setSelectedElements([])
-  }, [dispatchId, setSelectedElements, sublatticesDispatchId])
+    setSelectedNodes(initialSelectedNodes)
+  }, [dispatchId, setSelectedNodes, sublatticesDispatchId])
 
   // dispatch id not found
   if (latDetailError !== null && latDetailError.status === 400) {
@@ -89,13 +96,24 @@ export function DispatchLayout() {
 
   return (
     <>
+    <Box
+      sx={{
+        display: 'flex',
+        width: '100vw',
+        height: '100vh',
+        bgcolor: graphBgColor,
+      }}
+    >
       <DispatchTopBar />
+      <NavDrawer />
+      <LatticeDrawer>
+        <DispatchDrawerContents />
+      </LatticeDrawer>
       <Box
         sx={{
-          display: 'flex',
-          width: '100vw',
-          height: '100vh',
-          bgcolor: graphBgColor,
+          flex: 1,
+          height: '100%',
+          marginLeft: `${latticeDrawerWidth + navDrawerWidth}px`,
           paddingTop: '35px',
         }}
       >
@@ -109,28 +127,28 @@ export function DispatchLayout() {
               setPrettify(!prettify)
             }}
             prettify={prettify}
+            handleNodeSelectionChange={handleNodeSelectionChange}
           />
         )}
       </Box>
-      <NavDrawer />
-      <LatticeDrawer>
-        <DispatchDrawerContents />
-      </LatticeDrawer>
 
       {Object.keys(graph_result).length !== 0 ? (
         <NodeDrawer
           prettify={prettify}
           node={selectedElectron}
-          graph={graph_result}
           dispatchId={
             sublatticesDispatchId
               ? sublatticesDispatchId?.dispatchId
               : dispatchId
           }
+          handleClose={handleNodeDrawerClose}
         />
       ) : (
         <PageLoading />
       )}
+
+    </Box>
+
     </>
   )
 }

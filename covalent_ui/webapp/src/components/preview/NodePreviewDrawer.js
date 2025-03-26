@@ -15,7 +15,6 @@
  */
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
-import { useStoreActions } from 'react-flow-renderer'
 import { Close } from '@mui/icons-material'
 import {
   Box,
@@ -35,21 +34,13 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, setSelectedElectron }) => {
+const NodeDrawer = ({ node, setSelectedElectron, handleClose }) => {
   const preview = useSelector((state) => state.latticePreview.lattice) // unselect on close
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
-  )
-
-  const handleClose = () => {
-    setSelectedElements([])
-  }
 
   const src = _.get(node, 'function_string', '# source unavailable')
   return (
     <Drawer
       sx={(theme) => ({
-        width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
           boxSizing: 'border-box',

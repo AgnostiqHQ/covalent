@@ -21,7 +21,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 import userEvent from '@testing-library/user-event'
 
 function mockRender(renderedComponent) {

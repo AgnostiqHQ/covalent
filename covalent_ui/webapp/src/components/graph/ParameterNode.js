@@ -16,7 +16,7 @@
 
 import _ from 'lodash'
 import { Typography, Tooltip, tooltipClasses, Grid, Paper } from '@mui/material'
-import { Handle } from 'react-flow-renderer'
+import { Handle } from '@xyflow/react'
 import { styled } from '@mui/material/styles'
 import { nodeLabelIcon, truncateMiddle } from '../../utils/misc'
 

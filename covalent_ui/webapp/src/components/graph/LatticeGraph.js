@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useRef, useState, createRef, memo, useMemo } from 'react'
+import { useEffect, useState, createRef, memo, useMemo, useCallback } from 'react'
 import { useScreenshot, createFileName } from 'use-react-screenshot'
-import ReactFlow, {
+import {
+  ReactFlow,
   MiniMap,
-  getIncomers,
-  getOutgoers,
-  isEdge,
-} from 'react-flow-renderer'
+  useReactFlow,
+  applyEdgeChanges,
+  applyNodeChanges,
+} from '@xyflow/react'
 import { NODE_TEXT_COLOR, ElectronNode } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
-import layout from './Layout'
 import assignNodePositions from './LayoutElk'
 import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
-import useFitViewHelper from './ReactFlowHooks'
 import covalentLogo from '../../assets/frame.png'
 
-// https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
-function usePrevious(value) {
-  const ref = useRef()
-  useEffect(() => {
-    ref.current = value
-  })
-  return ref.current
+function shouldUnselectNodes(hasSelectedNode, flowNodes) {
+  if (hasSelectedNode) {
+    return false;
+  }
+  const selected = flowNodes.filter((n) => n.selected === true)
+  return selected.length > 0;
+}
+
+function onInit(reactFlowInstance) {
+  reactFlowInstance.fitView();
 }
 
 const LatticeGraph = ({
@@ -50,9 +52,11 @@ const LatticeGraph = ({
   marginLeft = 0,
   marginRight = 0,
   dispatchId,
+  handleNodeSelectionChange,
 }) => {
-  const { fitView } = useFitViewHelper()
-  const [elements, setElements] = useState([])
+  const { fitView } = useReactFlow()
+  const [nodes, setNodes] = useState([])
+  const [edges, setEdges] = useState([])
   const [direction, setDirection] = useState('DOWN')
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
@@ -61,16 +65,36 @@ const LatticeGraph = ({
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
   const [screen, setScreen] = useState(false)
-  const [highlighted, setHighlighted] = useState(false)
-
-  // set Margin
-  const prevMarginRight = usePrevious(marginRight)
 
   const nodeMap = new Map((graph?.nodes ?? []).map((node) => [node.name, node]))
 
   const searchName = ':postprocess:'
   const searchStatus = 'FAILED'
   const desiredNode = nodeMap.get(searchName)
+
+  console.log("DEBUG: rendering LatticeGraph")
+  const handleNodesChange = useCallback(
+    (changes) => {
+      setNodes((nds) => applyNodeChanges(changes, nds));
+      const selectedNodes = changes.filter((c) => c.type === 'select').filter((c) => c.selected === true);
+      handleNodeSelectionChange(selectedNodes);
+      console.log("DEBUG: in handleNodesChange")
+    },
+    [setNodes, handleNodeSelectionChange],
+  )
+  const handleEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges],
+  )
+
+  // Unselect all nodes when NodeDrawer is closed
+  if (shouldUnselectNodes(hasSelectedNode, nodes)) {
+    setNodes(
+      (nds) => nds.map(
+        (elem) => ({...elem, selected: false})
+      )
+    );
+  }
 
   useEffect(() => {
     if (desiredNode && desiredNode.status === searchStatus) {
@@ -84,27 +108,6 @@ const LatticeGraph = ({
     // );
   }, [graph, desiredNode])
 
-  const marginSet = () => {
-    setTimeout(() => {
-      const animate =
-        prevMarginRight !== undefined && prevMarginRight !== marginRight
-      fitView({
-        marginLeft,
-        marginRight,
-        ...(animate ? { duration: 250 } : null),
-      })
-    })
-  }
-
-  useEffect(() => {
-    if (!highlighted) marginSet()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitView, marginLeft, marginRight, graph, elements, highlighted])
-
-  useEffect(() => {
-    setHighlighted(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [direction, showParams, algorithm, hideLabels, graph])
 
   // handle resizing
   const resizing = () => {
@@ -118,39 +121,27 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft, fitView, elements, graph])
+  }, [marginRight, marginLeft, fitView, nodes, edges, graph])
 
   // layouting
   useEffect(() => {
-    if (algorithm === 'oldLayout') {
-      setElements(
-        layout(
-          graph,
-          direction,
-          showParams,
-          hideLabels,
-          preview,
-          showPostProcess,
-          prettify
-        )
-      )
-    } else {
-      assignNodePositions(
-        graph,
-        direction,
-        showParams,
-        algorithm,
-        hideLabels,
-        preview,
-        showPostProcess,
-        prettify
-      )
-        .then((els) => {
-          setElements(els)
-        })
-        .catch((error) => console.log(error))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log("DEBUG: assigning initial graph layout")
+    assignNodePositions(
+      graph,
+      direction,
+      showParams,
+      algorithm,
+      hideLabels,
+      preview,
+      showPostProcess,
+      prettify
+    )
+      .then((els) => {
+        setNodes(els.nodes);
+        setEdges(els.edges);
+      })
+      .catch((error) => console.log(error))
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     graph,
     direction,
@@ -213,116 +204,22 @@ const LatticeGraph = ({
     a.click()
   }
 
-  // highlight links of selected nodes
-  // const getAllIncomers = (node, elements) => {
-  //   return getIncomers(node, elements).reduce(
-  //     (memo, incomer) => [
-  //       ...memo,
-  //       incomer,
-  //       ...getAllIncomers(incomer, elements),
-  //     ],
-  //     []
-  //   )
-  // }
-
-  const getAllIncomers = (node, elements, prevIncomers = []) => {
-    const incomers = getIncomers(node, elements)
-    const result = incomers.reduce((memo, incomer) => {
-      memo.push(incomer)
-
-      if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
-        prevIncomers.push(incomer)
-
-        getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
-          memo.push(foundNode)
-
-          if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
-            prevIncomers.push(incomer)
-          }
-        })
-      }
-      return memo
-    }, [])
-    return result
-  }
-
-  const getAllOutgoers = (node, elements, prevOutgoers = []) => {
-    const outgoers = getOutgoers(node, elements)
-    return outgoers.reduce((memo, outgoer) => {
-      memo.push(outgoer)
-
-      if (prevOutgoers.findIndex((n) => n.id === outgoer.id) === -1) {
-        prevOutgoers.push(outgoer)
-
-        getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
-          memo.push(foundNode)
-
-          if (prevOutgoers.findIndex((n) => n.id === foundNode.id) === -1) {
-            prevOutgoers.push(foundNode)
-          }
-        })
-      }
-      return memo
-    }, [])
-  }
-
-  const highlightPath = (node, elements, selection) => {
-    if (node && elements) {
-      const allIncomers = getAllIncomers(node, elements)
-      const allOutgoers = getAllOutgoers(node, elements)
-      setHighlighted(true)
-      setElements((prevElements) => {
-        return prevElements?.map((elem) => {
-          const incomerIds = allIncomers.map((i) => i.id)
-          const outgoerIds = allOutgoers.map((o) => o.id)
-          if (isEdge(elem)) {
-            if (selection) {
-              const animated =
-                (outgoerIds.includes(elem.target) &&
-                  (outgoerIds.includes(elem.source) ||
-                    node.id === elem.source)) ||
-                (incomerIds.includes(elem.source) &&
-                  (incomerIds.includes(elem.target) || node.id === elem.target))
-              elem.style = {
-                ...elem.style,
-                stroke: animated ? '#6473FF' : '#303067',
-              }
-              elem.labelStyle = animated
-                ? { fill: '#6473FF' }
-                : { fill: NODE_TEXT_COLOR }
-            } else {
-              elem.animated = false
-              elem.style = {
-                ...elem.style,
-                stroke: '#303067',
-              }
-            }
-          }
-
-          return elem
-        })
-      })
-    }
-  }
-
   useEffect(() => {
     if (!hasSelectedNode) resetNodeStyles()
   }, [hasSelectedNode])
 
   const resetNodeStyles = () => {
-    setElements((prevElements) => {
-      return prevElements?.map((elem) => {
-        if (isEdge(elem)) {
-          elem.animated = false
-          elem.labelStyle = { fill: NODE_TEXT_COLOR }
-          elem.style = {
-            ...elem.style,
-            stroke: '#303067',
-          }
-        }
-        return elem
+    setEdges((eds) => eds.map(
+      (elem) => ({
+        ...elem,
+        animated: false,
+        labelsStyle: { fill: NODE_TEXT_COLOR },
+        style: {
+          ...elem.style,
+          stroke: '#303067',
+        },
       })
-    })
+    ))
   }
 
   const nodeTypes = useMemo(
@@ -331,9 +228,12 @@ const LatticeGraph = ({
   )
   const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), [])
 
+
+  const defaultViewport = { zoom: 0.5 }
+
   return (
     <>
-      {elements?.length > 0 && (
+      {nodes?.length > 0 && (
         <>
           <ReactFlow
             ref={ref_chart}
@@ -342,14 +242,14 @@ const LatticeGraph = ({
             edgeTypes={edgeTypes}
             nodesDraggable={nodesDraggable}
             nodesConnectable={false}
-            elements={elements}
-            defaultZoom={0.5}
+            nodes={nodes} // MIGRATION: update
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onInit={onInit}
+            defaultViewport={defaultViewport}
             minZoom={0}
             maxZoom={1.5}
-            onSelectionChange={(selectedElements) => {
-              const node = selectedElements?.[0]
-              highlightPath(node, elements, true)
-            }}
             selectNodesOnDrag={hasSelectedNode}
             onPaneClick={() => {
               resetNodeStyles()
