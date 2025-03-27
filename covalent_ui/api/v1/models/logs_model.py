@@ -17,10 +17,9 @@
 """Logs response model"""
 
 
-from typing import List, Optional, Union
+from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import Annotated
 
 from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum, SortDirection
 

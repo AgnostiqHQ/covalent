@@ -16,12 +16,11 @@
 
 """Summary Routes"""
 
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Query
 from pydantic import Field
 from sqlalchemy.orm import Session
-from typing_extensions import Annotated
 
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
