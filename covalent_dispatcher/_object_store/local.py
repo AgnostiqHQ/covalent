@@ -92,17 +92,19 @@ class LocalProvider(BaseProvider):
         the asset.
 
         """
-        storage_path = os.path.join(self.base_path, dispatch_id)
 
+        rel_dir = dispatch_id
         if node_id is not None:
-            storage_path = os.path.join(storage_path, f"node_{node_id}")
-            object_key = ELECTRON_ASSET_FILENAME_MAP[asset_key]
+            rel_dir = f"{dispatch_id}/node_{node_id}"
+            basename = ELECTRON_ASSET_FILENAME_MAP[asset_key]
         else:
-            object_key = WORKFLOW_ASSET_FILENAME_MAP[asset_key]
+            basename = WORKFLOW_ASSET_FILENAME_MAP[asset_key]
 
-        os.makedirs(storage_path, exist_ok=True)
+        os.makedirs(os.path.join(self.base_path, rel_dir), exist_ok=True)
 
-        return storage_path, object_key
+        object_key = os.path.join(rel_dir, basename)
+
+        return self.base_path, object_key
 
     def store_file(self, storage_path: str, filename: str, data: Any = None) -> Tuple[Digest, int]:
         """This function writes data corresponding to the filepaths in the DB."""

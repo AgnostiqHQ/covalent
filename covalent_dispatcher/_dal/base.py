@@ -20,7 +20,7 @@ from abc import abstractmethod
 from typing import Any, Dict, Generator, Generic, List, Type, TypeVar, Union
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session
 
 from .._db.datastore import workflow_db
 from . import controller
@@ -220,15 +220,13 @@ class DispatchedObject(Generic[MetaType, AssetLinkType]):
             .join(link_model)
             .join(cls.meta_type.model)
         )
-        if len(fields) == 0:
-            fields = FIELDS
+        fields = FIELDS
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.meta_type.model, attr) == val)
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(cls.meta_type.model, attr).in_(vals))
 
         attrs = [getattr(Asset.model, f) for f in fields]
-        stmt = stmt.options(load_only(*attrs))
 
         records = session.execute(stmt)
 

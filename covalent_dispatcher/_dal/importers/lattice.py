@@ -97,7 +97,6 @@ def import_lattice_assets(
         )
 
         local_uri = os.path.join(storage_path, object_key)
-
         asset_kwargs = {
             "storage_type": object_store.scheme,
             "storage_path": storage_path,
