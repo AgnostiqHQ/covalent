@@ -100,8 +100,6 @@ class LocalProvider(BaseProvider):
         else:
             basename = WORKFLOW_ASSET_FILENAME_MAP[asset_key]
 
-        os.makedirs(os.path.join(self.base_path, rel_dir), exist_ok=True)
-
         object_key = os.path.join(rel_dir, basename)
 
         return self.base_path, object_key

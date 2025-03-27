@@ -22,10 +22,13 @@ from typing import Optional
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import format_server_url
-
-SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dispatcher.port"))
+from covalent_dispatcher._object_store.local import local_store
 
 app_log = logger.app_log
+
+base_internal_url = "file://" + local_store.base_path
+
+SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dispatcher.port"))
 
 
 class AssetScope(enum.Enum):
@@ -39,17 +42,17 @@ class URIFilterPolicy(enum.Enum):
     http = "http"  # return data endpoints
 
 
-def _srv_asset_uri(
+def _internal_file_srv(
     uri: str, attrs: dict, scope: AssetScope, dispatch_id: str, node_id: Optional[int], key: str
 ) -> str:
-    base_uri = f"{SERVER_URL}/api/v2/dispatches/{dispatch_id}"
 
-    if scope == AssetScope.DISPATCH:
-        return f"{base_uri}/assets/{key}"
-    elif scope == AssetScope.LATTICE:
-        return f"{base_uri}/lattice/assets/{key}"
-    else:
-        return f"{base_uri}/electrons/{node_id}/assets/{key}"
+    # File:
+    if not uri.startswith(base_internal_url):
+        return uri
+
+    object_key = uri[len(base_internal_url) :]
+
+    return f"{SERVER_URL}/api/v0/files/{object_key}"
 
 
 def _raw(
@@ -60,7 +63,7 @@ def _raw(
 
 _filter_map = {
     URIFilterPolicy.raw: _raw,
-    URIFilterPolicy.http: _srv_asset_uri,
+    URIFilterPolicy.http: _internal_file_srv,
 }
 
 
