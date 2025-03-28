@@ -21,6 +21,7 @@
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.lattice import LatticeAssets, LatticeMetadata, LatticeSchema
 from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice
+from covalent_dispatcher._object_store.base import TransferDirection
 
 from .tg import export_transport_graph
 
@@ -37,8 +38,12 @@ def _export_lattice_assets(lat: Lattice) -> LatticeAssets:
         size = asset.size
         digest_alg = asset.digest_alg
         digest = asset.digest
-        scheme = asset.storage_type.value
-        remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
+        object_store = asset.object_store
+        remote_uri = object_store.get_public_uri(
+            asset.storage_path,
+            asset.object_key,
+            transfer_direction=TransferDirection.download,
+        )
         manifests[asset_key] = AssetSchema(
             remote_uri=remote_uri, size=size, digest_alg=digest_alg, digest=digest
         )

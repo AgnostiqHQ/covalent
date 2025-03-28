@@ -195,7 +195,12 @@ def run_task_group(
                     function_uri = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/function"
 
                     # Download function
-                    resp = requests.get(function_uri, stream=True)
+                    # Get remote uri
+                    uri_resp = requests.get(function_uri)
+                    uri_resp.raise_for_status()
+                    remote_uri = uri_resp.json()["remote_uri"]
+                    resp = requests.get(remote_uri, stream=True)
+
                     resp.raise_for_status()
                     serialized_fn = deserialize_node_asset(resp.content, "function")
 
@@ -205,19 +210,30 @@ def run_task_group(
                     # Download args and kwargs
                     for node_id in args:
                         url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/output"
-                        resp = requests.get(url, stream=True)
+                        uri_resp = requests.get(url)
+                        uri_resp.raise_for_status()
+                        remote_url = uri_resp.json()["remote_uri"]
+
+                        resp = requests.get(remote_url, stream=True)
                         resp.raise_for_status()
                         ser_args.append(deserialize_node_asset(resp.content, "output"))
 
                     for k, node_id in kwargs.items():
                         url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/output"
-                        resp = requests.get(url, stream=True)
+                        uri_resp = requests.get(url)
+                        uri_resp.raise_for_status()
+                        remote_url = uri_resp.json()["remote_uri"]
+                        resp = requests.get(remote_url, stream=True)
                         resp.raise_for_status()
                         ser_kwargs[k] = deserialize_node_asset(resp.content, "output")
 
                     # Download deps, call_before, and call_after
                     hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/hooks"
-                    resp = requests.get(hooks_url, stream=True)
+                    uri_resp = requests.get(hooks_url)
+                    uri_resp.raise_for_status()
+                    remote_url = uri_resp.json()["remote_uri"]
+
+                    resp = requests.get(remote_url, stream=True)
                     resp.raise_for_status()
                     hooks_json = deserialize_node_asset(resp.content, "hooks")
                     deps_json = hooks_json.get("deps", {})
@@ -268,22 +284,37 @@ def run_task_group(
                     # POST task artifacts
                     if result_uri:
                         upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/output"
+                        headers = {"Content-Length": str(os.path.getsize(result_uri))}
+                        uri_resp = requests.post(upload_url, headers=headers)
+                        uri_resp.raise_for_status()
+                        remote_uri = uri_resp.json()["remote_uri"]
+
                         with open(result_uri, "rb") as f:
-                            requests.put(upload_url, data=f)
+                            requests.put(remote_uri, data=f)
 
                     sys.stdout.flush()
                     if stdout_uri:
                         upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/stdout"
+                        headers = {"Content-Length": str(os.path.getsize(stdout_uri))}
+                        uri_resp = requests.post(upload_url, headers=headers)
+                        uri_resp.raise_for_status()
+                        remote_uri = uri_resp.json()["remote_uri"]
+
                         with open(stdout_uri, "rb") as f:
-                            headers = {"Content-Length": os.path.getsize(stdout_uri)}
-                            requests.put(upload_url, data=f)
+
+                            requests.put(remote_uri, data=f)
 
                     sys.stderr.flush()
                     if stderr_uri:
                         upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/stderr"
+                        headers = {"Content-Length": str(os.path.getsize(stderr_uri))}
+                        uri_resp = requests.post(upload_url, headers=headers)
+                        uri_resp.raise_for_status()
+                        remote_uri = uri_resp.json()["remote_uri"]
+
                         with open(stderr_uri, "rb") as f:
                             headers = {"Content-Length": os.path.getsize(stderr_uri)}
-                            requests.put(upload_url, data=f)
+                            requests.put(remote_uri, data=f)
 
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 

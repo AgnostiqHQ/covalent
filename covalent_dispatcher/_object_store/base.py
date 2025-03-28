@@ -17,7 +17,13 @@
 """Base storage backend provider"""
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Tuple
+
+
+class TransferDirection(str, Enum):
+    upload = "put"
+    download = "get"
 
 
 @dataclass
@@ -58,4 +64,7 @@ class BaseProvider:
 
         """
 
+        raise NotImplementedError
+
+    def get_public_uri(self, storage_path: str, object_key: str, **options) -> str:
         raise NotImplementedError

@@ -33,13 +33,13 @@ from .utils.file_transfer import cp
 app_log = logger.app_log
 
 
-class StorageType(Enum):
-    LOCAL = "file"
+class StorageType(str, Enum):
+    LOCAL = local_store.scheme  # "file"
     S3 = "s3"
 
 
 _storage_provider_map = {
-    StorageType.LOCAL: local_store,
+    StorageType.LOCAL.value: local_store,
 }
 
 
@@ -73,8 +73,8 @@ class Asset(Record[AssetRecord]):
         return self._id
 
     @property
-    def storage_type(self) -> StorageType:
-        return StorageType(self._attrs["storage_type"])
+    def storage_type(self) -> str:
+        return self._attrs["storage_type"]
 
     @property
     def storage_path(self) -> str:
@@ -98,8 +98,7 @@ class Asset(Record[AssetRecord]):
 
     @property
     def internal_uri(self) -> str:
-        scheme = self.storage_type.value
-        return f"{scheme}://" + str(Path(self.storage_path) / self.object_key)
+        return f"{self.storage_type}://" + str(Path(self.storage_path) / self.object_key)
 
     @property
     def size(self) -> int:
@@ -123,14 +122,14 @@ class Asset(Record[AssetRecord]):
         return self.object_store.load_file(self.storage_path, self.object_key)
 
     def download(self, src_uri: str):
-        scheme = self.storage_type.value
+        scheme = self.storage_type
         dest_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
         app_log.debug(f"Downloading asset from {src_uri} to {dest_uri}")
 
         cp(src_uri, dest_uri)
 
     def upload(self, dest_uri: str):
-        scheme = self.storage_type.value
+        scheme = self.storage_type
         src_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
         app_log.debug(f"Uploading asset from {src_uri} to {dest_uri}")
         cp(src_uri, dest_uri)
@@ -154,7 +153,7 @@ def copy_asset(src: Asset, dest: Asset):
     """
 
     if src.size > 0:
-        scheme = dest.storage_type.value
+        scheme = dest.storage_type
         dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
         src.upload(dest_uri)
     else:
@@ -174,7 +173,7 @@ def copy_asset_meta(session: Session, src: Asset, dest: Asset):
         "digest_alg": src.digest_alg,
         "digest": src.digest,
         "size": src.size,
-        "storage_type": src.storage_type.value,
+        "storage_type": src.storage_type,
         "storage_path": src.storage_path,
         "object_key": src.object_key,
         "remote_uri": src.remote_uri,

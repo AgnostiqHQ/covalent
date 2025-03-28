@@ -214,10 +214,10 @@ def test_copy_nodes_from(tg, mocker):
 
     mock_old_asset = MagicMock()
     mock_new_asset = MagicMock()
-    mock_old_asset.storage_type = StorageType.LOCAL
+    mock_old_asset.storage_type = StorageType.LOCAL.value
     mock_old_asset.storage_path = "/tmp"
     mock_old_asset.object_key = "result.pkl"
-    mock_new_asset.storage_type = StorageType.LOCAL
+    mock_new_asset.storage_type = StorageType.LOCAL.value
     mock_new_asset.storage_path = "/tmp"
     mock_new_asset.object_key = "result_new.pkl"
 
@@ -362,11 +362,11 @@ def test_get_reusable_nodes(mocker, tg, tg_2):
     )
     mock_old_asset = MagicMock()
     mock_new_asset = MagicMock()
-    mock_old_asset.storage_type = StorageType.LOCAL
+    mock_old_asset.storage_type = StorageType.LOCAL.value
     mock_old_asset.storage_path = "/tmp"
     mock_old_asset.object_key = "value.pkl"
     mock_old_asset.meta = {"digest": "24af"}
-    mock_new_asset.storage_type = StorageType.LOCAL
+    mock_new_asset.storage_type = StorageType.LOCAL.value
     mock_new_asset.storage_path = "/tmp"
     mock_new_asset.object_key = "value.pkl"
     mock_new_asset.meta = {"digest": "24af"}
@@ -390,11 +390,11 @@ def test_get_diff_nodes_integration_test(tg, tg_2):
 
     mock_old_asset = MagicMock()
     mock_new_asset = MagicMock()
-    mock_old_asset.storage_type = StorageType.LOCAL
+    mock_old_asset.storage_type = StorageType.LOCAL.value
     mock_old_asset.storage_path = "/tmp"
     mock_old_asset.object_key = "value.pkl"
     mock_old_asset.__dict__.update({"digest": "24af"})
-    mock_new_asset.storage_type = StorageType.LOCAL
+    mock_new_asset.storage_type = StorageType.LOCAL.value
     mock_new_asset.storage_path = "/tmp"
     mock_new_asset.object_key = "value.pkl"
     mock_new_asset.__dict__.update({"digest": "24af"})

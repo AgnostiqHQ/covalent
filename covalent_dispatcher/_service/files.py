@@ -19,8 +19,9 @@
 import os
 
 import aiofiles
+import aiofiles.os
 from fastapi import APIRouter, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
@@ -29,31 +30,6 @@ router = APIRouter()
 
 app_log = logger.app_log
 BASE_PATH = get_config("dispatcher.results_dir")
-
-
-def _generate_file_slice(file_path: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
-    """Generator of a byte slice from a file.
-
-    Args:
-        path: An absolute path to the file
-        start_byte: The beginning of the byte range
-        end_byte: The end of the byte range, or -1 to select [start_byte:]
-        chunk_size: The size of each chunk
-
-    Returns:
-        Yields chunks of size <= chunk_size
-    """
-    byte_pos = start_byte
-    with open(file_path, "rb") as f:
-        f.seek(start_byte)
-        if end_byte < 0:
-            for chunk in f:
-                yield chunk
-        else:
-            while byte_pos + chunk_size < end_byte:
-                byte_pos += chunk_size
-                yield f.read(chunk_size)
-            yield f.read(end_byte - byte_pos)
 
 
 async def _transfer_data(req: Request, dest_path: str):
@@ -71,16 +47,11 @@ async def _transfer_data(req: Request, dest_path: str):
 
 
 @router.get("/files/{object_key:path}")
-def download_file(object_key: str):
+async def download_file(object_key: str):
     # TODO: reject relative path components
 
-    start_byte = 0
-    end_byte = -1
-
     path = os.path.join(BASE_PATH, object_key)
-    generator = _generate_file_slice(path, start_byte, end_byte)
-
-    return StreamingResponse(generator)
+    return FileResponse(path)
 
 
 @router.put("/files/{object_key:path}")

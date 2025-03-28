@@ -25,6 +25,7 @@ import cloudpickle
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas import electron, lattice, result
+from covalent._shared_files.utils import format_server_url
 from covalent._workflow.transport import TransportableObject
 
 from .base import BaseProvider, Digest
@@ -36,6 +37,7 @@ WORKFLOW_ASSET_FILENAME_MAP = result.ASSET_FILENAME_MAP.copy()
 WORKFLOW_ASSET_FILENAME_MAP.update(lattice.ASSET_FILENAME_MAP)
 ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP.copy()
 
+SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dispatcher.port"))
 
 # Moved from write_result_to_db.py
 
@@ -166,6 +168,12 @@ class LocalProvider(BaseProvider):
                 data = f.read()
 
         return data
+
+    def get_public_uri(self, storage_path: str, object_key: str, **options) -> str:
+        if storage_path.startswith(self.base_path):
+            return f"{SERVER_URL}/api/v0/files/{object_key}"
+        else:
+            return ""
 
 
 local_store = LocalProvider()
