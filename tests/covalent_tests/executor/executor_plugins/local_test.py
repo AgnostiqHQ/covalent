@@ -281,21 +281,31 @@ def test_run_task_group(mocker):
     node_0_function_url = (
         f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
     )
+    node_0_function_file_url = f"{server_url}/files/node_0_function"
+    node_0_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/output"
+    node_0_output_file_url = f"{server_url}/files/node_0_output"
+    node_0_stdout_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/stdout"
+    node_0_stdout_file_url = f"{server_url}/files/node_0_stdout"
+    node_0_stderr_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/stderr"
+    node_0_stderr_file_url = f"{server_url}/files/node_0_stderr"
 
     hooks_file = tempfile.NamedTemporaryFile("wb")
     hooks_file.write(ser_hooks)
     hooks_file.flush()
     hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/hooks"
+    hooks_file_url = f"{server_url}/files/hooks"
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
     node_1_file.flush()
     node_1_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/1/assets/output"
+    node_1_output_file_url = f"{server_url}/node_1_output"
 
     node_2_file = tempfile.NamedTemporaryFile("wb")
     node_2_file.write(ser_y)
     node_2_file.flush()
     node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
+    node_2_output_file_url = f"{server_url}/node_2_output"
 
     task_spec = TaskSpec(
         electron_id=0,
@@ -303,25 +313,48 @@ def test_run_task_group(mocker):
         kwargs={},
     )
 
-    resources = {
-        node_0_function_url: ser_task,
-        node_1_output_url: ser_x,
-        node_2_output_url: ser_y,
-        hooks_url: ser_hooks,
+    # GET/POST URLs
+    url_map = {
+        node_0_function_url: node_0_function_file_url,
+        node_0_output_url: node_0_output_file_url,
+        node_0_stdout_url: node_0_stdout_file_url,
+        node_0_stderr_url: node_0_stderr_file_url,
+        hooks_url: hooks_file_url,
+        node_1_output_url: node_1_output_file_url,
+        node_2_output_url: node_2_output_file_url,
     }
 
-    def mock_req_get(url, stream):
+    # GET/PUT files
+    resources = {
+        node_0_function_file_url: ser_task,
+        node_1_output_file_url: ser_x,
+        node_2_output_file_url: ser_y,
+        hooks_file_url: ser_hooks,
+    }
+
+    def mock_req_get(url, **kwargs):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
-        mock_resp.content = resources[url]
+        if url in url_map:
+            mock_resp.json.return_value = {"remote_uri": url_map[url]}
+        else:
+            mock_resp.content = resources[url]
         return mock_resp
 
-    def mock_req_post(url, files):
-        resources[url] = files["asset_file"].read()
+    def mock_req_post(url, **kwargs):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"remote_uri": url_map[url]}
+        return mock_resp
+
+    def mock_req_put(url, data=None, headers={}, json={}):
+        if data is not None:
+            resources[url] = data if isinstance(data, bytes) else data.read()
+        return MagicMock()
 
     mocker.patch("requests.get", mock_req_get)
     mocker.patch("requests.post", mock_req_post)
-    mock_put = mocker.patch("requests.put")
+    mocker.patch("requests.put", mock_req_put)
     task_group_metadata = {
         "dispatch_id": dispatch_id,
         "node_ids": [node_id],
@@ -342,8 +375,7 @@ def test_run_task_group(mocker):
         server_url=server_url,
     )
 
-    with open(result_file.name, "rb") as f:
-        output = TransportableObject.deserialize(f.read())
+    output = TransportableObject.deserialize(resources[node_0_output_file_url])
     assert output.get_deserialized() == 3
 
     with open(cb_tmpfile.name, "r") as f:
@@ -351,8 +383,6 @@ def test_run_task_group(mocker):
 
     with open(ca_tmpfile.name, "r") as f:
         assert f.read() == "Bye\n"
-
-    mock_put.assert_called()
 
 
 def test_run_task_group_exception(mocker):
@@ -398,21 +428,31 @@ def test_run_task_group_exception(mocker):
     node_0_function_url = (
         f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
     )
+    node_0_function_file_url = f"{server_url}/files/node_0_function"
+    node_0_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/output"
+    node_0_output_file_url = f"{server_url}/files/node_0_output"
+    node_0_stdout_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/stdout"
+    node_0_stdout_file_url = f"{server_url}/files/node_0_stdout"
+    node_0_stderr_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/stderr"
+    node_0_stderr_file_url = f"{server_url}/files/node_0_stderr"
 
     hooks_file = tempfile.NamedTemporaryFile("wb")
     hooks_file.write(ser_hooks)
     hooks_file.flush()
     hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/hooks"
+    hooks_file_url = f"{server_url}/files/hooks"
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
     node_1_file.flush()
     node_1_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/1/assets/output"
+    node_1_output_file_url = f"{server_url}/node_1_output"
 
     node_2_file = tempfile.NamedTemporaryFile("wb")
     node_2_file.write(ser_y)
     node_2_file.flush()
     node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
+    node_2_output_file_url = f"{server_url}/node_2_output"
 
     task_spec = TaskSpec(
         electron_id=0,
@@ -420,25 +460,48 @@ def test_run_task_group_exception(mocker):
         kwargs={"y": 2},
     )
 
-    resources = {
-        node_0_function_url: ser_task,
-        node_1_output_url: ser_x,
-        node_2_output_url: ser_y,
-        hooks_url: ser_hooks,
+    # GET/POST URLs
+    url_map = {
+        node_0_function_url: node_0_function_file_url,
+        node_0_output_url: node_0_output_file_url,
+        node_0_stdout_url: node_0_stdout_file_url,
+        node_0_stderr_url: node_0_stderr_file_url,
+        hooks_url: hooks_file_url,
+        node_1_output_url: node_1_output_file_url,
+        node_2_output_url: node_2_output_file_url,
     }
 
-    def mock_req_get(url, stream):
+    # GET/PUT files
+    resources = {
+        node_0_function_file_url: ser_task,
+        node_1_output_file_url: ser_x,
+        node_2_output_file_url: ser_y,
+        hooks_file_url: ser_hooks,
+    }
+
+    def mock_req_get(url, **kwargs):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
-        mock_resp.content = resources[url]
+        if url in url_map:
+            mock_resp.json.return_value = {"remote_uri": url_map[url]}
+        else:
+            mock_resp.content = resources[url]
         return mock_resp
 
-    def mock_req_post(url, files):
-        resources[url] = files["asset_file"].read()
+    def mock_req_post(url, **kwargs):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"remote_uri": url_map[url]}
+        return mock_resp
+
+    def mock_req_put(url, data=None, headers={}, json={}):
+        if data is not None:
+            resources[url] = data if isinstance(data, bytes) else data.read()
+        return MagicMock()
 
     mocker.patch("requests.get", mock_req_get)
     mocker.patch("requests.post", mock_req_post)
-    mocker.patch("requests.put")
+    mocker.patch("requests.put", mock_req_put)
     task_group_metadata = {
         "dispatch_id": dispatch_id,
         "node_ids": [node_id],
@@ -458,6 +521,9 @@ def test_run_task_group_exception(mocker):
         task_group_metadata=task_group_metadata,
         server_url=server_url,
     )
+
+    stderr = resources[node_0_stderr_file_url].decode("utf-8")
+    assert "AssertionError" in stderr
 
     summary_file_path = f"{results_dir.name}/result-{dispatch_id}:{node_id}.json"
 
@@ -571,7 +637,7 @@ def test_send_internal(
         run_task_group,
         list(map(lambda t: t.dict(), test_case["task_specs"])),
         test_case["expected_output_uris"],
-        "mock_cache_dir",
+        local_exec.workdir,
         test_case["task_group_metadata"],
         test_case["expected_server_url"],
     )

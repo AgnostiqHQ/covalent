@@ -162,24 +162,26 @@ class LocalExecutor(BaseExecutor):
         resources: ResourceMap,
         task_group_metadata: dict,
     ):
+        os.makedirs(self.workdir, exist_ok=True)
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["node_ids"]
         gid = task_group_metadata["task_group_id"]
         output_uris = []
         for node_id in task_ids:
-            result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
-            stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
-            stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
+            result_uri = os.path.join(self.workdir, f"result_{dispatch_id}-{node_id}.pkl")
+            stdout_uri = os.path.join(self.workdir, f"stdout_{dispatch_id}-{node_id}.txt")
+            stderr_uri = os.path.join(self.workdir, f"stderr_{dispatch_id}-{node_id}.txt")
             output_uris.append((result_uri, stdout_uri, stderr_uri))
 
         server_url = format_server_url()
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
+        app_log.debug(f"Generated artifacts will be saved at: {output_uris}")
         future = proc_pool.submit(
             run_task_group,
             list(map(lambda t: t.model_dump(), task_specs)),
             output_uris,
-            self.cache_dir,
+            self.workdir,
             task_group_metadata,
             server_url,
         )
@@ -190,6 +192,9 @@ class LocalExecutor(BaseExecutor):
             if ex is not None:
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 app_log.debug(tb)
+                for task_id in task_ids:
+                    url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/job"
+                    requests.put(url, json={"status": "FAILED"})
             if fut.cancelled():
                 for task_id in task_ids:
                     url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/job"

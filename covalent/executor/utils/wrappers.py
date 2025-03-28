@@ -29,6 +29,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 
+from covalent._file_transfer import FileTransfer
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
@@ -169,14 +170,10 @@ def run_task_group(
 
     """
 
-    prefix = "file://"
-    prefix_len = len(prefix)
-
     outputs = {}
     results = []
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["node_ids"]
-    gid = task_group_metadata["task_group_id"]
 
     os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
@@ -288,9 +285,8 @@ def run_task_group(
                         uri_resp = requests.post(upload_url, headers=headers)
                         uri_resp.raise_for_status()
                         remote_uri = uri_resp.json()["remote_uri"]
-
-                        with open(result_uri, "rb") as f:
-                            requests.put(remote_uri, data=f)
+                        _, cp = FileTransfer(f"file://{result_uri}", remote_uri).cp()
+                        cp()
 
                     sys.stdout.flush()
                     if stdout_uri:
@@ -299,10 +295,8 @@ def run_task_group(
                         uri_resp = requests.post(upload_url, headers=headers)
                         uri_resp.raise_for_status()
                         remote_uri = uri_resp.json()["remote_uri"]
-
-                        with open(stdout_uri, "rb") as f:
-
-                            requests.put(remote_uri, data=f)
+                        _, cp = FileTransfer(f"file://{stdout_uri}", remote_uri).cp()
+                        cp()
 
                     sys.stderr.flush()
                     if stderr_uri:
@@ -311,10 +305,8 @@ def run_task_group(
                         uri_resp = requests.post(upload_url, headers=headers)
                         uri_resp.raise_for_status()
                         remote_uri = uri_resp.json()["remote_uri"]
-
-                        with open(stderr_uri, "rb") as f:
-                            headers = {"Content-Length": os.path.getsize(stderr_uri)}
-                            requests.put(remote_uri, data=f)
+                        _, cp = FileTransfer(f"file://{stderr_uri}", remote_uri).cp()
+                        cp()
 
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
