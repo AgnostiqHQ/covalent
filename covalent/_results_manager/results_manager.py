@@ -45,6 +45,7 @@ from .result import Result
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+BASE_ENDPOINT = os.getenv("COVALENT_DISPATCH_BASE_ENDPOINT", "/api/v2/dispatches")
 
 SDK_NODE_META_KEYS = {
     "executor",
@@ -123,7 +124,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
         task_ids = []
 
     api_client = CovalentAPIClient(dispatcher_addr)
-    endpoint = f"/api/v2/dispatches/{dispatch_id}/status"
+    endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/status"
 
     if isinstance(task_ids, int):
         task_ids = [task_ids]
@@ -137,7 +138,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 
 
 def _query_dispatch_status(dispatch_id: str, api_client: CovalentAPIClient):
-    endpoint = "/api/v2/dispatches"
+    endpoint = BASE_ENDPOINT
     resp = api_client.get(endpoint, params={"dispatch_id": dispatch_id, "status_only": True})
     resp.raise_for_status()
     dispatches = resp.json()["dispatches"]
@@ -166,7 +167,7 @@ def _get_result_export_from_dispatcher(
         MissingLatticeRecordError: If the result is not found.
     """
 
-    endpoint = f"/api/v2/dispatches/{dispatch_id}"
+    endpoint = f"{BASE_ENDPOINT}/{dispatch_id}"
     response = api_client.get(endpoint)
     if response.status_code == 404:
         raise MissingLatticeRecordError

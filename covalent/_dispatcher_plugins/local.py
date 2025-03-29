@@ -252,7 +252,7 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        endpoint = f"/api/v2/dispatches/{dispatch_id}/status"
+        endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/status"
         body = {"status": "RUNNING"}
         r = APIClient(dispatcher_addr).put(endpoint, json=body)
         r.raise_for_status()
@@ -509,7 +509,7 @@ class LocalDispatcher(BaseDispatcher):
         # We don't yet support pulling assets for redispatch
         stripped = strip_local_uris(manifest)
 
-        endpoint = f"/api/v2/dispatches/{dispatch_id}/redispatches"
+        endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/redispatches"
 
         params = {"reuse_previous_results": reuse_previous_results}
         r = APIClient(dispatcher_addr).post(
