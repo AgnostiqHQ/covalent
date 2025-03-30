@@ -21,6 +21,7 @@ import os
 import aiofiles
 import aiofiles.os
 from fastapi import APIRouter, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse
 
 from covalent._shared_files import logger
@@ -46,18 +47,23 @@ async def _transfer_data(req: Request, dest_path: str):
     await aiofiles.os.replace(tmp_path, dest_path)
 
 
+# Resolve path to an absolute path and check that it
+# doesn't escape the data directory root
+def _sanitize_path(path: str) -> str:
+    abs_path = os.path.realpath(path)
+    if not abs_path.startswith(BASE_PATH) or len(abs_path) <= len(BASE_PATH):
+        raise RequestValidationError(f"Invalid object key {path}")
+    return abs_path
+
+
 @router.get("/files/{object_key:path}")
 async def download_file(object_key: str):
-    # TODO: reject relative path components
-
-    path = os.path.join(BASE_PATH, object_key)
+    path = _sanitize_path(os.path.join(BASE_PATH, object_key))
     return FileResponse(path)
 
 
 @router.put("/files/{object_key:path}")
 async def upload_file(req: Request, object_key: str):
-    # TODO: reject relative path components
-
-    path = os.path.join(BASE_PATH, object_key)
+    path = _sanitize_path(os.path.join(BASE_PATH, object_key))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     await _transfer_data(req, path)
