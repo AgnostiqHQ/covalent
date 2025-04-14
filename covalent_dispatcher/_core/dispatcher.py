@@ -34,7 +34,7 @@ from . import data_manager as datasvc
 from . import runner_ng
 from .data_modules import graph as tg_utils
 from .data_modules import job_manager as jbmgr
-from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
+from .dispatcher_modules.caches import _task_group_cache, _workflow_run_cache
 from .runner_modules.cancel import cancel_tasks
 
 app_log = logger.app_log
@@ -95,7 +95,7 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
         gid = child["task_group_id"]
         app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
         if parent_gid != gid:
-            now_pending = await _pending_parents.decrement(dispatch_id, gid)
+            now_pending = await _task_group_cache.decrement(dispatch_id, gid)
             if now_pending < 1:
                 app_log.debug(f"Queuing task group {gid} for execution")
                 next_task_groups.append(gid)
@@ -414,13 +414,12 @@ async def _finalize_dispatch(dispatch_id: str):
 
 
 async def _initialize_caches(dispatch_id, pending_parents, sorted_task_groups):
-    for gid, indegree in pending_parents.items():
-        await _pending_parents.set_pending(dispatch_id, gid, indegree)
+    for gid in pending_parents:
+        indegree = pending_parents[gid]
+        sorted_nodes = sorted_task_groups[gid]
+        await _task_group_cache.set(dispatch_id, gid, indegree, sorted_nodes)
 
-    for gid, sorted_nodes in sorted_task_groups.items():
-        await _sorted_task_groups.set_task_group(dispatch_id, gid, sorted_nodes)
-
-    await _unresolved_tasks.set_unresolved(dispatch_id, 0)
+    await _workflow_run_cache.set_unresolved(dispatch_id, 0)
 
 
 async def _submit_initial_tasks(dispatch_id: str):
@@ -442,7 +441,7 @@ async def _submit_initial_tasks(dispatch_id: str):
     for gid in initial_groups:
         sorted_nodes = sorted_task_groups[gid]
         app_log.debug(f"Sorted nodes group group {gid}: {sorted_nodes}")
-        await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
+        await _workflow_run_cache.increment(dispatch_id, len(sorted_nodes))
 
     for gid in initial_groups:
         sorted_nodes = sorted_task_groups[gid]
@@ -469,8 +468,8 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
     if node_status == RESULT_STATUS.COMPLETED:
         next_task_groups = await _handle_completed_node(dispatch_id, node_id)
         for gid in next_task_groups:
-            sorted_nodes = await _sorted_task_groups.get_task_group(dispatch_id, gid)
-            await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
+            sorted_nodes = await _task_group_cache.get_task_group(dispatch_id, gid)
+            await _workflow_run_cache.increment(dispatch_id, len(sorted_nodes))
             await _submit_task_group(dispatch_id, sorted_nodes, gid)
 
     if node_status == RESULT_STATUS.FAILED:
@@ -481,7 +480,7 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
 
     # Decrement after any increments to avoid race with
     # finalize_dispatch()
-    await _unresolved_tasks.decrement(dispatch_id)
+    await _workflow_run_cache.decrement(dispatch_id)
 
 
 async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_STATUS:
@@ -530,7 +529,7 @@ async def _handle_event(msg: Dict):
             fut.set_result(dispatch_status)
         return dispatch_status
 
-    unresolved = await _unresolved_tasks.get_unresolved(dispatch_id)
+    unresolved = await _workflow_run_cache.get_unresolved(dispatch_id)
     if unresolved < 1:
         app_log.debug("Finalizing dispatch")
         try:
@@ -549,7 +548,7 @@ async def _handle_event(msg: Dict):
 
 async def _clear_caches(dispatch_id: str):
     """Clean up all keys in caches."""
-    await _unresolved_tasks.remove(dispatch_id)
+    await _workflow_run_cache.remove(dispatch_id)
 
     g_node_link = await tg_utils.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
@@ -558,5 +557,4 @@ async def _clear_caches(dispatch_id: str):
 
     for gid in task_groups:
         # Clean up no longer referenced keys
-        await _pending_parents.remove(dispatch_id, gid)
-        await _sorted_task_groups.remove(dispatch_id, gid)
+        await _task_group_cache.remove(dispatch_id, gid)

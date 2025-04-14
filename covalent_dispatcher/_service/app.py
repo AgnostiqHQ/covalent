@@ -20,11 +20,10 @@
 import asyncio
 import json
 from contextlib import asynccontextmanager
-from typing import List, Union
+from typing import Annotated, List, Union
 
 from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
-from typing_extensions import Annotated
 
 import covalent_dispatcher.entry_point as dispatcher
 from covalent._shared_files import logger
