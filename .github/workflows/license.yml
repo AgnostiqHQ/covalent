@@ -62,7 +62,7 @@ jobs:
         with:
           requirements: "requirements.txt,tests/requirements.txt,requirements-client.txt"
           fail: "Copyleft,Error,Other"
-          exclude: "^(pylint|aio[-_]*).*"
+          exclude: "^(pylint|aio[-_]*|pytest-asyncio|typing-extensions).*"
           exclude-license: 'Mozilla Public License 2.0 \(MPL 2.0\)'
           totals: true
           headers: true
