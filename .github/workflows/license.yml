@@ -41,6 +41,7 @@ jobs:
           license-checker --production --csv --onlyAllow '
             Apache-2.0;
             0BSD;
+            BSD;
             BSD-2-Clause;
             BSD-3-Clause;
             CC0-1.0;
