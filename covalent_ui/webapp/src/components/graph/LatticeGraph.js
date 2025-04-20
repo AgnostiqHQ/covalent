@@ -72,13 +72,11 @@ const LatticeGraph = ({
   const searchStatus = 'FAILED'
   const desiredNode = nodeMap.get(searchName)
 
-  console.log("DEBUG: rendering LatticeGraph")
   const handleNodesChange = useCallback(
     (changes) => {
       setNodes((nds) => applyNodeChanges(changes, nds));
       const selectedNodes = changes.filter((c) => c.type === 'select').filter((c) => c.selected === true);
       handleNodeSelectionChange(selectedNodes);
-      console.log("DEBUG: in handleNodesChange")
     },
     [setNodes, handleNodeSelectionChange],
   )
@@ -125,7 +123,6 @@ const LatticeGraph = ({
 
   // layouting
   useEffect(() => {
-    console.log("DEBUG: assigning initial graph layout")
     assignNodePositions(
       graph,
       direction,
@@ -242,7 +239,7 @@ const LatticeGraph = ({
             edgeTypes={edgeTypes}
             nodesDraggable={nodesDraggable}
             nodesConnectable={false}
-            nodes={nodes} // MIGRATION: update
+            nodes={nodes}
             edges={edges}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}

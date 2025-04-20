@@ -65,12 +65,9 @@ export function DispatchLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // TODO: replace
-  console.log("DEBUG: rendering DispatchLayout")
   // Track selected flow node to control the NodeDrawer
   const [selectedNodes, setSelectedNodes] = useState(initialSelectedNodes);
   const handleNodeSelectionChange = (selected) => {
-    console.log("DEBUG: In handleNodeSelectionChange")
     setSelectedNodes(selected)
   }
 
@@ -80,7 +77,6 @@ export function DispatchLayout() {
       (node) => nodeId === String(_.get(node, 'id')) && _.get(node, 'type') !== 'parameter'
   )
   const handleNodeDrawerClose = () => {
-    // MIGRATION: update selected attributes of nodes and edges
     setSelectedNodes(initialSelectedNodes)
   }
 
