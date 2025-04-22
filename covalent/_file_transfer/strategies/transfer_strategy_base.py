@@ -16,6 +16,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Callable
 
 from ..enums import FtCallDepReturnValue
 from ..file import File
@@ -34,7 +35,7 @@ class FileTransferStrategy(ABC):
 
     # download here implies 'from' is a remote source
     @abstractmethod
-    def download(self, from_file: File, to_file: File) -> File:
+    def download(self, from_file: File, to_file: File) -> Callable:
         raise NotImplementedError
 
     # upload here implies 'to' is a remote source

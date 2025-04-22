@@ -24,27 +24,22 @@ from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import LatticeSchema
 from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
-from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.asset import Asset
 from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
-from covalent_dispatcher._object_store.local import BaseProvider, local_store
+from covalent_dispatcher._object_store.base import BaseProvider, TransferDirection
+from covalent_dispatcher._object_store.local import local_store
 
 from ..asset import copy_asset_meta
 from ..tg_ops import TransportGraphOps
-from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import _get_lattice_meta, import_lattice_assets
 from .tg import import_transport_graph
 
-SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dispatcher.port"))
-
-URI_FILTER_POLICY = URIFilterPolicy[get_config("dispatcher.data_uri_filter_policy")]
-
 app_log = logger.app_log
+DEFAULT_OBJECT_STORE = local_store
 
 
 def import_result(
@@ -80,14 +75,14 @@ def import_result(
         st = datetime.now()
         lattice_row = ResultMeta.create(session, insert_kwargs=lattice_record_kwargs, flush=True)
         res_record = Result(session, lattice_row, True)
-        res_assets = import_result_assets(session, res, res_record, local_store)
+        res_assets = import_result_assets(session, res, res_record, DEFAULT_OBJECT_STORE)
 
         lat_assets = import_lattice_assets(
             session,
             dispatch_id,
             res.lattice,
             res_record.lattice,
-            local_store,
+            DEFAULT_OBJECT_STORE,
         )
         et = datetime.now()
         delta = (et - st).total_seconds()
@@ -99,7 +94,7 @@ def import_result(
             dispatch_id,
             res.lattice.transport_graph,
             res_record.lattice,
-            local_store,
+            DEFAULT_OBJECT_STORE,
             electron_id,
         )
         et = datetime.now()
@@ -108,13 +103,7 @@ def import_result(
 
     lat = LatticeSchema(metadata=res.lattice.metadata, assets=lat_assets, transport_graph=tg)
 
-    output = ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
-    st = datetime.now()
-    filtered_uris = _filter_remote_uris(output)
-    et = datetime.now()
-    delta = (et - st).total_seconds()
-    app_log.debug(f"{dispatch_id}: Filtering URIs took {delta} seconds")
-    return filtered_uris
+    return ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
 
 
 def _connect_result_to_electron(
@@ -165,49 +154,6 @@ def _connect_result_to_electron(
     return res
 
 
-def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
-    dispatch_id = manifest.metadata.dispatch_id
-
-    # Workflow-level
-    for key, asset in manifest.assets:
-        if asset.remote_uri:
-            filtered_uri = filter_asset_uri(
-                URI_FILTER_POLICY,
-                asset.remote_uri,
-                {},
-                AssetScope.DISPATCH,
-                dispatch_id,
-                None,
-                key,
-            )
-            asset.remote_uri = filtered_uri
-
-    for key, asset in manifest.lattice.assets:
-        if asset.remote_uri:
-            filtered_uri = filter_asset_uri(
-                URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.LATTICE, dispatch_id, None, key
-            )
-            asset.remote_uri = filtered_uri
-
-    # Now filter each node
-    tg = manifest.lattice.transport_graph
-    for node in tg.nodes:
-        for key, asset in node.assets:
-            if asset.remote_uri:
-                filtered_uri = filter_asset_uri(
-                    URI_FILTER_POLICY,
-                    asset.remote_uri,
-                    {},
-                    AssetScope.NODE,
-                    dispatch_id,
-                    node.id,
-                    key,
-                )
-                asset.remote_uri = filtered_uri
-
-    return manifest
-
-
 def _get_result_meta(res: ResultSchema, storage_path: str, electron_id: Optional[int]) -> dict:
     kwargs = {
         "dispatch_id": res.metadata.dispatch_id,
@@ -239,7 +185,6 @@ def import_result_assets(
             node_id=None,
             asset_key=asset_key,
         )
-        local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {
             "storage_type": object_store.scheme,
@@ -254,7 +199,12 @@ def import_result_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
+        remote_uri = object_store.get_public_uri(
+            storage_path,
+            object_key,
+            transfer_direction=TransferDirection.upload,
+        )
+        asset.remote_uri = remote_uri
 
     # Write asset records to DB
     n_records = len(asset_ids)

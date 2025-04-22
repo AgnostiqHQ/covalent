@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import os
+from typing import Callable
 
 from furl import furl
 
@@ -47,7 +48,7 @@ class S3(FileTransferStrategy):
             os.environ["AWS_SHARED_CREDENTIALS_FILE"] = self.credentials
 
     # return callable to download here implies 'from' is a remote source
-    def download(self, from_file: File, to_file: File = File()) -> File:
+    def download(self, from_file: File, to_file: File = File()) -> Callable:
         """Download files or the contents of folders from S3 bucket."""
         app_log.debug(f"Is dir: {from_file._is_dir}")
 

@@ -18,14 +18,12 @@
 """Functions to transform ResultSchema -> Result"""
 
 import json
-import os
 from typing import Dict, Tuple
 
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.electron import (
-    ASSET_FILENAME_MAP,
     ELECTRON_ERROR_FILENAME,
     ELECTRON_FUNCTION_FILENAME,
     ELECTRON_FUNCTION_STRING_FILENAME,
@@ -43,7 +41,7 @@ from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.write_result_to_db import get_electron_type
-from covalent_dispatcher._object_store.base import BaseProvider
+from covalent_dispatcher._object_store.base import BaseProvider, TransferDirection
 
 app_log = logger.app_log
 
@@ -142,8 +140,6 @@ def import_electron_assets(
             asset_key,
         )
 
-        object_key = ASSET_FILENAME_MAP[asset_key]
-        local_uri = os.path.join(node_storage_path, object_key)
         asset_kwargs = {
             "storage_type": object_store.scheme,
             "storage_path": node_storage_path,
@@ -156,28 +152,29 @@ def import_electron_assets(
         asset_recs[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
+        remote_uri = object_store.get_public_uri(
+            node_storage_path,
+            object_key,
+            transfer_direction=TransferDirection.upload,
+        )
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
+        asset.remote_uri = remote_uri
 
-    # Register custom assets
-    if e.assets._custom:
-        for asset_key, asset in e.assets._custom.items():
-            object_key = f"{asset_key}.data"
-            local_uri = os.path.join(node_storage_path, object_key)
-
-            asset_kwargs = {
-                "storage_type": object_store.scheme,
-                "storage_path": node_storage_path,
-                "object_key": object_key,
-                "digest_alg": asset.digest_alg,
-                "digest": asset.digest,
-                "remote_uri": asset.uri,
-                "size": asset.size,
-            }
-            asset_recs[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
-
-            # Send this back to the client
-            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
-            asset.digest = None
+    # Declare an asset for sublattice manifests
+    electron_type = get_electron_type(e.metadata.name)
+    if electron_type == "sublattice":
+        object_key = "result.tobj"
+        asset_kwargs = {
+            "storage_type": object_store.scheme,
+            "storage_path": node_storage_path,
+            "object_key": object_key,
+            "digest_alg": None,
+            "digest": None,
+            "remote_uri": None,
+            "size": 0,
+        }
+        asset_recs["sublattice_manifest"] = Asset.create(
+            session, insert_kwargs=asset_kwargs, flush=False
+        )
 
     return e.assets, asset_recs

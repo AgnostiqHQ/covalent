@@ -459,9 +459,9 @@ class BaseExecutor(_AbstractBaseExecutor):
         #
         # Task spec:
         # {
-        #     "function_id": int,
-        #     "args_ids": List[int],
-        #     "kwargs_ids": Dict[str, int],
+        #     "electron_id": int,
+        #     "args": List[int],
+        #     "kwargs": Dict[str, int],
         #     "deps_id": str,
         #     "call_before_id": str,
         #     "call_after_id": str,
@@ -815,9 +815,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         #
         # Task spec:
         # {
-        #     "function_id": int,
-        #     "args_ids": List[int],
-        #     "kwargs_ids": Dict[str, int],
+        #     "electron_id": int,
+        #     "args": List[int],
+        #     "kwargs": Dict[str, int],
         #     "deps_id": str,
         #     "call_before_id": str,
         #     "call_after_id": str,

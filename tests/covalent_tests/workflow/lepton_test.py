@@ -26,7 +26,7 @@ from tempfile import NamedTemporaryFile
 import pytest
 
 from covalent import DepsBash, TransportableObject
-from covalent._file_transfer.file_transfer import HTTP, File, FileTransfer, Order
+from covalent._file_transfer.file_transfer import File, FileTransfer, Order
 from covalent._workflow.lepton import Lepton
 from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
@@ -227,14 +227,6 @@ def test_http_file_transfer(order):
     mock_to_file = File("file:///home/dest.csv")
     mock_file_download = FileTransfer(from_file=mock_from_file, to_file=mock_to_file, order=order)
     mock_lepton_with_files = Lepton("python", command="mockcmd", files=[mock_file_download])
-
-    # Test that HTTP upload strategy is not currently implemented
-    with pytest.raises(NotImplementedError):
-        Lepton(
-            "python",
-            command="mockcmd",
-            files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())],
-        )
 
     deps = mock_lepton_with_files.get_metadata("hooks")["deps"]
     assert deps.get("bash") is None

@@ -176,20 +176,6 @@ def test_register_exception(mocker, app, client, mock_manifest):
     assert resp.status_code == 400
 
 
-def test_register_sublattice(mocker, app, client, mock_manifest):
-    mock_register_dispatch = mocker.patch(
-        "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
-    )
-    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post(
-        "/api/v2/dispatches/parent_dispatch/sublattices",
-        data=mock_manifest.json(),
-    )
-
-    assert resp.json() == json.loads(mock_manifest.json())
-    mock_register_dispatch.assert_awaited_with(mock_manifest, "parent_dispatch")
-
-
 def test_register_redispatch(mocker, app, client, mock_manifest):
     dispatch_id = "test_register_redispatch"
     mock_register_redispatch = mocker.patch(

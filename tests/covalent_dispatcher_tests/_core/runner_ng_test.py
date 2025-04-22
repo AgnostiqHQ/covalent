@@ -166,11 +166,11 @@ async def test_submit_abstract_task_group(mocker, task_cancelled):
     mock_node_upload_uri_1 = me.get_upload_uri(task_group_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_group_metadata, "node_2")
 
-    mock_function_id_0 = 0
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id_0 = 0
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
-    mock_function_id_3 = 3
+    mock_electron_id_3 = 3
 
     resources = {
         "functions": {
@@ -185,27 +185,27 @@ async def test_submit_abstract_task_group(mocker, task_cancelled):
     }
 
     mock_task_spec_0 = {
-        "function_id": mock_function_id_0,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id_0,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
 
     mock_task_spec_3 = {
-        "function_id": mock_function_id_3,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id_3,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
 
     mock_task_0 = {
-        "function_id": mock_function_id_0,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id_0,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
 
     mock_task_3 = {
-        "function_id": mock_function_id_3,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id_3,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
 
     known_nodes = [1, 2]
@@ -269,14 +269,14 @@ async def test_submit_requires_opt_in(mocker):
         "covalent_dispatcher._core.runner_ng.datamgr.generate_node_result",
         return_value=node_result,
     )
-    mock_function_id = task_id
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id = task_id
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
     mock_task = {
-        "function_id": mock_function_id,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
     known_nodes = [1, 2]
 
@@ -522,14 +522,14 @@ async def test_run_abstract_task_group(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    mock_function_id = node_id
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id = node_id
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
     mock_task = {
-        "function_id": mock_function_id,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
     known_nodes = [1, 2]
     task_group_metadata = {
@@ -574,15 +574,15 @@ async def test_run_abstract_task_group_handles_old_execs(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    mock_function_id = node_id
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id = node_id
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
     mock_task = {
-        "function_id": mock_function_id,
+        "electron_id": mock_electron_id,
         "name": node_name,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
     known_nodes = [1, 2]
 
@@ -614,14 +614,14 @@ async def test_run_abstract_task_group_handles_bad_executors(mocker):
     node_name = sublattice_prefix
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    mock_function_id = node_id
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id = node_id
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
     mock_task = {
-        "function_id": mock_function_id,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
     known_nodes = [1, 2]
 
@@ -670,14 +670,14 @@ async def test_run_abstract_task_group_handles_cancelled_tasks(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    mock_function_id = node_id
-    mock_args_ids = abstract_inputs["args"]
-    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_electron_id = node_id
+    mock_args = abstract_inputs["args"]
+    mock_kwargs = abstract_inputs["kwargs"]
 
     mock_task = {
-        "function_id": mock_function_id,
-        "args_ids": mock_args_ids,
-        "kwargs_ids": mock_kwargs_ids,
+        "electron_id": mock_electron_id,
+        "args": mock_args,
+        "kwargs": mock_kwargs,
     }
     known_nodes = [1, 2]
 

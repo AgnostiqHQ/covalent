@@ -95,3 +95,7 @@ class DispatchSummary(BaseModel):
 class BulkDispatchGetSchema(BaseModel):
     dispatches: List[DispatchSummary]
     metadata: BulkGetMetadata
+
+
+class ElectronUpdateSchema(BaseModel):
+    sub_dispatch_id: str

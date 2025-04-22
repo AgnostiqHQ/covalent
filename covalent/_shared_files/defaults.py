@@ -111,7 +111,6 @@ def get_default_dispatcher_config():
             "heartbeat",
         ),
         "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
-        "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
         "asset_cache_size": int(os.environ.get("COVALENT_ASSET_CACHE_SIZE", 32)),
     }
 

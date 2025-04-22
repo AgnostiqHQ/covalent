@@ -70,10 +70,10 @@ async def _submit_abstract_task_group(
     known_nodes: list,
     executor: AsyncBaseExecutor,
 ) -> None:
-    # Task sequence of the form {"function_id": task_id, "args_ids":
-    # [node_ids], "kwargs_ids": {key: node_id}}
+    # Task sequence of the form {"electron_id": task_id, "args":
+    # [node_ids], "kwargs": {key: node_id}}
 
-    task_ids = [task["function_id"] for task in task_seq]
+    task_ids = [task["electron_id"] for task in task_seq]
     task_specs = []
     task_group_metadata = {
         "dispatch_id": dispatch_id,
@@ -89,7 +89,7 @@ async def _submit_abstract_task_group(
 
         # Get upload URIs
         for task_spec in task_seq:
-            task_id = task_spec["function_id"]
+            task_id = task_spec["electron_id"]
 
             function_uri = executor.get_upload_uri(task_group_metadata, f"function-{task_id}")
             hooks_uri = executor.get_upload_uri(task_group_metadata, f"hooks-{task_id}")
@@ -255,7 +255,7 @@ async def run_abstract_task_group(
 
     try:
         app_log.debug(f"Attempting to instantiate executor {selected_executor}")
-        task_ids = [task["function_id"] for task in task_seq]
+        task_ids = [task["electron_id"] for task in task_seq]
         app_log.debug(f"Running task group {dispatch_id}:{task_group_id}")
         executor = get_executor(
             node_id=task_group_id,
@@ -281,11 +281,11 @@ async def run_abstract_task_group(
                 raise RuntimeError("Task packing not supported by executor plugin")
 
             task_spec = task_seq[0]
-            node_id = task_spec["function_id"]
+            node_id = task_spec["electron_id"]
             name = task_spec["name"]
             abstract_inputs = {
-                "args": task_spec["args_ids"],
-                "kwargs": task_spec["kwargs_ids"],
+                "args": task_spec["args"],
+                "kwargs": task_spec["kwargs"],
             }
             app_log.debug(f"Reverting to legacy runner for task {task_group_id}")
             coro = runner_legacy.run_abstract_task(

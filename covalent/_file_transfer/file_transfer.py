@@ -16,11 +16,72 @@
 
 from typing import Optional, Union
 
-from .enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order
-from .file import File
+from .enums import FileSchemes, FtCallDepReturnValue, Order
+from .file import File, register_remote_scheme
+from .strategies.blob_strategy import Blob
+from .strategies.gcloud_strategy import GCloud
 from .strategies.http_strategy import HTTP
+from .strategies.s3_strategy import S3
 from .strategies.shutil_strategy import Shutil
 from .strategies.transfer_strategy_base import FileTransferStrategy
+
+_downloaders = {
+    FileSchemes.File.value: Shutil,
+    FileSchemes.HTTP.value: HTTP,
+    FileSchemes.HTTPS.value: HTTP,
+    FileSchemes.GCloud.value: GCloud,
+    FileSchemes.Blob.value: Blob,
+    FileSchemes.S3.value: S3,
+}
+
+_uploaders = {
+    FileSchemes.File.value: Shutil,
+    FileSchemes.HTTP.value: HTTP,
+    FileSchemes.HTTPS.value: HTTP,
+    FileSchemes.GCloud.value: GCloud,
+    FileSchemes.Blob.value: Blob,
+    FileSchemes.S3.value: S3,
+}
+
+
+# For registering additional file transfer strategies
+def register_downloader(scheme: str, cls: FileTransferStrategy):
+    register_remote_scheme(scheme)
+    _downloaders[scheme] = cls
+
+
+def register_uploader(scheme: str, cls: FileTransferStrategy):
+    register_remote_scheme(scheme)
+    _uploaders[scheme] = cls
+
+
+def guess_transfer_strategy(from_file: File, to_file: File) -> FileTransferStrategy:
+    # Handle the following cases automatically
+    # Local-Remote (except HTTP destination)
+    # Remote-local
+    # Local-local
+
+    # Local-Remote
+    if not from_file.is_remote and to_file.is_remote:
+        strategy = _uploaders.get(to_file.scheme)
+        if not strategy:
+            raise AttributeError(f"Cannot guess upload strategy for remote {to_file.uri}")
+        return strategy
+
+    # Remote-Local
+    if from_file.is_remote and not to_file.is_remote:
+        strategy = _downloaders.get(from_file.scheme)
+        if not strategy:
+            raise AttributeError(f"Cannot guess download strategy for remote {from_file.uri}")
+        return strategy
+
+    # Local-Local
+    if not from_file.is_remote and not to_file.is_remote:
+        strategy = Shutil
+        return strategy
+
+    else:
+        raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
 
 
 class FileTransfer:
@@ -58,15 +119,8 @@ class FileTransfer:
         # assign explicit strategy or default to strategy based on from_file & to_file schemes
         if strategy:
             self.strategy = strategy
-        elif (
-            from_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
-            and to_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
-        ):
-            self.strategy = Shutil()
-        elif from_file.mapped_strategy_type == FileTransferStrategyTypes.HTTP:
-            self.strategy = HTTP()
         else:
-            raise AttributeError("FileTransfer requires a file transfer strategy to be specified")
+            self.strategy = guess_transfer_strategy(from_file, to_file)()
 
         self.to_file = to_file
         self.from_file = from_file

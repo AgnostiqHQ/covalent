@@ -26,6 +26,7 @@ from covalent._shared_files.schemas.electron import (
     ElectronSchema,
 )
 from covalent_dispatcher._dal.electron import ASSET_KEYS, Electron
+from covalent_dispatcher._object_store.base import TransferDirection
 
 app_log = logger.app_log
 
@@ -60,8 +61,12 @@ def _export_electron_assets(e: Electron) -> ElectronAssets:
         size = asset.size
         digest_alg = asset.digest_alg
         digest = asset.digest
-        scheme = asset.storage_type.value
-        remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
+        object_store = asset.object_store
+        remote_uri = object_store.get_public_uri(
+            asset.storage_path,
+            asset.object_key,
+            transfer_direction=TransferDirection.download,
+        )
         manifests[asset_key] = AssetSchema(
             remote_uri=remote_uri, size=size, digest_alg=digest_alg, digest=digest
         )

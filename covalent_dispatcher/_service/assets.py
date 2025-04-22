@@ -16,36 +16,19 @@
 
 """Endpoints for uploading and downloading workflow assets"""
 
-import asyncio
-import mmap
-import os
 from functools import lru_cache
-from typing import Tuple, Union
+from typing import Union
 
-import aiofiles
-import aiofiles.os
-from fastapi import APIRouter, Header, HTTPException, Request
-from fastapi.responses import StreamingResponse
-from furl import furl
+from fastapi import APIRouter, Header, HTTPException
 
-from covalent._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
-from covalent._serialize.lattice import ASSET_TYPES as LATTICE_ASSET_TYPES
-from covalent._serialize.result import ASSET_TYPES as RESULT_ASSET_TYPES
-from covalent._serialize.result import AssetType
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._workflow.transportable_object import TOArchiveUtils
+from covalent._shared_files.schemas.asset import AssetSchema
+from covalent_dispatcher._object_store.base import TransferDirection
 
 from .._dal.result import get_result_object
 from .._db.datastore import workflow_db
-from .models import (
-    AssetRepresentation,
-    DispatchAssetKey,
-    ElectronAssetKey,
-    LatticeAssetKey,
-    range_pattern,
-    range_regex,
-)
+from .models import ElectronAssetKey
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -67,35 +50,16 @@ def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
-    representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
-):
+) -> AssetSchema:
     """Returns an asset for an electron.
 
     Args:
         dispatch_id: The dispatch's unique id.
         node_id: The id of the electron.
         key: The name of the asset
-        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
-        range: (optional) range request header
-
-    If `representation` is specified, it will override the range request.
     """
-    start_byte = 0
-    end_byte = -1
 
     try:
-        if Range:
-            start_byte, end_byte = _extract_byte_range(Range)
-
-        if end_byte >= 0 and end_byte < start_byte:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid byte range",
-            )
-        app_log.debug(
-            f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for node {dispatch_id}:{node_id}"
-        )
 
         result_object = get_cached_result_object(dispatch_id)
 
@@ -104,148 +68,26 @@ def get_node_asset(
         node = result_object.lattice.transport_graph.get_node(node_id)
         with workflow_db.session() as session:
             asset = node.get_asset(key=key.value, session=session)
+            remote_uri = asset.object_store.get_public_uri(
+                asset.storage_path, asset.object_key, direction=TransferDirection.download
+            )
 
-        # Explicit representation overrides the byte range
-        if representation is None or ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
-
-        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-        return StreamingResponse(generator)
+        return AssetSchema(size=asset.size, remote_uri=remote_uri)
 
     except Exception as e:
         app_log.debug(e)
         raise
 
 
-@router.get("/dispatches/{dispatch_id}/assets/{key}")
-def get_dispatch_asset(
-    dispatch_id: str,
-    key: DispatchAssetKey,
-    representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
-):
-    """Returns a dynamic asset for a workflow
-
-    Args:
-        dispatch_id: The dispatch's unique id.
-        key: The name of the asset
-        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
-        range: (optional) range request header
-
-    If `representation` is specified, it will override the range request.
-    """
-    start_byte = 0
-    end_byte = -1
-
-    try:
-        if Range:
-            start_byte, end_byte = _extract_byte_range(Range)
-
-        if end_byte >= 0 and end_byte < start_byte:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid byte range",
-            )
-        app_log.debug(
-            f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for dispatch {dispatch_id}"
-        )
-
-        result_object = get_cached_result_object(dispatch_id)
-
-        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-        with workflow_db.session() as session:
-            asset = result_object.get_asset(key=key.value, session=session)
-
-        # Explicit representation overrides the byte range
-        if representation is None or RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
-
-        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-        return StreamingResponse(generator)
-    except Exception as e:
-        app_log.debug(e)
-        raise
-
-
-@router.get("/dispatches/{dispatch_id}/lattice/assets/{key}")
-def get_lattice_asset(
-    dispatch_id: str,
-    key: LatticeAssetKey,
-    representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
-):
-    """Returns a static asset for a workflow
-
-    Args:
-        dispatch_id: The dispatch's unique id.
-        key: The name of the asset
-        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
-        range: (optional) range request header
-
-    If `representation` is specified, it will override the range request.
-    """
-    start_byte = 0
-    end_byte = -1
-
-    try:
-        if Range:
-            start_byte, end_byte = _extract_byte_range(Range)
-
-        if end_byte >= 0 and end_byte < start_byte:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid byte range",
-            )
-        app_log.debug(
-            f"Requested lattice asset {key.value} ([{start_byte}:{end_byte}])for dispatch {dispatch_id}"
-        )
-
-        result_object = get_cached_result_object(dispatch_id)
-        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-
-        with workflow_db.session() as session:
-            asset = result_object.lattice.get_asset(key=key.value, session=session)
-
-        # Explicit representation overrides the byte range
-        if representation is None or LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
-
-        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-        return StreamingResponse(generator)
-
-    except Exception as e:
-        app_log.debug(e)
-        raise e
-
-
-@router.put("/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
-async def upload_node_asset(
-    req: Request,
+@router.post("/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
+def upload_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
     content_length: int = Header(default=0),
     digest_alg: Union[str, None] = Header(default=None),
     digest: Union[str, None] = Header(default=None),
-):
+) -> AssetSchema:
     """Upload an electron asset.
 
     Args:
@@ -256,177 +98,21 @@ async def upload_node_asset(
         content_length: (header)
         digest: (header)
     """
-    app_log.debug(f"Uploading node asset {dispatch_id}:{node_id}:{key} ({content_length} bytes) ")
-
+    app_log.debug(
+        f"Initiating upload for {dispatch_id}:{node_id}:{key.value} ({content_length} bytes) "
+    )
     try:
         metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
-        internal_uri = await _run_in_executor(
-            _update_node_asset_metadata,
+        remote_uri = _update_node_asset_metadata(
             dispatch_id,
             node_id,
             key,
             metadata,
         )
-        # Stream the request body to object store
-        await _transfer_data(req, internal_uri)
-
-        return f"Uploaded file to {internal_uri}"
+        return AssetSchema(size=content_length, remote_uri=remote_uri)
     except Exception as e:
         app_log.debug(e)
         raise
-
-
-@router.put("/dispatches/{dispatch_id}/assets/{key}")
-async def upload_dispatch_asset(
-    req: Request,
-    dispatch_id: str,
-    key: DispatchAssetKey,
-    content_length: int = Header(default=0),
-    digest_alg: Union[str, None] = Header(default=None),
-    digest: Union[str, None] = Header(default=None),
-):
-    """Upload a dispatch asset.
-
-    Args:
-        dispatch_id: The dispatch's unique id.
-        key: The name of the asset
-        asset_file: (body) The file to be uploaded
-        content_length: (header)
-        digest: (header)
-    """
-    app_log.debug(f"Uploading dispatch asset {dispatch_id}:{key} ({content_length} bytes) ")
-    try:
-        metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
-        internal_uri = await _run_in_executor(
-            _update_dispatch_asset_metadata,
-            dispatch_id,
-            key,
-            metadata,
-        )
-        # Stream the request body to object store
-        await _transfer_data(req, internal_uri)
-        return f"Uploaded file to {internal_uri}"
-    except Exception as e:
-        app_log.debug(e)
-        raise
-
-
-@router.put("/dispatches/{dispatch_id}/lattice/assets/{key}")
-async def upload_lattice_asset(
-    req: Request,
-    dispatch_id: str,
-    key: LatticeAssetKey,
-    content_length: int = Header(default=0),
-    digest_alg: Union[str, None] = Header(default=None),
-    digest: Union[str, None] = Header(default=None),
-):
-    """Upload a lattice asset.
-
-    Args:
-        dispatch_id: The dispatch's unique id.
-        key: The name of the asset
-        asset_file: (body) The file to be uploaded
-        content_length: (header)
-        digest: (header)
-    """
-    try:
-        app_log.debug(f"Uploading lattice asset {dispatch_id}:{key} ({content_length} bytes) ")
-        metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
-        internal_uri = await _run_in_executor(
-            _update_lattice_asset_metadata,
-            dispatch_id,
-            key,
-            metadata,
-        )
-        # Stream the request body to object store
-        await _transfer_data(req, internal_uri)
-        return f"Uploaded file to {internal_uri}"
-    except Exception as e:
-        app_log.debug(e)
-        raise
-
-
-def _generate_file_slice(file_url: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
-    """Generator of a byte slice from a file.
-
-    Args:
-        file_url: A file:/// type URL pointing to the file
-        start_byte: The beginning of the byte range
-        end_byte: The end of the byte range, or -1 to select [start_byte:]
-        chunk_size: The size of each chunk
-
-    Returns:
-        Yields chunks of size <= chunk_size
-    """
-    byte_pos = start_byte
-    file_path = str(furl(file_url).path)
-    with open(file_path, "rb") as f:
-        f.seek(start_byte)
-        if end_byte < 0:
-            for chunk in f:
-                yield chunk
-        else:
-            while byte_pos + chunk_size < end_byte:
-                byte_pos += chunk_size
-                yield f.read(chunk_size)
-            yield f.read(end_byte - byte_pos)
-
-
-def _extract_byte_range(byte_range_header: str) -> Tuple[int, int]:
-    """Extract the byte range from a range request header."""
-    start_byte = 0
-    end_byte = -1
-    match = range_pattern.match(byte_range_header)
-    start = match.group(1)
-    end = match.group(2)
-    start_byte = int(start)
-    if end:
-        end_byte = int(end)
-
-    return start_byte, end_byte
-
-
-# Helpers for TransportableObject
-
-
-def _get_tobj_string_offsets(file_url: str) -> Tuple[int, int]:
-    """Get the byte range for the str rep of a stored TObj.
-
-    For a first implementation we just query the filesystem directly.
-
-    Args:
-        file_url: A file:/// URL pointing to the TransportableObject
-
-    Returns:
-        (start_byte, end_byte)
-    """
-
-    file_path = str(furl(file_url).path)
-    filelen = os.path.getsize(file_path)
-    with open(file_path, "rb+") as f:
-        with mmap.mmap(f.fileno(), filelen) as mm:
-            # TOArchiveUtils operates on byte arrays
-            return TOArchiveUtils.string_byte_range(mm)
-
-
-def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
-    """Get the byte range for the picklebytes of a stored TObj.
-
-    For a first implementation we just query the filesystem directly.
-
-    Args:
-        file_url: A file:/// URL pointing to the TransportableObject
-
-    Returns:
-        (start_byte, -1)
-    """
-
-    file_path = str(furl(file_url).path)
-    filelen = os.path.getsize(file_path)
-    with open(file_path, "rb+") as f:
-        with mmap.mmap(f.fileno(), filelen) as mm:
-            # TOArchiveUtils operates on byte arrays
-            return TOArchiveUtils.data_byte_range(mm)
 
 
 # This must only be used for static data as we don't have yet any
@@ -474,56 +160,10 @@ def _update_node_asset_metadata(dispatch_id, node_id, key, metadata) -> str:
         # Update asset metadata
         update = _filter_null_metadata(metadata)
         node.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
+        app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key.value}")
 
-        return asset.internal_uri
-
-
-def _update_lattice_asset_metadata(dispatch_id, key, metadata) -> str:
-    result_object = get_cached_result_object(dispatch_id)
-
-    app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-    with workflow_db.session() as session:
-        asset = result_object.lattice.get_asset(key=key.value, session=session)
-
-        # Update asset metadata
-        update = _filter_null_metadata(metadata)
-        result_object.lattice.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
-
-        return asset.internal_uri
-
-
-def _update_dispatch_asset_metadata(dispatch_id, key, metadata) -> str:
-    result_object = get_cached_result_object(dispatch_id)
-
-    app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-    with workflow_db.session() as session:
-        asset = result_object.get_asset(key=key.value, session=session)
-
-        # Update asset metadata
-        update = _filter_null_metadata(metadata)
-        result_object.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
-        return asset.internal_uri
-
-
-async def _transfer_data(req: Request, destination_url: str):
-    dest_url = furl(destination_url)
-    dest_path = str(dest_url.path)
-
-    # Stream data to a temporary file, then replace the destination
-    # file atomically
-    tmp_path = f"{dest_path}.tmp"
-    app_log.debug(f"Streaming file upload to {tmp_path}")
-
-    async with aiofiles.open(tmp_path, "wb") as f:
-        async for chunk in req.stream():
-            await f.write(chunk)
-
-    await aiofiles.os.replace(tmp_path, dest_path)
-
-
-def _run_in_executor(function, *args) -> asyncio.Future:
-    loop = asyncio.get_running_loop()
-    return loop.run_in_executor(None, function, *args)
+        object_store = asset.object_store
+        remote_uri = object_store.get_public_uri(
+            asset.storage_path, asset.object_key, direction=TransferDirection.upload
+        )
+        return remote_uri

@@ -37,7 +37,7 @@ from covalent._shared_files.schemas.lattice import (
 )
 from covalent_dispatcher._dal.asset import Asset
 from covalent_dispatcher._dal.lattice import Lattice
-from covalent_dispatcher._object_store.local import BaseProvider
+from covalent_dispatcher._object_store.base import BaseProvider, TransferDirection
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
@@ -97,7 +97,6 @@ def import_lattice_assets(
         )
 
         local_uri = os.path.join(storage_path, object_key)
-
         asset_kwargs = {
             "storage_type": object_store.scheme,
             "storage_path": storage_path,
@@ -111,30 +110,12 @@ def import_lattice_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
-
-    # Register custom assets
-    if lat.assets._custom:
-        for asset_key, asset in lat.assets._custom.items():
-            object_key = f"{asset_key}.data"
-            local_uri = os.path.join(storage_path, object_key)
-
-            asset_kwargs = {
-                "storage_type": object_store.scheme,
-                "storage_path": storage_path,
-                "object_key": object_key,
-                "digest_alg": asset.digest_alg,
-                "digest": asset.digest,
-                "remote_uri": asset.uri,
-                "size": asset.size,
-            }
-            asset_ids[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
-
-            # Send this back to the client
-            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
-            asset.digest = None
-
-    session.flush()
+        remote_uri = object_store.get_public_uri(
+            storage_path,
+            object_key,
+            transfer_direction=TransferDirection.upload,
+        )
+        asset.remote_uri = remote_uri
 
     # Write asset records to DB
     session.flush()

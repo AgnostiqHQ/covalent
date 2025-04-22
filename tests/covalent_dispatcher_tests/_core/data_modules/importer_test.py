@@ -21,7 +21,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from covalent_dispatcher._core.data_modules.importer import (
-    _copy_assets,
     import_derived_manifest,
     import_manifest,
 )
@@ -91,10 +90,6 @@ async def test_import_derived_manifest(mocker):
         "covalent_dispatcher._core.data_modules.importer._import_manifest",
     )
 
-    mock_copy = mocker.patch(
-        "covalent_dispatcher._core.data_modules.importer._copy_assets",
-    )
-
     mock_handle_redispatch = mocker.patch(
         "covalent_dispatcher._core.data_modules.importer.handle_redispatch",
         return_value=(mock_manifest, []),
@@ -110,11 +105,3 @@ async def test_import_derived_manifest(mocker):
     mock_import_manifest.assert_called()
     mock_pull.assert_called()
     mock_handle_redispatch.assert_called()
-    mock_copy.assert_called_with([])
-
-
-def test_copy_assets(mocker):
-    mock_copy = mocker.patch("covalent_dispatcher._core.data_modules.importer.copy_asset")
-
-    _copy_assets([("src", "dest")])
-    mock_copy.assert_called_with("src", "dest")

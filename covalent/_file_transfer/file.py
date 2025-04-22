@@ -20,7 +20,24 @@ from typing import Optional
 
 from furl import furl
 
-from .enums import FileSchemes, FileTransferStrategyTypes, SchemeToStrategyMap
+from .enums import FileSchemes
+
+_is_remote_scheme = {
+    FileSchemes.S3.value: True,
+    FileSchemes.Blob.value: True,
+    FileSchemes.GCloud.value: True,
+    FileSchemes.Globus.value: True,
+    FileSchemes.HTTP.value: True,
+    FileSchemes.HTTPS.value: True,
+    FileSchemes.FTP.value: True,
+    FileSchemes.File: False,
+}
+
+
+# For registering additional file transfer strategies; this will be called by
+# `register_uploader`` and `register_downloader``
+def register_remote_scheme(s: str):
+    _is_remote_scheme[s] = True
 
 
 class File:
@@ -80,19 +97,7 @@ class File:
 
     @property
     def is_remote(self):
-        return self._is_remote or self.scheme in [
-            FileSchemes.S3,
-            FileSchemes.Blob,
-            FileSchemes.GCloud,
-            FileSchemes.Globus,
-            FileSchemes.HTTP,
-            FileSchemes.HTTPS,
-            FileSchemes.FTP,
-        ]
-
-    @property
-    def mapped_strategy_type(self) -> FileTransferStrategyTypes:
-        return SchemeToStrategyMap[self.scheme.value]
+        return self._is_remote or _is_remote_scheme[self.scheme]
 
     @property
     def filepath(self) -> str:
@@ -127,23 +132,13 @@ class File:
         return path_components.url
 
     @staticmethod
-    def resolve_scheme(path: str) -> FileSchemes:
+    def resolve_scheme(path: str) -> str:
         scheme = furl(path).scheme
         host = furl(path).host
-        if scheme == FileSchemes.Globus:
-            return FileSchemes.Globus
-        if scheme == FileSchemes.S3:
-            return FileSchemes.S3
-        if scheme == FileSchemes.Blob and "blob.core.windows.net" in host:
-            return FileSchemes.Blob
-        if scheme == FileSchemes.GCloud:
-            return FileSchemes.GCloud
-        if scheme == FileSchemes.FTP:
-            return FileSchemes.FTP
-        if scheme == FileSchemes.HTTP:
-            return FileSchemes.HTTP
-        if scheme == FileSchemes.HTTPS:
-            return FileSchemes.HTTPS
-        if scheme is None or scheme == FileSchemes.File:
-            return FileSchemes.File
-        raise ValueError(f"Provided File scheme ({scheme}) is not supported.")
+        # Canonicalize file system paths to file:// urls
+        if not scheme:
+            return FileSchemes.File.value
+        if scheme in _is_remote_scheme:
+            return scheme
+        else:
+            raise ValueError(f"Provided File scheme ({scheme}) is not supported.")

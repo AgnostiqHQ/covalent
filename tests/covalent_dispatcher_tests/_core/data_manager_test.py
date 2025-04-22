@@ -19,24 +19,23 @@ Tests for the core functionality of the dispatcher.
 """
 
 
+import base64
+import tempfile
 from unittest.mock import MagicMock
 
 import pytest
 
 import covalent as ct
+from covalent._dispatcher_plugins.local import LocalDispatcher, pack_staging_dir
 from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
-    ResultSchema,
-    _legacy_sublattice_dispatch_helper,
     _make_sublattice_dispatch,
-    _redirect_lattice,
     _update_parent_electron,
     ensure_dispatch,
     finalize_dispatch,
     get_result_object,
-    make_dispatch,
     persist_result,
     update_node_result,
 )
@@ -86,6 +85,7 @@ def get_mock_result() -> Result:
         (Result.FAILED, "function", Result.FAILED, ""),
         (Result.CANCELLED, "function", Result.CANCELLED, ""),
         (Result.COMPLETED, "sublattice", RESULT_STATUS.DISPATCHING, ""),
+        (Result.COMPLETED, "sublattice", RESULT_STATUS.DISPATCHING, "asdf"),
         (Result.COMPLETED, "sublattice", RESULT_STATUS.COMPLETED, "asdf"),
         (Result.FAILED, "sublattice", Result.FAILED, ""),
         (Result.CANCELLED, "sublattice", Result.CANCELLED, ""),
@@ -99,11 +99,16 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
     result_object.dispatch_id = "test_update_node_result"
 
     node_result = {"node_id": 0, "status": node_status}
-    mock_update_node = mocker.patch(
-        "covalent_dispatcher._dal.result.Result._update_node", return_value=True
-    )
     node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
+    subdispatch_info = (
+        {"status": Result.NEW_OBJ}
+        if output_status == RESULT_STATUS.DISPATCHING
+        else {"status": Result.RUNNING}
+    )
     mocker.patch("covalent_dispatcher._core.data_manager.electron.get", return_value=node_info)
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.dispatch.get", return_value=subdispatch_info
+    )
 
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
@@ -247,17 +252,6 @@ async def test_update_node_result_handles_db_exceptions(mocker):
     mock_notify.assert_awaited_with(result_object.dispatch_id, 0, Result.FAILED, {})
 
 
-@pytest.mark.asyncio
-async def test_make_dispatch(mocker):
-    res = MagicMock()
-    dispatch_id = "test_make_dispatch"
-    mock_resubmit_lattice = mocker.patch(
-        "covalent_dispatcher._core.data_manager._redirect_lattice", return_value=dispatch_id
-    )
-    json_lattice = '{"workflow_function": "asdf"}'
-    assert dispatch_id == await make_dispatch(json_lattice)
-
-
 def test_get_result_object(mocker):
     result_object = MagicMock()
     result_object.dispatch_id = "dispatch_1"
@@ -347,14 +341,32 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 
 @pytest.mark.asyncio
 async def test_make_sublattice_dispatch(mocker):
+
+    @ct.lattice
+    @ct.electron
+    def sublattice(x):
+        return x**2
+
+    sublattice.build_graph(3)
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+        manifest = LocalDispatcher.prepare_manifest(sublattice, staging_path)
+
+        # This tarball will be unpacked and resubmitted server-side
+        tar_file = pack_staging_dir(staging_path, manifest)
+        with open(tar_file, "rb") as tar:
+            tar_b64 = base64.b64encode(tar.read()).decode("utf-8")
+
+    # This base64-encoded tarball will be read server-side
+    # as `TransportableObject.object_string`
+
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    output_json = "lattice_json"
 
     mock_node = MagicMock()
     mock_node._electron_id = 5
 
     mock_bg_output = MagicMock()
-    mock_bg_output.object_string = output_json
+    mock_bg_output.object_string = tar_b64
 
     mock_node.get_value = MagicMock(return_value=mock_bg_output)
 
@@ -368,98 +380,16 @@ async def test_make_sublattice_dispatch(mocker):
         "covalent_dispatcher._core.data_manager.get_result_object",
         return_value=result_object,
     )
-    mocker.patch("covalent._shared_files.schemas.result.ResultSchema.parse_raw")
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.manifest_importer.import_manifest",
+        "covalent_dispatcher._core.data_modules.importer._import_manifest",
         return_value=mock_manifest,
     )
 
-    mock_make_dispatch = mocker.patch("covalent_dispatcher._core.data_manager.make_dispatch")
+    mock_pull = mocker.patch("covalent_dispatcher._core.data_modules.importer._pull_assets")
     sub_dispatch_id = await _make_sublattice_dispatch(result_object.dispatch_id, node_result)
+    mock_pull.assert_called()
 
     assert sub_dispatch_id == mock_manifest.metadata.dispatch_id
-
-
-@pytest.mark.asyncio
-async def test_make_monolithic_sublattice_dispatch(mocker):
-    """Check that JSON sublattices are handled correctly"""
-
-    dispatch_id = "test_make_monolithic_sublattice_dispatch"
-
-    def _mock_helper(dispatch_id, node_result):
-        return ResultSchema.parse_raw("invalid_input")
-
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager._make_sublattice_dispatch_helper", _mock_helper
-    )
-
-    json_lattice = "json_lattice"
-    parent_electron_id = 5
-    mock_legacy_subl_helper = mocker.patch(
-        "covalent_dispatcher._core.data_manager._legacy_sublattice_dispatch_helper",
-        return_value=(json_lattice, parent_electron_id),
-    )
-    sub_dispatch_id = "sub_dispatch"
-    mock_make_dispatch = mocker.patch(
-        "covalent_dispatcher._core.data_manager.make_dispatch", return_value=sub_dispatch_id
-    )
-
-    assert sub_dispatch_id == await _make_sublattice_dispatch(dispatch_id, {})
-
-    mock_make_dispatch.assert_awaited_with(json_lattice, dispatch_id, parent_electron_id)
-
-
-def test_legacy_sublattice_dispatch_helper(mocker):
-    dispatch_id = "test_legacy_sublattice_dispatch_helper"
-    res_obj = MagicMock()
-    bg_output = MagicMock()
-    bg_output.object_string = "json_sublattice"
-    parent_node = MagicMock()
-    parent_node._electron_id = 2
-    parent_node.get_value = MagicMock(return_value=bg_output)
-    res_obj.lattice.transport_graph.get_node = MagicMock(return_value=parent_node)
-    node_result = {"node_id": 0}
-
-    mocker.patch("covalent_dispatcher._core.data_manager.get_result_object", return_value=res_obj)
-
-    assert _legacy_sublattice_dispatch_helper(dispatch_id, node_result) == ("json_sublattice", 2)
-
-
-def test_redirect_lattice(mocker):
-    """Test redirecting JSON lattices to new DAL."""
-
-    dispatch_id = "test_redirect_lattice"
-    mock_manifest = MagicMock()
-    mock_manifest.metadata.dispatch_id = dispatch_id
-    mock_prepare_manifest = mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.prepare_manifest",
-        return_value=mock_manifest,
-    )
-    mock_import_manifest = mocker.patch(
-        "covalent_dispatcher._core.data_manager.manifest_importer._import_manifest",
-        return_value=mock_manifest,
-    )
-
-    mock_pull = mocker.patch(
-        "covalent_dispatcher._core.data_manager.manifest_importer._pull_assets",
-    )
-
-    mock_lat_deserialize = mocker.patch(
-        "covalent_dispatcher._core.data_manager.Lattice.deserialize_from_json"
-    )
-
-    json_lattice = "json_lattice"
-
-    parent_dispatch_id = "parent_dispatch"
-    parent_electron_id = 3
-
-    assert (
-        _redirect_lattice(json_lattice, parent_dispatch_id, parent_electron_id, None)
-        == dispatch_id
-    )
-
-    mock_import_manifest.assert_called_with(mock_manifest, parent_dispatch_id, parent_electron_id)
-    mock_pull.assert_called_with(mock_manifest)
 
 
 @pytest.mark.asyncio

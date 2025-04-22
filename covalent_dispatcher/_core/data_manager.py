@@ -18,19 +18,13 @@
 Defines the core functionality of the result service
 """
 
-import asyncio
-import tempfile
 import traceback
 from typing import Dict
 
-from pydantic import ValidationError
-
-from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent._workflow.lattice import Lattice
 
 from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
@@ -99,9 +93,10 @@ async def update_node_result(dispatch_id, node_result):
 
         # Handle returns from _build_sublattice_graph -- change
         # COMPLETED -> DISPATCHING
-        node_result = _filter_sublattice_status(
+        node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
+        app_log.debug(f"Filtered node result: {node_result}")
 
         valid_update = await electron.update(dispatch_id, node_result)
         if not valid_update:
@@ -110,15 +105,26 @@ async def update_node_result(dispatch_id, node_result):
             )
             return
 
+        # TODO: refactor _make_sublattice_dispatch
         if node_result["status"] == RESULT_STATUS.DISPATCHING:
-            app_log.debug("Received sublattice dispatch")
-            try:
-                sub_dispatch_id = await _make_sublattice_dispatch(dispatch_id, node_result)
-            except Exception as ex:
-                tb = "".join(traceback.TracebackException.from_exception(ex).format())
-                node_result["status"] = RESULT_STATUS.FAILED
-                node_result["error"] = tb
-                await electron.update(dispatch_id, node_result)
+            if sub_dispatch_id:
+                # `_build_sublattice_graph` linked` the sublattice dispatch id with its parent electron
+                app_log.debug(
+                    f"Electron {dispatch_id}:{node_id} is already linked to subdispatch {sub_dispatch_id}"
+                )
+            else:
+                try:
+                    # If `_build_sublattice_graph` was unable to reach the server, import the
+                    # b64-encoded staging tarball from `output.object_string`
+                    sub_dispatch_id = await _make_sublattice_dispatch(dispatch_id, node_result)
+                    app_log.debug(
+                        f"Created sublattice dispatch {sub_dispatch_id} for {dispatch_id}:{node_id}"
+                    )
+                except Exception as ex:
+                    tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                    node_result["status"] = RESULT_STATUS.FAILED
+                    node_result["error"] = tb
+                    await electron.update(dispatch_id, node_result)
 
     except KeyError as ex:
         valid_update = False
@@ -140,59 +146,6 @@ async def update_node_result(dispatch_id, node_result):
         if node_status and valid_update:
             dispatch_id = dispatch_id
             await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
-
-
-# Domain: result
-def _redirect_lattice(
-    json_lattice: str,
-    parent_dispatch_id: str,
-    parent_electron_id: int,
-    loop: asyncio.AbstractEventLoop,
-) -> str:
-    """Redirect a JSON lattice through the new DAL.
-
-    Args:
-        json_lattice: A JSON-serialized lattice.
-        parent_dispatch_id:  The id of a sublattice's parent dispatch.
-
-    This will only be triggered from either the monolithic /submit
-    endpoint or a monolithic sublattice dispatch.
-
-    Returns:
-        The dispatch manifest
-
-    """
-    lattice = Lattice.deserialize_from_json(json_lattice)
-    with tempfile.TemporaryDirectory() as staging_dir:
-        manifest = LocalDispatcher.prepare_manifest(lattice, staging_dir)
-
-        # Trigger an internal asset pull from /tmp to object store
-        coro = manifest_importer.import_manifest(
-            manifest,
-            parent_dispatch_id,
-            parent_electron_id,
-        )
-        filtered_manifest = manifest_importer._import_manifest(
-            manifest,
-            parent_dispatch_id,
-            parent_electron_id,
-        )
-
-        manifest_importer._pull_assets(filtered_manifest)
-
-    return filtered_manifest.metadata.dispatch_id
-
-
-async def make_dispatch(
-    json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
-) -> str:
-    return await run_in_executor(
-        _redirect_lattice,
-        json_lattice,
-        parent_dispatch_id,
-        parent_electron_id,
-        asyncio.get_running_loop(),
-    )
 
 
 def get_result_object(dispatch_id: str, bare: bool = True) -> SRVResult:
@@ -225,69 +178,56 @@ async def _update_parent_electron(dispatch_id: str):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
-def _filter_sublattice_status(
+async def _filter_sublattice_status(
     dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
 ):
-    if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
+    # COMPLETED -> DISPATCHING if either
+    # * Dispatch with id `sub_dispatch_id` has not started running (NEW_OBJ)
+    # * Electron is a sublattice but no sub_dispatch_id (legacy style sublattices)
+    if status != Result.COMPLETED:
+        return node_result
+    if sub_dispatch_id:
+        dispatch_info = await dispatch.get(sub_dispatch_id, ["status"])
+        if dispatch_info["status"] == RESULT_STATUS.NEW_OBJECT:
+            node_result["status"] = RESULT_STATUS.DISPATCHING
+    if node_type == "sublattice" and not sub_dispatch_id:
         node_result["status"] = RESULT_STATUS.DISPATCHING
     return node_result
 
 
-async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
+async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict) -> str:
     try:
-        manifest, parent_electron_id = await run_in_executor(
-            _make_sublattice_dispatch_helper,
+        subl_manifest = await run_in_executor(
+            _import_sublattice_tarball,
             dispatch_id,
             node_result,
         )
+        return subl_manifest.metadata.dispatch_id
 
-        imported_manifest = await manifest_importer.import_manifest(
-            manifest=manifest,
-            parent_dispatch_id=dispatch_id,
-            parent_electron_id=parent_electron_id,
-        )
-
-        return imported_manifest.metadata.dispatch_id
-
-    except ValidationError as ex:
-        # Fall back to legacy sublattice handling
-        # NB: this loads the JSON sublattice in memory
-        json_lattice, parent_electron_id = await run_in_executor(
-            _legacy_sublattice_dispatch_helper,
-            dispatch_id,
-            node_result,
-        )
-        return await make_dispatch(
-            json_lattice,
-            dispatch_id,
-            parent_electron_id,
-        )
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        raise RuntimeError(f"Failed to import sublattice tarball:\n{ex}")
 
 
-def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
-    app_log.debug("falling back to legacy sublattice dispatch")
+def _import_sublattice_tarball(dispatch_id: str, node_result: Dict) -> ResultSchema:
+    app_log.debug("Importing sublattice tarball")
 
     result_object = get_result_object(dispatch_id, bare=True)
     node_id = node_result["node_id"]
     parent_node = result_object.lattice.transport_graph.get_node(node_id)
-    bg_output = parent_node.get_value("output")
-
-    parent_electron_id = parent_node._electron_id
-    json_lattice = bg_output.object_string
-    return json_lattice, parent_electron_id
-
-
-def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
-    """Helper function for performing DB queries related to sublattices."""
-    result_object = get_result_object(dispatch_id, bare=True)
-    node_id = node_result["node_id"]
-    parent_node = result_object.lattice.transport_graph.get_node(node_id)
-    bg_output = parent_node.get_value("output")
-
-    manifest = ResultSchema.parse_raw(bg_output.object_string)
     parent_electron_id = parent_node._electron_id
 
-    return manifest, parent_electron_id
+    # Extract the base64-encoded tarball from the graph builder output's `object_string` attribute.
+    # TODO: stream the base64 tarball to the decoder to avoid loading the entire
+    # tarball in memory
+    bg_output = parent_node.get_value("output")
+    b64_tarball = bg_output.object_string
+
+    subl_manifest = manifest_importer.import_b64_staging_tarball(
+        b64_tarball, dispatch_id, parent_electron_id
+    )
+
+    return subl_manifest
 
 
 # Common Result object queries

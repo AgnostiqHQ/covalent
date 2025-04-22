@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import shutil
 
 from .. import File
@@ -46,6 +47,7 @@ class Shutil(FileTransferStrategy):
         """
 
         def callable():
+            os.makedirs(os.path.dirname(to_file.filepath), exist_ok=True)
             shutil.copyfile(from_file.filepath, to_file.filepath)
 
         return callable

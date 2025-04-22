@@ -40,7 +40,7 @@ from .runner_modules.cancel import cancel_tasks
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 _global_status_queue = None
-_status_queues = {}
+_background_tasks = set()
 _futures = {}
 
 _global_event_listener = None
@@ -212,10 +212,10 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
                 selected_executor = executor_attrs["executor"]
                 selected_executor_data = executor_attrs["executor_data"]
                 task_spec = {
-                    "function_id": node_id,
+                    "electron_id": node_id,
                     "name": node_name,
-                    "args_ids": abs_task_input["args"],
-                    "kwargs_ids": abs_task_input["kwargs"],
+                    "args": abs_task_input["args"],
+                    "kwargs": abs_task_input["kwargs"],
                 }
                 # Task inputs that don't belong to the task group have already beeen resolved
                 external_task_args = filter(
@@ -243,7 +243,9 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
                 selected_executor=[selected_executor, selected_executor_data],
             )
 
-            asyncio.create_task(coro)
+            fut = asyncio.create_task(coro)
+            _background_tasks.add(fut)
+            fut.add_done_callback(_background_tasks.discard)
         else:
             ts = datetime.now(timezone.utc)
             for node_id in sorted_nodes:
@@ -363,7 +365,10 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
-    return asyncio.create_task(run_workflow(dispatch_id))
+    fut = asyncio.create_task(run_workflow(dispatch_id))
+    _background_tasks.add(fut)
+    fut.add_done_callback(_background_tasks.discard)
+    return fut
 
 
 async def notify_node_status(
@@ -391,16 +396,11 @@ async def _finalize_dispatch(dispatch_id: str):
     cancelled = incomplete_tasks["cancelled"]
     if failed or cancelled:
         app_log.debug(f"Workflow {dispatch_id} cancelled or failed")
-        failed_nodes = failed
-        failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
-        failed_nodes_msg = "\n".join(failed_nodes)
-        error_msg = "The following tasks failed:\n" + failed_nodes_msg
         ts = datetime.now(timezone.utc)
         status = RESULT_STATUS.FAILED if failed else RESULT_STATUS.CANCELLED
         result_update = datasvc.generate_dispatch_result(
             dispatch_id,
             status=status,
-            error=error_msg,
             end_time=ts,
         )
         await datasvc.dispatch.update(dispatch_id, result_update)
@@ -509,7 +509,9 @@ async def _node_event_listener():
     while True:
         msg = await _global_status_queue.get()
 
-        asyncio.create_task(_handle_event(msg))
+        fut = asyncio.create_task(_handle_event(msg))
+        _background_tasks.add(fut)
+        fut.add_done_callback(_background_tasks.discard)
 
 
 async def _handle_event(msg: Dict):

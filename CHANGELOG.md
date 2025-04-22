@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Allow registering custom file transfer strategies
+
+### Changed
+
+- Improved automatic file transfer strategy selection
+- HTTP strategy can now upload files too
+- Adjusted sublattice logic. The sublattice builder now attempts to
+link the sublattice with its parent electron.
+- Replaced json sublattice flow with new tarball importer to allow future memory
+footprint enhancements
+
 ## [0.239.0-rc.0] - 2025-04-16
 
 ### Authors

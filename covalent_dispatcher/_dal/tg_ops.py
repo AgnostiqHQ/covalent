@@ -24,7 +24,7 @@ import networkx as nx
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import RESULT_STATUS
 
-from .asset import copy_asset, copy_asset_meta
+from .asset import copy_asset_meta
 from .electron import ASSET_KEYS, METADATA_KEYS
 from .tg import _TransportGraph
 
@@ -107,12 +107,6 @@ class TransportGraphOps:
                     new = self.tg.get_node(n).get_asset(k, session)
                     copy_asset_meta(session, old, new)
                     assets_to_copy.append((old, new))
-
-        # Now perform all data copy operations (this could be slow)
-        if not defer_copy_objects:
-            for item in assets_to_copy:
-                src, dest = item
-                copy_asset(src, dest)
 
         # Return the assets to copy at a later time
         return assets_to_copy

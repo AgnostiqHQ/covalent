@@ -19,7 +19,6 @@
 
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.result import (
     ASSET_KEYS,
@@ -28,16 +27,13 @@ from covalent._shared_files.schemas.result import (
     ResultMetadata,
     ResultSchema,
 )
-from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.electron import Electron
 from covalent_dispatcher._dal.result import Result, get_result_object
+from covalent_dispatcher._object_store.base import TransferDirection
 
-from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import export_lattice
 
 METADATA_KEYS_TO_OMIT = {"num_nodes"}
-SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dispatcher.port"))
-URI_FILTER_POLICY = URIFilterPolicy[get_config("dispatcher.data_uri_filter_policy")]
 
 app_log = logger.app_log
 
@@ -98,8 +94,12 @@ def _export_result_assets(res: Result) -> ResultAssets:
         size = asset.size
         digest_alg = asset.digest_alg
         digest = asset.digest
-        scheme = asset.storage_type.value
-        remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
+        object_store = asset.object_store
+        remote_uri = object_store.get_public_uri(
+            asset.storage_path,
+            asset.object_key,
+            transfer_direction=TransferDirection.download,
+        )
         manifests[asset_key] = AssetSchema(
             remote_uri=remote_uri, size=size, digest_alg=digest_alg, digest=digest
         )
@@ -119,35 +119,7 @@ def export_result(res: Result) -> ResultSchema:
 
     # Filter asset URIs
 
-    return _filter_remote_uris(ResultSchema(metadata=metadata, assets=assets, lattice=lattice))
-
-
-def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
-    dispatch_id = manifest.metadata.dispatch_id
-
-    # Workflow-level
-    for key, asset in manifest.assets:
-        filtered_uri = filter_asset_uri(
-            URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.DISPATCH, dispatch_id, None, key
-        )
-        asset.remote_uri = filtered_uri
-
-    for key, asset in manifest.lattice.assets:
-        filtered_uri = filter_asset_uri(
-            URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.LATTICE, dispatch_id, None, key
-        )
-        asset.remote_uri = filtered_uri
-
-    # Now filter each node
-    tg = manifest.lattice.transport_graph
-    for node in tg.nodes:
-        for key, asset in node.assets:
-            filtered_uri = filter_asset_uri(
-                URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.NODE, dispatch_id, node.id, key
-            )
-            asset.remote_uri = filtered_uri
-
-    return manifest
+    return ResultSchema(metadata=metadata, assets=assets, lattice=lattice)
 
 
 def export_result_manifest(dispatch_id: str) -> ResultSchema:

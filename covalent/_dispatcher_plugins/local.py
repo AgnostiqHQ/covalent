@@ -14,16 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import os
+import tarfile
 import tempfile
 from copy import deepcopy
 from functools import wraps
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
-
-from furl import furl
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from .._api.apiclient import CovalentAPIClient as APIClient
+from .._file_transfer import FileTransfer
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result, get_result_manager
 from .._serialize.result import (
@@ -36,7 +37,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
-from .._shared_files.utils import copy_file_locally, format_server_url
+from .._shared_files.utils import format_server_url
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
 from .base import BaseDispatcher
@@ -251,7 +252,7 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        endpoint = f"/api/v2/dispatches/{dispatch_id}/status"
+        endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/status"
         body = {"status": "RUNNING"}
         r = APIClient(dispatcher_addr).put(endpoint, json=body)
         r.raise_for_status()
@@ -463,7 +464,6 @@ class LocalDispatcher(BaseDispatcher):
     def register_manifest(
         manifest: ResultSchema,
         dispatcher_addr: Optional[str] = None,
-        parent_dispatch_id: Optional[str] = None,
         push_assets: bool = True,
     ) -> ResultSchema:
         """Submits a manifest for registration.
@@ -481,9 +481,6 @@ class LocalDispatcher(BaseDispatcher):
 
         stripped = strip_local_uris(manifest) if push_assets else manifest
         endpoint = BASE_ENDPOINT
-
-        if parent_dispatch_id:
-            endpoint = f"{BASE_ENDPOINT}/{parent_dispatch_id}/sublattices"
 
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
@@ -512,7 +509,7 @@ class LocalDispatcher(BaseDispatcher):
         # We don't yet support pulling assets for redispatch
         stripped = strip_local_uris(manifest)
 
-        endpoint = f"/api/v2/dispatches/{dispatch_id}/redispatches"
+        endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/redispatches"
 
         params = {"reuse_previous_results": reuse_previous_results}
         r = APIClient(dispatcher_addr).post(
@@ -531,45 +528,89 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def _upload(assets: List[AssetSchema]):
-        local_scheme_prefix = "file://"
         total = len(assets)
         number_uploaded = 0
         for i, asset in enumerate(assets):
             if not asset.remote_uri or not asset.uri:
                 app_log.debug(f"Skipping asset {i + 1} out of {total}")
                 continue
-            if asset.remote_uri.startswith(local_scheme_prefix):
-                copy_file_locally(asset.uri, asset.remote_uri)
-                number_uploaded += 1
-            else:
-                _upload_asset(asset.uri, asset.remote_uri)
-                number_uploaded += 1
-            app_log.debug(f"Uploaded asset {i + 1} out of {total}.")
+
+            _upload_asset(asset.uri, asset.remote_uri)
+            number_uploaded += 1
+        app_log.debug(f"Uploaded asset {i + 1} out of {total}.")
         app_log.debug(f"uploaded {number_uploaded} assets.")
 
 
 def _upload_asset(local_uri, remote_uri):
+    _, ft = FileTransfer(local_uri, remote_uri).cp()
+    ft()
+
+
+# Archive staging directory and manifest
+# Used for sublattice dispatch when the executor cannot directly
+# submit the sublattice to the control plane
+def pack_staging_dir(staging_dir, manifest: ResultSchema) -> str:
+    # save manifest json to staging root
+    with open(os.path.join(staging_dir, "manifest.json"), "w") as f:
+        f.write(manifest.model_dump_json())
+
+    # Tar up staging dir
+    with tempfile.NamedTemporaryFile(suffix=".tar") as f:
+        tar_path = f.name
+
+    with tarfile.TarFile(tar_path, "w") as tar:
+        tar.add(staging_dir, recursive=True)
+    return tar_path
+
+
+# Inverse of `pack_staging_dir`
+# Consumed by server-side tarball importer
+def untar_staging_dir(tar_name) -> Tuple[str, ResultSchema]:
+
+    # Working directory for unpacking the archive
+    with tempfile.TemporaryDirectory(prefix="postprocess-") as work_dir:
+        ...
+
+    # Find and extract manifest
+    with tarfile.TarFile(tar_name) as tar:
+        manifest_path = list(filter(lambda x: x.endswith("manifest.json"), tar.getnames()))
+        if len(manifest_path) == 0:
+            raise RuntimeError("Archive contains no manifest")
+
+        manifest = ResultSchema.model_validate_json(tar.extractfile(manifest_path[0]).read())
+
+        tar.extractall(path=work_dir, filter="tar")
+
+    # prepend work_dir to each asset path
     scheme_prefix = "file://"
-    if local_uri.startswith(scheme_prefix):
-        local_path = local_uri[len(scheme_prefix) :]
-    else:
-        local_path = local_uri
+    for _, asset in manifest.assets:
+        if asset.uri:
+            path = asset.uri[len(scheme_prefix) :]
+            asset.uri = f"{scheme_prefix}{work_dir}{path}"
+            print("Rewrote asset uri ", asset.uri)
+    for _, asset in manifest.lattice.assets:
+        if asset.uri:
+            path = asset.uri[len(scheme_prefix) :]
+            asset.uri = f"{scheme_prefix}{work_dir}{path}"
+            print("Rewrote asset uri ", asset.uri)
 
-    filesize = os.path.getsize(local_path)
-    with open(local_path, "rb") as reader:
-        app_log.debug(f"uploading to {remote_uri}")
-        f = furl(remote_uri)
-        scheme = f.scheme
-        host = f.host
-        port = f.port
-        dispatcher_addr = f"{scheme}://{host}:{port}"
-        endpoint = str(f.path)
-        api_client = APIClient(dispatcher_addr)
-        if f.query:
-            endpoint = f"{endpoint}?{f.query}"
+    for node in manifest.lattice.transport_graph.nodes:
+        for _, asset in node.assets:
+            if asset.uri:
+                path = asset.uri[len(scheme_prefix) :]
+                asset.uri = f"{scheme_prefix}{work_dir}{path}"
+                print("Rewrote asset uri ", asset.uri)
 
-        # Workaround for Requests bug when streaming from empty files
-        data = reader.read() if filesize < 50 else reader
+    return work_dir, manifest
 
-        r = api_client.put(endpoint, headers={"Content-Length": str(filesize)}, data=data)
-        r.raise_for_status()
+
+# Consumed by server-side tarball importer (`import_b64_staging_tarball`)
+# TODO: support streaming decode to avoid having to load the entire buffer in mem
+def decode_b64_tar(b64_buffer: str) -> str:
+    with tempfile.NamedTemporaryFile(suffix=".tar") as tar_file:
+        tar_path = tar_file.name
+
+    with open(tar_path, "wb") as tar_file:
+        tar_file.write(base64.b64decode(b64_buffer.encode("utf-8")))
+
+    return tar_path

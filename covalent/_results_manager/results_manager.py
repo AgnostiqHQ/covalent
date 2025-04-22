@@ -23,9 +23,8 @@ import time
 from pathlib import Path
 from typing import List, Optional
 
-from furl import furl
-
 from .._api.apiclient import CovalentAPIClient
+from .._file_transfer import FileTransfer
 from .._serialize.common import load_asset
 from .._serialize.electron import ASSET_FILENAME_MAP as ELECTRON_ASSET_FILENAMES
 from .._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
@@ -40,12 +39,13 @@ from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
 from .._shared_files.util_classes import RESULT_STATUS, Status
-from .._shared_files.utils import copy_file_locally, format_server_url
+from .._shared_files.utils import format_server_url
 from .result import Result
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+BASE_ENDPOINT = os.getenv("COVALENT_DISPATCH_BASE_ENDPOINT", "/api/v2/dispatches")
 
 SDK_NODE_META_KEYS = {
     "executor",
@@ -124,7 +124,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
         task_ids = []
 
     api_client = CovalentAPIClient(dispatcher_addr)
-    endpoint = f"/api/v2/dispatches/{dispatch_id}/status"
+    endpoint = f"{BASE_ENDPOINT}/{dispatch_id}/status"
 
     if isinstance(task_ids, int):
         task_ids = [task_ids]
@@ -138,7 +138,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 
 
 def _query_dispatch_status(dispatch_id: str, api_client: CovalentAPIClient):
-    endpoint = "/api/v2/dispatches"
+    endpoint = BASE_ENDPOINT
     resp = api_client.get(endpoint, params={"dispatch_id": dispatch_id, "status_only": True})
     resp.raise_for_status()
     dispatches = resp.json()["dispatches"]
@@ -167,7 +167,7 @@ def _get_result_export_from_dispatcher(
         MissingLatticeRecordError: If the result is not found.
     """
 
-    endpoint = f"/api/v2/dispatches/{dispatch_id}"
+    endpoint = f"{BASE_ENDPOINT}/{dispatch_id}"
     response = api_client.get(endpoint)
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -220,21 +220,8 @@ def get_result_asset_path(results_dir: str, key: str):
 
 
 def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 1024):
-    local_scheme = "file"
-    if remote_uri.startswith(local_scheme):
-        copy_file_locally(remote_uri, f"file://{local_path}")
-    else:
-        f = furl(remote_uri)
-        scheme = f.scheme
-        host = f.host
-        port = f.port
-        dispatcher_addr = f"{scheme}://{host}:{port}"
-        endpoint = str(f.path)
-        api_client = CovalentAPIClient(dispatcher_addr)
-        r = api_client.get(endpoint, stream=True)
-        with open(local_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                f.write(chunk)
+    _, ft = FileTransfer(remote_uri, local_path).cp()
+    ft()
 
 
 def _download_result_asset(manifest: dict, results_dir: str, key: str):
@@ -292,6 +279,13 @@ class ResultManager:
         self._manifest = manifest.model_dump()
         self._results_dir = results_dir
 
+        # Compute Result._error message from electron statuses
+        tg = manifest.lattice.transport_graph
+        failed_nodes = list(filter(lambda x: x.metadata.status == Result.FAILED, tg.nodes))
+        if len(failed_nodes) > 0:
+            failed_nodes_msg = "".join(map(lambda x: f"{x.id}: {x.metadata.name}", failed_nodes))
+            self.result_object._error = "The following tasks failed:\n" + failed_nodes_msg
+
     def save(self, path: Optional[str] = None):
         if not path:
             path = os.path.join(self._results_dir, "manifest.json")
@@ -316,7 +310,8 @@ class ResultManager:
 
     def load_result_asset(self, key: str):
         data = _load_result_asset(self._manifest, key)
-        self.result_object.__dict__[f"_{key}"] = data
+        if data is not None:
+            self.result_object.__dict__[f"_{key}"] = data
 
     def load_lattice_asset(self, key: str):
         data = _load_lattice_asset(self._manifest, key)

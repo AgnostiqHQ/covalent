@@ -320,9 +320,9 @@ def test_dask_send_poll_receive(mocker):
     node_2_file.flush()
 
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1, 2],
-        kwargs_ids={},
+        electron_id=0,
+        args=[1, 2],
+        kwargs={},
     )
 
     resources = ResourceMap(
@@ -417,9 +417,9 @@ def test_run_task_group_alt():
     node_2_file.flush()
 
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1, 2],
-        kwargs_ids={},
+        electron_id=0,
+        args=[1, 2],
+        kwargs={},
     )
 
     resources = ResourceMap(
@@ -515,9 +515,9 @@ def test_run_task_group_alt_exception():
     node_2_file.flush()
 
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1],
-        kwargs_ids={"y": 2},
+        electron_id=0,
+        args=[1],
+        kwargs={"y": 2},
     )
 
     resources = ResourceMap(

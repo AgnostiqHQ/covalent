@@ -285,6 +285,21 @@ def _electron_data(
 
                 assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
 
+            # Register sublattice manifest for sublattice electrons
+            electron_type = get_electron_type(tg.get_node_value(node_id, "name"))
+            if electron_type == "sublattice":
+                asset_record_kwargs = {
+                    "storage_type": ELECTRON_STORAGE_TYPE,
+                    "storage_path": str(node_path),
+                    "object_key": "result.tobj",
+                    "digest_alg": None,
+                    "digest": None,
+                    "size": 0,
+                }
+                assets["sublattice_manifest"] = Asset.create(
+                    session, insert_kwargs=asset_record_kwargs, flush=True
+                )
+
             # Register custom assets
             node_metadata = tg.get_node_value(node_id, "metadata")
             if CUSTOM_ASSETS_FIELD in node_metadata:
