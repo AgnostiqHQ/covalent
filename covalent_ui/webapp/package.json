@@ -3,16 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.7.0",
-    "@emotion/styled": "^11.6.0",
-    "@mui/icons-material": "^5.2.0",
-    "@mui/lab": "^5.0.0-alpha.62",
-    "@mui/material": "^5.2.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "7.0.2",
+    "@mui/lab": "^7.0.0-beta.11",
+    "@mui/material": "^7.0.2",
     "@reduxjs/toolkit": "^1.6.2",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^12.1.10",
+    "@types/react": "^18.3.1",
+    "@xyflow/react": "^12.6.0",
     "axios": "^1.6.0",
     "clsx": "^1.1.1",
     "copy-to-clipboard": "^3.3.1",
@@ -23,22 +25,19 @@
     "html2canvas": "^1.4.1",
     "humanize-duration": "^3.27.1",
     "lodash": "^4.17.21",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-flow-renderer": "^9.7.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-helmet-async": "^1.2.1",
     "react-redux": "^7.2.6",
     "react-router-dom": "^6.0.2",
-    "react-scripts": "4.0.3",
+    "react-scripts": "5.0.0",
     "react-syntax-highlighter": "^15.4.5",
-    "react-virtualized": "^9.22.5",
     "react-tooltip": "^4.2.21",
+    "react-virtualized": "^9.22.5",
     "redux-localstorage": "^0.4.1",
     "socket.io-client": "^4.4.0",
     "use-debounce": "^8.0.1",
-    "use-react-screenshot": "3.0.0",
-    "xterm-addon-fit": "^0.5.0",
-    "xterm-for-react": "^1.0.4"
+    "use-react-screenshot": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -55,8 +54,11 @@
     ]
   },
   "jest": {
+    "moduleNameMapper": {
+      "\\.(css|scss)$": "<rootDir>/__mocks__/styleMock.js"
+    },
     "transformIgnorePatterns": [
-      "/node_modules/(?!d3|axios|d3-array|internmap|delaunator|xterm-for-react|xterm-addon-fit|xterm-addon-web-links|xterm-addon-search|robust-predicates)"
+      "/node_modules/(?!d3|axios|d3-array|internmap|delaunator|robust-predicates)"
     ]
   },
   "browserslist": {

@@ -25,7 +25,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import { HelmetProvider } from 'react-helmet-async'
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 
 function reduxRender(renderedComponent) {
   const store = configureStore({

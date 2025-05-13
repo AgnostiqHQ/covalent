@@ -16,7 +16,7 @@
 
  import { useMemo } from 'react'
  import { zoomIdentity } from 'd3-zoom'
- import { getRectOfNodes, useStoreState, useStore } from 'react-flow-renderer'
+ import { getRectOfNodes, useStoreState, useStore } from '@xyflow/react'
 
  const DEFAULT_PADDING = 0.1
 

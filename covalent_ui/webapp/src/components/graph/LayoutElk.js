@@ -16,7 +16,6 @@
 
 import _ from 'lodash'
 import ELK from 'elkjs/lib/elk.bundled.js'
-import { isNode } from 'react-flow-renderer'
 import { isParameter, isPostProcess, Prettify } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
@@ -62,7 +61,6 @@ const mapGraphToElements = (
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
-
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
@@ -91,6 +89,7 @@ const mapGraphToElements = (
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
+      selected: false,
     }
   })
 
@@ -104,9 +103,12 @@ const mapGraphToElements = (
       type: 'directed',
     }
   })
-
-  return [...nodes, ...edges]
+  return {
+    nodes: nodes,
+    edges: edges,
+  }
 }
+const DEFAULT_HEIGHT = 75
 
 const assignNodePositions = async (
   graph,
@@ -127,9 +129,13 @@ const assignNodePositions = async (
     showPostProcess,
     prettify
   )
-  const nodes = []
-  const edges = []
-  const DEFAULT_HEIGHT = 75
+
+  const layoutNodes = elements.nodes.map(
+     (el) => ({id: el.id, width: _.size(el.data.label) * 15, height: DEFAULT_HEIGHT})
+  )
+  const layoutEdges = elements.edges.map(
+    (el) => ({id: el.id, target: el.target, source: el.source})
+  )
 
   const elk = new ELK({
     defaultLayoutOptions: {
@@ -145,39 +151,24 @@ const assignNodePositions = async (
       'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
     },
   })
-  _.each(elements, (el) => {
-    if (isNode(el)) {
-      nodes.push({
-        id: el.id,
-        width: _.size(el.data.label) * 15,
-        height: DEFAULT_HEIGHT,
-      })
-    } else {
-      edges.push({
-        id: el.id,
-        target: el.target,
-        source: el.source,
-      })
-    }
-  })
 
   const newGraph = await elk.layout({
     id: 'root',
-    children: nodes,
-    edges: edges,
+    children: layoutNodes,
+    edges: layoutEdges,
   })
-  return elements.map((el) => {
-    if (isNode(el)) {
-      const node = newGraph?.children?.find((n) => n.id === el.id)
-      if (node?.x && node?.y && node?.width && node?.height) {
-        el.position = {
-          x: node.x,
-          y: node.y,
-        }
+
+  const positionedNodes = elements.nodes.map((el) => {
+    const node = newGraph?.children?.find((n) => n.id === el.id)
+    if (node?.x && node?.y && node?.width && node?.height) {
+      el.position = {
+        x: node.x,
+        y: node.y,
       }
     }
     return el
   })
+  return {nodes: positionedNodes, edges: elements.edges}
 }
 
 /**

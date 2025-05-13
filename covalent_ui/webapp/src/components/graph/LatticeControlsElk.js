@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useZoomPanHelper } from 'react-flow-renderer'
+import { useReactFlow } from '@xyflow/react'
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -30,7 +30,6 @@ import {
   LockOutlined,
   MapOutlined,
 } from '@mui/icons-material'
-import useFitViewHelper from './ReactFlowHooks'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import LabelOffIcon from '@mui/icons-material/LabelOff'
 import LabelIcon from '@mui/icons-material/Label'
@@ -69,8 +68,7 @@ const LatticeControls = ({
   togglePrettify,
   prettify,
 }) => {
-  const { zoomIn, zoomOut } = useZoomPanHelper()
-  const { fitView } = useFitViewHelper()
+  const { zoomIn, zoomOut, fitView } = useReactFlow()
   return (
     <ToggleButtonGroup
       orientation="vertical"
@@ -142,7 +140,7 @@ const LatticeControls = ({
           sx={{ height: '40px', color: 'white' }}
           value=""
           onClick={() => {
-            fitView({ duration: 300, marginLeft, marginRight })
+            fitView({ duration: 300 })
           }}
           data-testid="FullscreenIcon"
         >

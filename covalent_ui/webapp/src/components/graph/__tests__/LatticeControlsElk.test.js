@@ -16,6 +16,7 @@
 
 import {
   render,
+  renderHook,
   screen,
   fireEvent,
   waitFor,
@@ -30,9 +31,8 @@ import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import { BrowserRouter } from 'react-router-dom'
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 import { HelmetProvider } from 'react-helmet-async'
-import { renderHook } from '@testing-library/react-hooks'
 
 function reduxRender(renderedComponent) {
   const store = configureStore({
@@ -237,10 +237,6 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders up button for change orientation', async () => {
-    const setStateMock = jest.fn()
-    const useStateMock = (useState) => [useState, setStateMock]
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
-
     reduxRender(<App direction={direction1} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
@@ -249,10 +245,6 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders left button for change orientation', async () => {
-    const setStateMock = jest.fn()
-    const useStateMock = (useState) => [useState, setStateMock]
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
-
     reduxRender(<App direction={direction2} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)
@@ -261,10 +253,6 @@ describe('lattice toggle buttons', () => {
   })
 
   test('renders right button for change orientation', async () => {
-    const setStateMock = jest.fn()
-    const useStateMock = (useState) => [useState, setStateMock]
-    jest.spyOn(React, 'useState').mockImplementation(useStateMock)
-
     reduxRender(<App direction={direction3} />)
     const linkElement = screen.getByTestId('changeorientation')
     fireEvent.click(linkElement)

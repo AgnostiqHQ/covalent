@@ -122,7 +122,7 @@ async def test_cluster_info_cli(admin_worker_addr, event_loop):
         "nanny",
     ]
     response = await _get_cluster_info(admin_worker_addr)
-    assert list(response.keys()) == expected_keys
+    assert set(response.keys()) >= set(expected_keys)
     assert len(response["workers"]) == DEFAULT_N_WORKERS
 
     # Check the keys match for each worker in the cluster

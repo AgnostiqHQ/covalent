@@ -25,7 +25,7 @@ import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import { BrowserRouter } from 'react-router-dom'
 
-import { ReactFlowProvider } from 'react-flow-renderer'
+import { ReactFlowProvider } from '@xyflow/react'
 import { HelmetProvider } from 'react-helmet-async'
 
 var initialState = {

@@ -89,7 +89,7 @@ def test_electron_takes_nested_iterables():
         [5, 6, 7, 8, 9],
     ]
 
-    rm._delete_result(dispatch_id)
+    # rm._delete_result(dispatch_id)
 
 
 def test_sublatticing():

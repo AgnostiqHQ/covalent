@@ -26,9 +26,6 @@ The following screens are available in the Covalent GUI:
 :doc:`Settings<settings/index>`
     Provides controls to customize the Covalent GUI.
 
-:doc:`Terminal<terminal/index>`
-    Opens a terminal where you can type shell commands.
-
 .. toctree::
    :maxdepth: 1
    :hidden:
@@ -39,4 +36,3 @@ The following screens are available in the Covalent GUI:
    preview/index
    logs/index
    settings/index
-   terminal/index

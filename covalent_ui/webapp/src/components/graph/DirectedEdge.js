@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BezierEdge } from 'react-flow-renderer'
+import { BezierEdge } from '@xyflow/react'
 
 import theme from '../../utils/theme'
 import { NODE_TEXT_COLOR } from './ElectronNode'
