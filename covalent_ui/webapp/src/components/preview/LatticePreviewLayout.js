@@ -16,8 +16,8 @@
 
 import _ from 'lodash'
 import { Box, Typography } from '@mui/material'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useStoreActions, useStoreState } from 'react-flow-renderer'
 import LatticeMain from '../graph/LatticeGraph'
 import NotFound from '../NotFound'
 import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'
@@ -28,27 +28,30 @@ import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 
 import PreviewDrawerContents from './PreviewDrawerContents'
 
+const initialSelectedNodes = [];
+
 const LatticePreviewLayout = () => {
   const lattice = useSelector((state) => state.latticePreview.lattice)
-  const selectedElectron = useStoreState((state) => {
-    const nodeId = _.get(
-      _.find(state.selectedElements, { type: 'electron' }),
-      'id'
-    )
-    return _.find(
-      _.get(lattice, 'graph.nodes'),
-      (node) => nodeId === String(_.get(node, 'id'))
-    )
-  })
 
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
+  // Track selected flow node to control the NodeDrawer
+  const [selectedNodes, setSelectedNodes] = useState(initialSelectedNodes);
+  const handleNodeSelectionChange = (selected) => {
+    setSelectedNodes(selected)
+  }
+
+  const nodeId = selectedNodes.length === 1 ? selectedNodes[0].id : ''
+  const selectedElectron = _.find(
+      _.get(lattice, 'graph.nodes'),
+      (node) => nodeId === String(_.get(node, 'id')) && _.get(node, 'type') !== 'parameter'
   )
+  const handleNodeDrawerClose = () => {
+    setSelectedNodes(initialSelectedNodes)
+  }
 
   // unselect on change of lattice
   useEffect(() => {
-    setSelectedElements([])
-  }, [lattice, setSelectedElements])
+    setSelectedNodes(initialSelectedNodes)
+  }, [lattice, setSelectedNodes])
 
   if (!lattice) {
     return (
@@ -73,22 +76,32 @@ const LatticePreviewLayout = () => {
           bgcolor: graphBgColor,
         }}
       >
-        <LatticeMain
-          preview
-          graph={lattice.graph}
-          hasSelectedNode={!!selectedElectron}
-          marginLeft={latticeDrawerWidth + navDrawerWidth}
-          marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
-        />
+        <NavDrawer />
+        <LatticeDrawer>
+          <PreviewDrawerContents />
+        </LatticeDrawer>
+
+        <Box
+          sx={{
+            flex: 1,
+            height: '100%',
+            marginLeft: `${latticeDrawerWidth + navDrawerWidth}px`,
+            paddingTop: '35px',
+          }}
+        >
+          <LatticeMain
+            preview
+            graph={lattice.graph}
+            hasSelectedNode={!!selectedElectron}
+            marginLeft={latticeDrawerWidth + navDrawerWidth}
+            marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
+            handleNodeSelectionChange={handleNodeSelectionChange}
+          />
+        </Box>
+
+        <NodeDrawer node={selectedElectron} handleClose={handleNodeDrawerClose} />
+
       </Box>
-
-      {/* <MobileAppBar /> */}
-      <NavDrawer />
-      <LatticeDrawer>
-        <PreviewDrawerContents />
-      </LatticeDrawer>
-
-      <NodeDrawer node={selectedElectron} />
     </>
   )
 }

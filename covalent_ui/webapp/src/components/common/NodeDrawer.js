@@ -16,8 +16,7 @@
 
 import _ from 'lodash'
 import React, { useEffect } from 'react'
-import { useStoreActions } from 'react-flow-renderer'
-import { Close } from '@mui/icons-material'
+// import { Close } from '@mui/icons-material'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
@@ -61,7 +60,8 @@ export const nodeDrawerWidth = 360
 const NodeDrawer = ({
   node,
   dispatchId,
-  prettify
+  prettify,
+  handleClose,
 }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
@@ -119,15 +119,6 @@ const NodeDrawer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
 
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
-  )
-
-  const handleClose = () => {
-    setSelectedElements([])
-  }
-
-
   const nodeLabel = (type, name) => {
     switch (type) {
       case 'parameter':
@@ -148,7 +139,7 @@ const NodeDrawer = ({
     <Drawer
       transitionDuration={400}
       sx={(theme) => ({
-        width: nodeDrawerWidth,
+        // width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
           boxSizing: 'border-box',
@@ -188,7 +179,7 @@ const NodeDrawer = ({
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Grid container sx={{ background: '', position: 'relative' }}>
-                <Grid item xs={8}>
+                <Grid>
                   <Typography
                     sx={{
                       color: '#A5A6F6',
@@ -202,18 +193,18 @@ const NodeDrawer = ({
                       : nodeLabel(electronDetail?.type, electronDetail?.name)}
                   </Typography>
                 </Grid>
-                <Grid
+                {/* <Grid
                   item
-                  xs={4}
+                  size={{ xs: 4 }}
 
                 >
                   <Box
                     data-testid="node__dra_close"
-                    sx={{ position: 'absolute', top: 0, right: 1.5 }}
+                    // sx={{ position: 'absolute', top: 0, right: 1.5 }}
                   >
                     <Close onClick={handleClose} fontSize='small' sx={{ cursor: 'pointer' }} />
                   </Box>
-                </Grid>
+                </Grid> */}
               </Grid>
             )}
           </Box>
@@ -223,11 +214,11 @@ const NodeDrawer = ({
             <Grid
               id="statusGrid"
               item
-              xs={8}
+              size={{ xs: 8 }}
               sx={{ display: 'flex', flexDirection: 'column' }}
             >
               {electronDetail.status && (
-                <Grid item container direction="column">
+                <Grid container direction="column">
                   <Heading>Status</Heading>
                   {!electronDetail && electronDetailIsFetching ? (
                     <Skeleton data-testid="node__status_skl" width={150} />
@@ -250,7 +241,7 @@ const NodeDrawer = ({
               )}
             </Grid>
             <Grid
-              xs={4}
+              size={{ xs: 4}}
               item
               sx={{ display: 'flex', justifyContent: 'flex-end' }}
             >

@@ -16,9 +16,7 @@
 
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
-import ReactDOM from 'react-dom'
 
-jest.mock('react-dom', () => ({ render: jest.fn() }))
 
 describe('testing index', () => {
   test('mock store', () => {
@@ -26,10 +24,14 @@ describe('testing index', () => {
     expect(mockStore).toBeDefined()
   })
   test('rendering react dom', () => {
+    const mockRender = jest.fn()
+    const mockCreateRoot = jest.fn(() => ({ render: mockRender }))
+    jest.mock('react-dom/client', () => ({ createRoot: mockCreateRoot }))
+
     const div = document.createElement('div')
     div.id = 'root'
     document.body.appendChild(div)
     require('../index')
-    expect(ReactDOM.render).toHaveBeenCalled()
+    expect(mockCreateRoot).toHaveBeenCalled()
   })
 })

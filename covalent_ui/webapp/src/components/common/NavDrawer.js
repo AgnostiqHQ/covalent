@@ -31,7 +31,6 @@ import { ReactComponent as LogoOnHover } from '../../assets/covalent-logo-hover.
 
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
-import { ReactComponent as UITerminal } from '../../assets/terminal.svg'
 import { ReactComponent as NavSettings } from '../../assets/SettingsIcon.svg'
 import { ReactComponent as Logs } from '../../assets/logs.svg'
 
@@ -95,7 +94,7 @@ const NavDrawer = () => {
           path="/settings"
           icon={NavSettings}
           position="fixed"
-          bottom={110}
+          bottom={54}
           paddingTop="3px"
           paddingLeft="2px"
           paddingRight="3px"
@@ -106,19 +105,6 @@ const NavDrawer = () => {
             title="Logs"
             path="/logs"
             icon={Logs}
-            paddingTop="8px"
-            paddingLeft="5px"
-            paddingRight="0px"
-            paddingBottom="0px"
-            position="fixed"
-            bottom={54}
-          />
-        </Grid>
-        <Grid>
-          <LinkButton
-            title="Terminal"
-            path="/terminal"
-            icon={UITerminal}
             paddingTop="8px"
             paddingLeft="5px"
             paddingRight="0px"

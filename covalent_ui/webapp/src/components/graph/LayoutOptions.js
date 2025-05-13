@@ -42,10 +42,6 @@ export function LayoutOptions(props) {
       optionName: 'Box',
       optionValue: 'box',
     },
-    {
-      optionName: 'Old Layout',
-      optionValue: 'oldLayout',
-    },
   ]
   return (
 
@@ -57,7 +53,6 @@ export function LayoutOptions(props) {
         open={open}
         onClose={handleClose}
         keepMounted={false}
-        getContentAnchorEl={null}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         PaperProps={{

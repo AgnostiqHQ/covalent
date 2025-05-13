@@ -19,7 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 link the sublattice with its parent electron.
 - Replaced json sublattice flow with new tarball importer to allow future memory
 footprint enhancements
+- Upgraded UI to React 18
 - Removed upper limit of `rich` installation
+
+### Operations
+
+- Upgrade Github Actions node environment to Node 20
+- Disabled workaround to build UI in release pipeline
 
 ## [0.239.0-rc.0] - 2025-04-16
 

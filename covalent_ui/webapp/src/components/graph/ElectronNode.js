@@ -16,7 +16,7 @@
 
 import { Grid, Paper, Tooltip, tooltipClasses, Typography} from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { Handle } from 'react-flow-renderer'
+import { Handle } from '@xyflow/react'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle, nodeLabelIcon, statusIcon } from '../../utils/misc'
 
