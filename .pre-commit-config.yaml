@@ -15,12 +15,12 @@
 # limitations under the License.
 
 exclude: ^(.git/|.tox/|CHANGELOG.md|VERSION)
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: true
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -30,7 +30,7 @@ repos:
       - id: requirements-txt-fixer
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         args: ["--profile", "black"]
