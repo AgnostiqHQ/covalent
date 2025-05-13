@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 link the sublattice with its parent electron.
 - Replaced json sublattice flow with new tarball importer to allow future memory
 footprint enhancements
+- Removed upper limit of `rich` installation
 
 ## [0.239.0-rc.0] - 2025-04-16
 
