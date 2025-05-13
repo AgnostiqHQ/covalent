@@ -23,6 +23,7 @@ on:
 jobs:
   license:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out head
         uses: actions/checkout@v4
@@ -63,12 +64,22 @@ jobs:
         id: license_check_report
         uses: pilosus/action-pip-license-checker@main
         with:
-          requirements: "requirements.txt,tests/requirements.txt,requirements-client.txt"
-          fail: "Copyleft,Error,Other"
-          exclude: "^(pylint|aio[-_]*|pytest-asyncio|typing-extensions).*"
-          exclude-license: 'Mozilla Public License 2.0 \(MPL 2.0\)'
+          requirements: |
+            requirements.txt
+            tests/requirements.txt
+            requirements-client.txt
+          fail: |
+            Copyleft
+            Error
+            Other
+          exclude: |
+            ^(pylint|aio[-_]*|pytest-asyncio|typing-extensions).*
+          exclude-license: |
+            MPL-2.0
           totals: true
           headers: true
+          verbose: true
+
       - name: Print report
         if: ${{ always() }}
         run: echo "${{ steps.license_check_report.outputs.report }}"
