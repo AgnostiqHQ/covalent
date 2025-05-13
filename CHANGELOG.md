@@ -20,6 +20,7 @@ link the sublattice with its parent electron.
 - Replaced json sublattice flow with new tarball importer to allow future memory
 footprint enhancements
 - Upgraded UI to React 18
+- Removed upper limit of `rich` installation
 
 ### Operations
 

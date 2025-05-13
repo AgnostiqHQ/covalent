@@ -107,3 +107,6 @@ node_modules/**
 
 # package-lock
 webapp/package-lock.json
+
+package-lock.json
+package.json
