@@ -119,7 +119,7 @@ jobs:
 
       - name: Create prerelease
         if: >-
-          inputs.prerelease
+          github.event.inputs.prerelease
           && ${{ steps.push.outcome == 'success'
           && steps.message.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
