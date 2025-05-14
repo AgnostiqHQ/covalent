@@ -99,16 +99,6 @@ jobs:
           git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
           git push origin $RELEASE
 
-      - name: Generate stable release message
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: stable-changelog
-        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
-        with:
-          changelog-path: CHANGELOG.md
-          version-path: VERSION
-
       - name: Generate prerelease message
         if: inputs.prerelease
         id: message
@@ -137,13 +127,12 @@ jobs:
         if: >-
           github.event.inputs.stable_version && !inputs.prerelease
           && contains(env.PAUL_BLART, github.actor)
-          && steps.stable-changelog.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
-          body: ${{ steps.stable-changelog.outputs.message }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
+          skipIfReleaseExists: true
 
       # TODO(sankalp): Need to fix this step, but can be skipped for now
       # - name: Alert Slack
