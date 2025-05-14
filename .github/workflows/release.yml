@@ -119,10 +119,10 @@ jobs:
 
       - name: Create prerelease
         if: >-
-          inputs.prerelease && !github.event.inputs.stable_version
-          && ${{ steps.push.outcome == 'success'
+          inputs.prerelease
+          && steps.push.outcome == 'success'
           && steps.message.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
