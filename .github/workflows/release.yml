@@ -77,12 +77,15 @@ jobs:
 
       - name: Read version
         run: |
-          if [ -z ${{ inputs.prerelease }} ] && \
-             [ -z ${{ github.event.inputs.stable_version }} ] ; then
+          if [ "${{ inputs.prerelease }}" = "false" ] && [ -z "${{ github.event.inputs.stable_version }}" ]; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          VERSION="$(cat ./VERSION)"
+          if [ "${{ inputs.prerelease }}" = "false" ] && [ -n "${{ github.event.inputs.stable_version }}" ]; then
+            VERSION="${{ github.event.inputs.stable_version }}"
+          else
+            VERSION="$(cat ./VERSION)"
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
 
