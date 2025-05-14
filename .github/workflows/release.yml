@@ -119,7 +119,7 @@ jobs:
 
       - name: Create prerelease
         if: >-
-          github.event.inputs.prerelease
+          inputs.prerelease && !github.event.inputs.stable_version
           && ${{ steps.push.outcome == 'success'
           && steps.message.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
@@ -132,7 +132,7 @@ jobs:
 
       - name: Create stable release
         if: >-
-          github.event.inputs.stable_version
+          github.event.inputs.stable_version && !inputs.prerelease
           && contains(env.PAUL_BLART, github.actor)
           && steps.stable-changelog.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
