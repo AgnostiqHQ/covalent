@@ -47,27 +47,29 @@ jobs:
       prerelease: true
     secrets: inherit # pragma: allowlist secret
 
-  notify_slack:
-    name: Notify on Slack
-    needs:
-      - create_release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout master
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch_name }}
+  # TODO(sankalp): Need to fix this step, but can be skipped for now
 
-      - name: Format Slack message
-        run: |
-          VERSION="$(cat ./VERSION)"
-          SLACK_MSG=":rocket: Version $VERSION is now available."
-          echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+  # notify_slack:
+  #   name: Notify on Slack
+  #   needs:
+  #     - create_release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout master
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ inputs.branch_name }}
 
-      - name: Notify Slack
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: ${{ env.SLACK_MSG }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  #     - name: Format Slack message
+  #       run: |
+  #         VERSION="$(cat ./VERSION)"
+  #         SLACK_MSG=":rocket: Version $VERSION is now available."
+  #         echo "SLACK_MSG=$SLACK_MSG" >> $GITHUB_ENV
+
+  #     - name: Notify Slack
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_CHANNEL: "covalent-ci"
+  #         SLACK_USERNAME: "CovalentOpsBot"
+  #         SLACK_MESSAGE: ${{ env.SLACK_MSG }}
+  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
