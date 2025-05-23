@@ -13,7 +13,7 @@
     "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py310:latest",
     "backend": "local",
     "experimental": false,
-    "trigger": ["schedule", "workflow_dispatch"]
+    "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
     "name": "Debian 12 / Python 3.11 / Dask",
@@ -21,7 +21,7 @@
     "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py311:latest",
     "backend": "dask",
     "experimental": false,
-    "trigger": ["push", "schedule", "workflow_dispatch"]
+    "trigger": ["schedule", "workflow_dispatch"]
   },
   {
     "name": "Debian 12 / Python 3.11 / Local",
@@ -37,7 +37,7 @@
     "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py312:latest",
     "backend": "dask",
     "experimental": false,
-    "trigger": ["push", "schedule", "workflow_dispatch"]
+    "trigger": ["schedule", "workflow_dispatch"]
   },
   {
     "name": "Debian 12 / Python 3.12 / Local",
