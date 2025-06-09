@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Monitor executor instances """
+"""Monitor executor instances"""
 
 
 from typing import Any
