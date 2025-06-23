@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Serialization/Deserialization methods for Assets """
+"""Serialization/Deserialization methods for Assets"""
 
 import hashlib
 import json
