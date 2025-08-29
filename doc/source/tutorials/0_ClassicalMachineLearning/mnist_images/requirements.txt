@@ -1,3 +1,3 @@
 covalent
-torch==1.13.1
+torch==2.8.0
 torchvision==0.14.1
