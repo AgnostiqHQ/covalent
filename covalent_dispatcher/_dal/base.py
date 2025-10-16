@@ -42,23 +42,6 @@ class DispatchedObject(Generic[MetaType, AssetLinkType]):
 
     """
 
-    @classmethod
-    @property
-    def meta_type(cls) -> Type[MetaType]:
-        """Returns the metadata controller class."""
-        raise NotImplementedError
-
-    @classmethod
-    @property
-    def asset_link_type(cls) -> Type[AssetLinkType]:
-        """Returns the asset link controller class"""
-        raise NotImplementedError
-
-    @classmethod
-    @property
-    def metadata_keys(cls) -> set:
-        raise NotImplementedError
-
     @property
     @abstractmethod
     def query_keys(self) -> set:

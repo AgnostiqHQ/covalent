@@ -73,14 +73,14 @@ def test_import_export_manifest(test_db, mocker):
         tempfile.TemporaryDirectory() as srv_tmp_dir,
     ):
         manifest = serialize_result(res, sdk_tmp_dir)
-        received_manifest = manifest.copy(deep=True)
+        received_manifest = manifest.model_copy(deep=True)
 
         import_result(received_manifest, srv_tmp_dir, None)
 
         export_manifest = export_result_manifest(dispatch_id)
 
-        submitted = manifest.dict()
-        exported = export_manifest.dict()
+        submitted = manifest.model_dump()
+        exported = export_manifest.model_dump()
 
         # Check that workflow metadata are preserved
         for key in submitted["metadata"]:

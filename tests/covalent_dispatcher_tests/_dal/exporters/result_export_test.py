@@ -71,7 +71,7 @@ def test_export_result(mocker, test_db):
         tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir,
     ):
         manifest = get_mock_manifest(dispatch_id, sdk_dir)
-        received_manifest = manifest.copy(deep=True)
+        received_manifest = manifest.model_copy(deep=True)
         filtered_res = import_result(received_manifest, srv_dir, None)
 
     srvres = Result.from_dispatch_id(dispatch_id, bare=False)
