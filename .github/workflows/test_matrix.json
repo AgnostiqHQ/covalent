@@ -1,48 +1,64 @@
 [
   {
-    "name": "Debian 12 / Python 3.10 / Dask",
+    "name": "Debian 13 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "Debian 12 / Python 3.10 / Local",
+    "name": "Debian 13 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "Debian 12 / Python 3.11 / Dask",
+    "name": "Debian 13 / Python 3.11 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py311:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py311:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": ["push", "schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "Debian 12 / Python 3.11 / Local",
+    "name": "Debian 13 / Python 3.11 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py311:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py311:latest",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "Debian 12 / Python 3.12 / Dask",
+    "name": "Debian 13 / Python 3.12 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py312:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py312:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": ["push", "schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "Debian 12 / Python 3.12 / Local",
+    "name": "Debian 13 / Python 3.12 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py312:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py312:latest",
+    "backend": "local",
+    "experimental": false,
+    "trigger": ["schedule", "workflow_dispatch", "pull_request"]
+  },
+  {
+    "name": "Debian 13 / Python 3.13 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": ["push", "schedule", "workflow_dispatch", "pull_request"]
+  },
+  {
+    "name": "Debian 13 / Python 3.13 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
@@ -187,6 +203,22 @@
     "name": "MacOS 15 / Python 3.12 / Local",
     "os": "macos-15",
     "python-version": "3.12",
+    "backend": "local",
+    "experimental": false,
+    "trigger": ["schedule", "workflow_dispatch"]
+  },
+  {
+    "name": "MacOS 15 / Python 3.13 / Dask",
+    "os": "macos-15",
+    "python-version": "3.13",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": ["schedule", "workflow_dispatch"]
+  },
+  {
+    "name": "MacOS 15 / Python 3.13 / Local",
+    "os": "macos-15",
+    "python-version": "3.13",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
