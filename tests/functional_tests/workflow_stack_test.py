@@ -816,6 +816,42 @@ def test_redispatch():
     assert res_obj_5.result == 49
 
 
+def test_redispatch_doesnt_overwrite_previous_outputs():
+
+    # Use an impure function
+    @ct.lattice
+    @ct.electron
+    def read_from_file(filename: str) -> str:
+        with open(filename, "r") as f:
+            return f.read()
+
+    t = tempfile.NamedTemporaryFile(mode="w+", delete=False, delete_on_close=False)
+
+    t.write("run_1")
+    t.flush()
+
+    dispatch_id = ct.dispatch(read_from_file)(t.name)
+    orig_res = ct.get_result(dispatch_id, wait=True)
+    assert orig_res.status == "COMPLETED"
+    assert orig_res.result == "run_1"
+
+    # Modify the file and redispatch
+    t.seek(0)
+    t.write("run_2")
+    t.flush()
+
+    redispatch_id = ct.redispatch(dispatch_id, reuse_previous_results=False)()
+    redispatch_res = ct.get_result(redispatch_id, wait=True)
+    assert redispatch_res.status == "COMPLETED"
+    assert redispatch_res.result == "run_2"
+
+    # Check that the original dispatch's outputs remain unchanged
+    # Redownload the results
+    orig_res = ct.get_result(dispatch_id)
+    assert orig_res.get_node_result(0)["output"].get_deserialized() == "run_1"
+    assert orig_res.result == "run_1"
+
+
 def test_redispatch_reusing_previous_results():
     """Test reusing previous results for redispatching"""
 
