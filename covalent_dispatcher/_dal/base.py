@@ -17,7 +17,7 @@
 """Base class for server-side analogues of workflow data types"""
 
 from abc import abstractmethod
-from typing import Any, Dict, Generator, Generic, List, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, TypeVar, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
