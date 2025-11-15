@@ -251,8 +251,10 @@ def handle_redispatch(
     tg_new = result_object.lattice.transport_graph
     tg_old = parent_result_object.lattice.transport_graph
 
-    # Get the nodes that can potentially be reused from the previous
-    # dispatch, assuming that they have previously completed.
+    # Get the nodes that can potentially be reused from the previous dispatch,
+    # assuming that they have previously completed. A node is "reusable" if its
+    # task definition is unchanged and its functional dependencies are
+    # recursively recursively reusable.
     reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg_new)
 
     # No need to upload assets for reusable nodes since they can be
@@ -274,7 +276,7 @@ def handle_redispatch(
 
     # Two cases:
     #
-    # If not reuse_previous_results, copy assets for all reusable
+    # If reuse_previous_results=False, copy assets for all reusable
     # nodes but leave all metadata as initialized by the SDK.  This
     # will cause all nodes to be rerun since their statuses will be
     # NEW_OBJECT.
@@ -287,8 +289,7 @@ def handle_redispatch(
     assets_to_copy = TransportGraphOps(tg_new).copy_nodes_from(
         tg_old,
         reusable_nodes,
-        copy_metadata=reuse_previous_results,
-        defer_copy_objects=True,
+        reuse_previous_results=reuse_previous_results,
     )
 
     # Since the graph comparison is finished, we can upgrade
