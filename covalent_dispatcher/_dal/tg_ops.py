@@ -22,6 +22,7 @@ from typing import Callable, List
 import networkx as nx
 
 from covalent._shared_files import logger
+from covalent._shared_files.defaults import NODE_TYPE_PARAMETER
 from covalent._shared_files.util_classes import RESULT_STATUS
 
 from .asset import copy_asset_meta
@@ -30,6 +31,8 @@ from .tg import _TransportGraph
 
 app_log = logger.app_log
 
+
+GENERATED_ASSETS = {"output", "stdout", "stderr", "error"}
 
 class TransportGraphOps:
     def __init__(self, tg: _TransportGraph):
@@ -83,6 +86,7 @@ class TransportGraphOps:
         for n in nodes:
             old_node = tg.get_node(n)
             old_status = tg.get_node_value(n, "status")
+            node_type = tg.get_node_value(n, "type")
 
             if copy_metadata and old_status == RESULT_STATUS.COMPLETED:
                 # Only previously completed nodes can actually be
@@ -101,6 +105,12 @@ class TransportGraphOps:
             # truth instead of these hardcoded values
             for k in ASSET_KEYS:
                 # Copy asset metadata
+                # For non-parameter nodes, skip output, stdout, stderr, error if not reuse_previous_results
+                # since re-run of reusable nodes will overwrite artifacts
+                # produced by the previous workflow run
+                if (not copy_metadata) and k in GENERATED_ASSETS and node_type != NODE_TYPE_PARAMETER:
+                    app_log.debug(f"Not copying asset {k} for node {n}")
+                    continue
                 app_log.debug(f"Copying asset {k} for node {n}")
                 with old_node.session() as session:
                     old = old_node.get_asset(k, session)

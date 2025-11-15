@@ -24,7 +24,8 @@ import dask.system
 
 prefix_separator = ":"
 
-parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
+NODE_TYPE_PARAMETER = "parameter"
+parameter_prefix = f"{prefix_separator}{NODE_TYPE_PARAMETER}{prefix_separator}"
 electron_list_prefix = f"{prefix_separator}electron_list{prefix_separator}"
 electron_dict_prefix = f"{prefix_separator}electron_dict{prefix_separator}"
 subscript_prefix = f"{prefix_separator}subscripted{prefix_separator}"
