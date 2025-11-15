@@ -34,6 +34,7 @@ app_log = logger.app_log
 
 GENERATED_ASSETS = {"output", "stdout", "stderr", "error"}
 
+
 class TransportGraphOps:
     def __init__(self, tg: _TransportGraph):
         self.tg = tg
@@ -108,7 +109,11 @@ class TransportGraphOps:
                 # For non-parameter nodes, skip output, stdout, stderr, error if not reuse_previous_results
                 # since re-run of reusable nodes will overwrite artifacts
                 # produced by the previous workflow run
-                if (not copy_metadata) and k in GENERATED_ASSETS and node_type != NODE_TYPE_PARAMETER:
+                if (
+                    (not copy_metadata)
+                    and k in GENERATED_ASSETS
+                    and node_type != NODE_TYPE_PARAMETER
+                ):
                     app_log.debug(f"Not copying asset {k} for node {n}")
                     continue
                 app_log.debug(f"Copying asset {k} for node {n}")

@@ -183,7 +183,9 @@ def test_register_redispatch(mocker, app, client, mock_manifest):
         return_value=mock_manifest,
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post(f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.model_dump_json())
+    resp = client.post(
+        f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.model_dump_json()
+    )
     mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, False)
     assert resp.json() == json.loads(mock_manifest.model_dump_json())
 
@@ -211,7 +213,9 @@ def test_register_redispatch_exception(mocker, app, client, mock_manifest):
         side_effect=RuntimeError(),
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post(f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.model_dump_json())
+    resp = client.post(
+        f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.model_dump_json()
+    )
     assert resp.status_code == 400
 
 
