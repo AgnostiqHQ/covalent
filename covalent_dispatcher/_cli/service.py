@@ -33,14 +33,9 @@ from subprocess import DEVNULL, Popen
 from typing import Optional
 
 import click
-import dask.system
 import psutil
 import requests
 import sqlalchemy
-from dask.distributed import Client
-from distributed.comm import unparse_address
-from distributed.comm.core import CommClosedError
-from distributed.core import connect, rpc
 from furl import furl
 from natsort import natsorted
 from rich.box import ROUNDED
@@ -56,6 +51,19 @@ from sqlalchemy import exc as sa_exc
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
+
+_DASK_AVAILABLE = False
+try:
+    import dask.system as _dask_system
+    from dask.distributed import Client
+    from distributed.comm import unparse_address
+    from distributed.comm.core import CommClosedError
+    from distributed.core import connect, rpc
+
+    _DASK_AVAILABLE = True
+except ImportError:
+    CommClosedError = OSError  # safe stand-in; these code paths are never reached without dask
+
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -855,13 +863,15 @@ async def _get_cluster_logs(uri):
 
 
 def _get_cluster_admin_address():
+    if not _DASK_AVAILABLE:
+        return None
     try:
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
         admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
         return admin_server_addr
     except KeyError:
-        return
+        return None
 
 
 @click.command()
@@ -877,7 +887,7 @@ def _get_cluster_admin_address():
     is_flag=False,
     nargs=1,
     type=int,
-    default=dask.system.CPU_COUNT,
+    default=_dask_system.CPU_COUNT if _DASK_AVAILABLE else (os.cpu_count() or 1),
     show_default=True,
     help="Scale cluster by adding/removing workers to match `nworkers`",
 )

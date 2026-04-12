@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Make `dask[distributed]` and optional dependency via `covalent[dask]` extra
 - Improved automatic file transfer strategy selection
 - HTTP strategy can now upload files too
 - Adjusted sublattice logic. The sublattice builder now attempts to

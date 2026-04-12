@@ -211,6 +211,7 @@ setup_info = {
     "zip_safe": False,
     "install_requires": required,
     "extras_require": {
+        "dask": ["dask[distributed]>=2022.6.0"],
         "aws": ["boto3>=1.20.48"],
         "azure": ["azure-identity>=1.13.0", "azure-storage-blob>=12.16.0"],
         "braket": ["amazon-braket-pennylane-plugin>=1.17.4", "boto3>=1.28.5"],

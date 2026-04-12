@@ -27,7 +27,10 @@ import os
 from enum import Enum
 from typing import Any, Callable, Dict, List, Literal, Optional
 
-from dask.distributed import CancelledError, Client, Future
+try:
+    from dask.distributed import CancelledError, Client, Future
+except ImportError as e:
+    raise ImportError("'covalent[dask]' is required for DaskExecutor.") from e
 from pydantic import BaseModel
 
 from covalent._shared_files import TaskRuntimeError, logger

@@ -23,9 +23,15 @@ from multiprocessing import Process, current_process
 from multiprocessing.connection import Connection
 from threading import Thread
 
-import dask.config
-from dask.distributed import LocalCluster
-from distributed.core import Server, rpc
+try:
+    import dask.config
+    from dask.distributed import LocalCluster
+    from distributed.core import Server, rpc
+except ImportError as e:
+    raise ImportError(
+        "dask[distributed] is required for the Dask cluster. "
+        "Install it with: pip install 'covalent[dask]'"
+    ) from e
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
