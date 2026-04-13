@@ -315,7 +315,7 @@ def transaction_insert_electron_dependency_data(
     """
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
-    node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
+    node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["edges"]
 
     electron_dependency_ids = []
 

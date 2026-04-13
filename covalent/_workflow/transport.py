@@ -411,10 +411,10 @@ class _TransportGraph:
                         data["nodes"][idx].pop(field, None)
 
             # Remove the non-source-target fields from the scheduler workflow input data.
-            for idx, node in enumerate(data["links"]):
-                for name in data["links"][idx].copy():
+            for idx, node in enumerate(data["edges"]):
+                for name in data["edges"][idx].copy():
                     if name not in ["source", "target"]:
-                        data["links"][idx].pop("edge_name", None)
+                        data["edges"][idx].pop("edge_name", None)
 
         data["lattice_metadata"] = self.lattice_metadata
         return cloudpickle.dumps(data)
@@ -475,10 +475,10 @@ class _TransportGraph:
                         data["nodes"][idx].pop(field, None)
 
             # Remove the non-source-target fields from the scheduler workflow input data.
-            for idx, node in enumerate(data["links"]):
-                for name in data["links"][idx].copy():
+            for idx, node in enumerate(data["edges"]):
+                for name in data["edges"][idx].copy():
                     if name not in ["source", "target"]:
-                        data["links"][idx].pop("edge_name", None)
+                        data["edges"][idx].pop("edge_name", None)
 
         data["lattice_metadata"] = encode_metadata(self.lattice_metadata)
         return json.dumps(data)
