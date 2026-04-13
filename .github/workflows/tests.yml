@@ -184,7 +184,9 @@ jobs:
       - name: Build distribution
         id: build-dist
         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
-        run: python setup.py sdist
+        run: |
+          pip install --no-cache-dir setuptools
+          python setup.py sdist
 
       - name: Validate distribution
         if: env.BUILD_AND_RUN_ALL

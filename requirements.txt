@@ -14,7 +14,6 @@ pydantic>=2.1.1
 python-socketio>=5.7.1
 requests>=2.24.0
 rich>=12.0.0
-setuptools
 sqlalchemy>=1.4.37,<2.0.0
 sqlalchemy_utils>=0.38.3
 toml>=0.10.2
