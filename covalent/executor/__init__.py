@@ -244,10 +244,7 @@ class _ExecutorManager:
                     the_module = importlib.util.module_from_spec(module_spec)
                     try:
                         module_spec.loader.exec_module(the_module)
-                    except ImportError as e:
-                        app_log.warning(
-                            "Skipping executor plugin %s: missing dependency (%s)", module_file, e
-                        )
+                    except ImportError:
                         continue
 
                     self._populate_executor_map_from_module(the_module)
