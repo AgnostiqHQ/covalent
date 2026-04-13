@@ -111,4 +111,4 @@ async def test_set_job_status(mocker):
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
     )
     await set_job_status("dispatch", 0, status="COMPLETED")
-    mock_update.assert_called_with([{"job_id": 1, "status": "COMPLETED"}])
+    mock_update.assert_called_with([{"job_id": 1, "job_status": "COMPLETED"}])
