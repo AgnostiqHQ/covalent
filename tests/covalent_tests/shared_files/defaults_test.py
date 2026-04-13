@@ -90,3 +90,44 @@ def test_get_default_executor():
         from covalent._shared_files.defaults import get_default_executor
 
         assert get_default_executor() == "dask"
+
+
+def test_get_default_executor_dask_not_available():
+    """When dask is not installed, default executor is 'local' regardless of config."""
+    from covalent._shared_files.defaults import get_default_executor
+
+    with mock.patch("covalent._shared_files.defaults._DASK_AVAILABLE", False):
+        with mock.patch("covalent._shared_files.config.get_config", return_value="false"):
+            assert get_default_executor() == "local"
+
+
+def test_get_default_executor_dask_available_with_no_cluster_false():
+    """When dask is installed and no_cluster is false, default executor is 'dask'."""
+    from covalent._shared_files.defaults import get_default_executor
+
+    with mock.patch("covalent._shared_files.defaults._DASK_AVAILABLE", True):
+        with mock.patch("covalent._shared_files.config.get_config", return_value="false"):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("COVALENT_DISABLE_DASK", None)
+                assert get_default_executor() == "dask"
+
+
+def test_get_default_executor_disable_dask_env_var():
+    """COVALENT_DISABLE_DASK=1 forces 'local' even when dask is installed."""
+    from covalent._shared_files.defaults import get_default_executor
+
+    with mock.patch("covalent._shared_files.defaults._DASK_AVAILABLE", True):
+        with mock.patch("covalent._shared_files.config.get_config", return_value="false"):
+            with mock.patch.dict(os.environ, {"COVALENT_DISABLE_DASK": "1"}):
+                assert get_default_executor() == "local"
+
+
+def test_get_default_dask_config_num_workers_fallback():
+    """When dask is not installed, num_workers falls back to os.cpu_count()."""
+    from covalent._shared_files.defaults import get_default_dask_config
+
+    cpu_count = os.cpu_count() or 1
+    with mock.patch("covalent._shared_files.defaults._dask_cpu_count", cpu_count):
+        with mock.patch.dict(os.environ, {"HOME": "test_home"}, clear=False):
+            config = get_default_dask_config()
+            assert config["num_workers"] == cpu_count

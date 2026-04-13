@@ -148,3 +148,54 @@ def test_zero_plugin_class_else_case(mocker):
 
     em.nonzero_plugin_classes.assert_called_once()
     app_log_mock.warning.assert_called_once()
+
+
+def test_load_executors_silently_skips_import_error(mocker):
+    """A plugin whose import raises ImportError is silently skipped - no warning, not registered."""
+    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    em = _ExecutorManager()
+    em.executor_plugins_map = {}
+
+    mocker.patch("os.path.exists", return_value=True)
+    mocker.patch("covalent.executor.glob.glob", return_value=["/fake/plugins/missing_dep.py"])
+
+    mock_spec = MagicMock()
+    mock_spec.loader.exec_module.side_effect = ImportError("optional dependency not installed")
+    mocker.patch("importlib.util.spec_from_file_location", return_value=mock_spec)
+    mocker.patch("importlib.util.module_from_spec", return_value=MagicMock())
+
+    populate_mock = mocker.patch.object(em, "_populate_executor_map_from_module")
+    app_log_mock = mocker.patch("covalent.executor.app_log")
+
+    em._load_executors("/fake/plugins")
+
+    populate_mock.assert_not_called()
+    app_log_mock.warning.assert_not_called()
+
+
+def test_load_executors_continues_loading_after_import_error(mocker):
+    """An ImportError on one plugin does not prevent subsequent plugins from loading."""
+    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    em = _ExecutorManager()
+    em.executor_plugins_map = {}
+
+    mocker.patch("os.path.exists", return_value=True)
+    mocker.patch(
+        "covalent.executor.glob.glob",
+        return_value=["/fake/plugins/bad.py", "/fake/plugins/good.py"],
+    )
+
+    bad_spec = MagicMock()
+    bad_spec.loader.exec_module.side_effect = ImportError("missing dep")
+    good_spec = MagicMock()
+    good_module = MagicMock()
+
+    mocker.patch("importlib.util.spec_from_file_location", side_effect=[bad_spec, good_spec])
+    mocker.patch("importlib.util.module_from_spec", side_effect=[MagicMock(), good_module])
+
+    populate_mock = mocker.patch.object(em, "_populate_executor_map_from_module")
+
+    em._load_executors("/fake/plugins")
+
+    # Only the good plugin reaches _populate_executor_map_from_module
+    populate_mock.assert_called_once_with(good_module)
