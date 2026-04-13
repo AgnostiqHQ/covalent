@@ -100,6 +100,7 @@ async def test_set_job_handle(mocker):
     mock_update.assert_called_with([{"job_id": 1, "job_handle": "12356"}])
 
 
+@pytest.mark.asyncio
 async def test_set_job_status(mocker):
     """
     Test requesting a task to be cancelled
