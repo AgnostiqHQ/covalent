@@ -112,7 +112,7 @@ def extract_graph(graph):
     nodes = list(map(extract_graph_node, graph["nodes"]))
     return {
         "nodes": nodes,
-        "edges": graph["edges"],
+        "edges": graph["links"],
     }
 
 
