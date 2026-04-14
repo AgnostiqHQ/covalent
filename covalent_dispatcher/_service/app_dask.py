@@ -244,5 +244,6 @@ class DaskCluster(Process):
 
             admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
             admin.start()
+            admin.join()
         except Exception as e:
             self.logger.exception(e)
