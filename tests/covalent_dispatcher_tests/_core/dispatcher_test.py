@@ -659,7 +659,7 @@ async def test_clear_caches(mocker):
     g.add_node(2, task_group_id=0)
     g.add_node(3, task_group_id=3)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links")
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_edges")
     mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
     mock_unresolved_remove = mocker.patch(
         "covalent_dispatcher._core.dispatcher._workflow_run_cache.remove"
