@@ -34,7 +34,7 @@
   {
     "name": "Debian 12 / Python 3.13 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py313:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": ["push", "schedule", "workflow_dispatch", "pull_request"]
@@ -42,7 +42,7 @@
   {
     "name": "Debian 12 / Python 3.13 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py313:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
