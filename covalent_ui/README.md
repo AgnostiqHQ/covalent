@@ -41,7 +41,7 @@ yarn build
 yarn start
 ```
 ## Run server
-Recomended python version is 3.10
+Recommended python version is 3.12
 ```shell
 cd covalent_ui
 python app.py
@@ -54,4 +54,4 @@ python app.py
 
 -   The optimized production build of the UI web app lives under `covalent_ui/webapp/build`. It is statically served by the server by default.
 
--   For the development version of the web app, see `covalent_ui/webapp/README.me`
+-   For the development version of the web app, see `covalent_ui/webapp/README.md`
