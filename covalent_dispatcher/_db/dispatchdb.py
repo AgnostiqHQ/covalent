@@ -110,9 +110,10 @@ def encode_dict(d):
 def extract_graph(graph):
     graph = nx.json_graph.node_link_data(graph)
     nodes = list(map(extract_graph_node, graph["nodes"]))
+    edges = graph.get("edges", graph.get("links", []))
     return {
         "nodes": nodes,
-        "edges": graph["links"],
+        "edges": edges,
     }
 
 
