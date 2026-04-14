@@ -130,7 +130,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
     # Number of pending predecessor nodes for each task group
     pending_parents = {}
 
-    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_edges(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     # Topologically sort each task group
@@ -552,7 +552,7 @@ async def _clear_caches(dispatch_id: str):
     """Clean up all keys in caches."""
     await _workflow_run_cache.remove(dispatch_id)
 
-    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_edges(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     task_groups = {g.nodes[i]["task_group_id"] for i in g.nodes}

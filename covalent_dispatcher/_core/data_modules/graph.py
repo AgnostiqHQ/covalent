@@ -66,7 +66,7 @@ def get_node_successors_sync(
     return result_object.lattice.transport_graph.get_successors(node_id, attrs)
 
 
-def get_nodes_links_sync(dispatch_id: str) -> dict:
+def get_nodes_edges_sync(dispatch_id: str) -> dict:
     """Return the internal transport graph in NX node-link form"""
 
     # Need the whole NX graph here
@@ -94,8 +94,8 @@ async def get_node_successors(
     return await run_in_executor(get_node_successors_sync, dispatch_id, node_id, attrs)
 
 
-async def get_nodes_links(dispatch_id: str) -> Dict:
-    return await run_in_executor(get_nodes_links_sync, dispatch_id)
+async def get_nodes_edges(dispatch_id: str) -> Dict:
+    return await run_in_executor(get_nodes_edges_sync, dispatch_id)
 
 
 async def get_nodes(dispatch_id: str) -> List[int]:

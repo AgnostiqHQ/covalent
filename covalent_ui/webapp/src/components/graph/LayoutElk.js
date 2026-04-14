@@ -37,10 +37,10 @@ const nodeLabel = (type, name) => {
 const filterGraph = (graph, nodePredicate) => {
   const nodes = graph?.nodes?.filter(nodePredicate)
   const nodeSet = new Set(nodes?.map((i) => i.id))
-  const links = graph?.links?.filter(
+  const edges = graph?.edges?.filter(
     ({ source, target }) => nodeSet.has(source) && nodeSet.has(target)
   )
-  return { nodes, links }
+  return { nodes, edges }
 }
 
 /**
@@ -93,7 +93,7 @@ const mapGraphToElements = (
     }
   })
 
-  const edges = _.map(graph.links, (edge) => {
+  const edges = _.map(graph.edges, (edge) => {
     const { source, target } = edge
     return {
       id: `${source}-${target}`,

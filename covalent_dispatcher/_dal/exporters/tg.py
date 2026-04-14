@@ -53,4 +53,4 @@ def export_transport_graph(tg: _TransportGraph) -> TransportGraphSchema:
     node_list = _export_nodes(tg)
     edge_list = _export_edges(tg)
     app_log.debug(f"Exporting {len(node_list)} nodes and {len(edge_list)} edges")
-    return TransportGraphSchema(nodes=node_list, links=edge_list)
+    return TransportGraphSchema(nodes=node_list, edges=edge_list)

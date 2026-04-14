@@ -132,7 +132,7 @@ def serialize_transport_graph(tg, storage_path: str) -> TransportGraphSchema:
     g = tg.get_internal_graph_copy()
     return TransportGraphSchema(
         nodes=_serialize_nodes(g, storage_path),
-        links=_serialize_edges(g),
+        edges=_serialize_edges(g),
     )
 
 
@@ -151,7 +151,7 @@ def deserialize_transport_graph(t: TransportGraphSchema) -> _TransportGraph:
     tg = _TransportGraph()
     g = tg._graph
     nodes = [deserialize_node(n) for n in t.nodes]
-    edges = [_deserialize_edge(e) for e in t.links]
+    edges = [_deserialize_edge(e) for e in t.edges]
     for node in nodes:
         node_id = node["id"]
         attrs = node["attrs"]

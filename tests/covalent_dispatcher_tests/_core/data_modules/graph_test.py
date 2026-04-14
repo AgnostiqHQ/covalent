@@ -63,19 +63,19 @@ async def test_get_node_successors(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_node_links(mocker):
-    dispatch_id = "test_get_node_links"
+async def test_get_node_edges(mocker):
+    dispatch_id = "test_get_node_edges"
 
     mock_result_obj = MagicMock()
 
-    mock_return_val = {"nodes": [0, 1], "links": [(1, 0, 0)]}
+    mock_return_val = {"nodes": [0, 1], "edges": [(1, 0, 0)]}
     mocker.patch("networkx.readwrite.node_link_data", return_value=mock_return_val)
     mocker.patch(
         "covalent_dispatcher._core.data_modules.graph.get_result_object",
         return_value=mock_result_obj,
     )
 
-    assert mock_return_val == await graph.get_nodes_links(dispatch_id)
+    assert mock_return_val == await graph.get_nodes_edges(dispatch_id)
 
 
 @pytest.mark.asyncio

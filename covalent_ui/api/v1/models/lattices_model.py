@@ -106,7 +106,7 @@ class GraphNodes(BaseModel):
 
 class GraphResponseData(BaseModel):
     nodes: List[GraphNodes] = None
-    links: List[dict] = None
+    edges: List[dict] = None
 
 
 class GraphResponse(BaseModel):

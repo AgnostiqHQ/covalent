@@ -26,7 +26,7 @@ from .electron import ElectronSchema
 
 class TransportGraphSchema(BaseModel):
     nodes: List[ElectronSchema]
-    links: List[EdgeSchema]
+    edges: List[EdgeSchema]
 
     # For use by redispatch
     def reset(self):
