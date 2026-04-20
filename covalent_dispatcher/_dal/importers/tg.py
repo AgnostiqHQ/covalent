@@ -134,7 +134,7 @@ def import_transport_graph(
 
     # Insert edges
     edge_records = []
-    edges = [_import_edge(session, e, electron_map, edge_records) for e in tg.links]
+    edges = [_import_edge(session, e, electron_map, edge_records) for e in tg.edges]
 
     n_records = 0
     n_records = len(edge_records)
@@ -145,7 +145,7 @@ def import_transport_graph(
     delta = (et - st).total_seconds()
     app_log.debug(f"Inserting {n_records} edge records took {delta} seconds")
 
-    return TransportGraphSchema(nodes=output_nodes, links=edges)
+    return TransportGraphSchema(nodes=output_nodes, edges=edges)
 
 
 def _import_edge(

@@ -20,7 +20,14 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict
 
-import dask.system
+try:
+    import dask.system
+
+    _dask_cpu_count = dask.system.CPU_COUNT
+    _DASK_AVAILABLE = True
+except ImportError:
+    _dask_cpu_count = os.cpu_count() or 1
+    _DASK_AVAILABLE = False
 
 prefix_separator = ":"
 
@@ -129,7 +136,7 @@ def get_default_dask_config():
         ),
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
-        "num_workers": dask.system.CPU_COUNT,
+        "num_workers": _dask_cpu_count,
     }
 
 
@@ -172,7 +179,9 @@ def get_default_executor() -> dict:
 
     return (
         "local"
-        if os.environ.get("COVALENT_DISABLE_DASK") == "1" or get_config("sdk.no_cluster") == "true"
+        if not _DASK_AVAILABLE
+        or os.environ.get("COVALENT_DISABLE_DASK") == "1"
+        or get_config("sdk.no_cluster") == "true"
         else "dask"
     )
 

@@ -63,15 +63,15 @@ class Graph:
         result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
         return result
 
-    def get_links(self, parent_lattice_id: int):
+    def get_edges(self, parent_lattice_id: int):
         """
-        Get links from parent_lattice_id
-        When parent_lattice_id passed to get links
+        Get edges from parent_lattice_id
+        When parent_lattice_id passed to get edges
             then join electrons and electron_dependency
         Args:
             parent_lattice_id: Refers to the parent_lattice_id id in electrons table
         Return:
-            graph data with list of links
+            graph data with list of edges
         """
         return (
             self.db_con.query(
@@ -91,11 +91,11 @@ class Graph:
         Get graph data from parent lattice id
         When dispatch id passed to get graph
             Get list of nodes from Electrons table by passing list of latice id
-            Get list of links from Electron dependency table by passing in electron
+            Get list of edges from Electron dependency table by passing in electron
         Args:
             dispatch_id: Refers to the dispatch id from lattices table
         Return:
-            graph data with list of nodes and links
+            graph data with list of nodes and edges
         """
         parent_lattice_id = (
             self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
@@ -103,6 +103,6 @@ class Graph:
         if parent_lattice_id is not None:
             parrent_id = parent_lattice_id[0]
             nodes = self.get_nodes(parrent_id)
-            links = self.get_links(parrent_id)
-            return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
+            edges = self.get_edges(parrent_id)
+            return {"dispatch_id": str(dispatch_id), "nodes": nodes, "edges": edges}
         return None

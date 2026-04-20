@@ -119,8 +119,8 @@ def test_import_result(mocker, test_db):
         assert node.metadata == filtered_node.metadata
         filtered_node.assets.function.remote_uri.startswith(SERVER_URL)
 
-    for i, edge in enumerate(tg.links):
-        assert edge == filtered_tg.links[i]
+    for i, edge in enumerate(tg.edges):
+        assert edge == filtered_tg.edges[i]
 
 
 def test_import_previously_imported_result(mocker, test_db):

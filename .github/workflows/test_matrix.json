@@ -1,21 +1,5 @@
 [
   {
-    "name": "Debian 12 / Python 3.10 / Dask",
-    "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py310:latest",
-    "backend": "dask",
-    "experimental": false,
-    "trigger": ["schedule", "workflow_dispatch", "pull_request"]
-  },
-  {
-    "name": "Debian 12 / Python 3.10 / Local",
-    "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py310:latest",
-    "backend": "local",
-    "experimental": false,
-    "trigger": ["schedule", "workflow_dispatch", "pull_request"]
-  },
-  {
     "name": "Debian 12 / Python 3.11 / Dask",
     "os": "ubuntu-latest",
     "container": "ghcr.io/agnostiqhq/covalent-dev/debian12-py311:latest",
@@ -48,20 +32,20 @@
     "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "MacOS 13 / Python 3.10 / Dask",
-    "os": "macos-13",
-    "python-version": "3.10",
+    "name": "Debian 13 / Python 3.13 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
     "backend": "dask",
     "experimental": false,
-    "trigger": ["schedule", "workflow_dispatch"]
+    "trigger": ["push", "schedule", "workflow_dispatch", "pull_request"]
   },
   {
-    "name": "MacOS 13 / Python 3.10 / Local",
-    "os": "macos-13",
-    "python-version": "3.10",
+    "name": "Debian 13 / Python 3.13 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian13-py313:latest",
     "backend": "local",
     "experimental": false,
-    "trigger": ["schedule", "workflow_dispatch"]
+    "trigger": ["schedule", "workflow_dispatch", "pull_request"]
   },
   {
     "name": "MacOS 13 / Python 3.11 / Dask",
@@ -88,25 +72,25 @@
     "trigger": ["schedule", "workflow_dispatch"]
   },
   {
-    "name": "MacOS 13 / Python 3.11 / Local",
+    "name": "MacOS 13 / Python 3.12 / Local",
     "os": "macos-13",
-    "python-version": "3.11",
+    "python-version": "3.12",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
   },
   {
-    "name": "MacOS 14 / Python 3.10 / Dask",
-    "os": "macos-14",
-    "python-version": "3.10",
+    "name": "MacOS 13 / Python 3.13 / Dask",
+    "os": "macos-13",
+    "python-version": "3.13",
     "backend": "dask",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
   },
   {
-    "name": "MacOS 14 / Python 3.10 / Local",
-    "os": "macos-14",
-    "python-version": "3.10",
+    "name": "MacOS 13 / Python 3.13 / Local",
+    "os": "macos-13",
+    "python-version": "3.13",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
@@ -144,17 +128,17 @@
     "trigger": ["schedule", "workflow_dispatch"]
   },
   {
-    "name": "MacOS 15 / Python 3.10 / Dask",
-    "os": "macos-15",
-    "python-version": "3.10",
+    "name": "MacOS 14 / Python 3.13 / Dask",
+    "os": "macos-14",
+    "python-version": "3.13",
     "backend": "dask",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
   },
   {
-    "name": "MacOS 15 / Python 3.10 / Local",
-    "os": "macos-15",
-    "python-version": "3.10",
+    "name": "MacOS 14 / Python 3.13 / Local",
+    "os": "macos-14",
+    "python-version": "3.13",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]
@@ -187,6 +171,22 @@
     "name": "MacOS 15 / Python 3.12 / Local",
     "os": "macos-15",
     "python-version": "3.12",
+    "backend": "local",
+    "experimental": false,
+    "trigger": ["schedule", "workflow_dispatch"]
+  },
+  {
+    "name": "MacOS 15 / Python 3.13 / Dask",
+    "os": "macos-15",
+    "python-version": "3.13",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": ["schedule", "workflow_dispatch"]
+  },
+  {
+    "name": "MacOS 15 / Python 3.13 / Local",
+    "os": "macos-15",
+    "python-version": "3.13",
     "backend": "local",
     "experimental": false,
     "trigger": ["schedule", "workflow_dispatch"]

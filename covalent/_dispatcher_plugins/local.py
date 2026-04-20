@@ -482,7 +482,11 @@ class LocalDispatcher(BaseDispatcher):
         stripped = strip_local_uris(manifest) if push_assets else manifest
         endpoint = BASE_ENDPOINT
 
-        r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
+        r = APIClient(dispatcher_addr).post(
+            endpoint,
+            data=stripped.model_dump_json(),
+            headers={"Content-Type": "application/json"},
+        )
         r.raise_for_status()
 
         parsed_resp = ResultSchema.model_validate(r.json())
@@ -513,7 +517,10 @@ class LocalDispatcher(BaseDispatcher):
 
         params = {"reuse_previous_results": reuse_previous_results}
         r = APIClient(dispatcher_addr).post(
-            endpoint, data=stripped.model_dump_json(), params=params
+            endpoint,
+            data=stripped.model_dump_json(),
+            headers={"Content-Type": "application/json"},
+            params=params,
         )
         r.raise_for_status()
 

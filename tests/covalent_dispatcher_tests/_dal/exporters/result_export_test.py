@@ -85,11 +85,11 @@ def test_export_result(mocker, test_db):
     tg = manifest.lattice.transport_graph
 
     assert len(tg.nodes) == len(tg_export.nodes)
-    assert len(tg.links) == len(tg_export.links)
+    assert len(tg.edges) == len(tg_export.edges)
 
     for i, node in enumerate(tg.nodes):
         assert node.id == tg_export.nodes[i].id
         assert node.metadata == tg_export.nodes[i].metadata
 
-    for i, edge in enumerate(tg.links):
-        assert edge == tg.links[i]
+    for i, edge in enumerate(tg.edges):
+        assert edge == tg.edges[i]

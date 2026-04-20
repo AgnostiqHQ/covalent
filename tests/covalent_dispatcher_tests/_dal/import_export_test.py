@@ -122,4 +122,4 @@ def test_import_export_manifest(test_db, mocker):
 
                 assert sub_node["assets"][key] == exp_node["assets"][key]
 
-        assert sub_tg["links"] == exp_tg["links"]
+        assert sub_tg["edges"] == exp_tg["edges"]

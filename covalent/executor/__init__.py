@@ -242,7 +242,10 @@ class _ExecutorManager:
                     # Import the module that contains the plugin
                     module_spec = importlib.util.spec_from_file_location(module_name, module_file)
                     the_module = importlib.util.module_from_spec(module_spec)
-                    module_spec.loader.exec_module(the_module)
+                    try:
+                        module_spec.loader.exec_module(the_module)
+                    except ImportError:
+                        continue
 
                     self._populate_executor_map_from_module(the_module)
 

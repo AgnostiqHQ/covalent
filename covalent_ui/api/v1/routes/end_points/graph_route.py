@@ -48,7 +48,7 @@ def get_graph(dispatch_id: uuid.UUID):
                 dispatch_id=graph_data["dispatch_id"],
                 graph={
                     "nodes": jsonable_encoder(graph_data["nodes"]),
-                    "links": jsonable_encoder(graph_data["links"]),
+                    "edges": jsonable_encoder(graph_data["edges"]),
                 },
             )
         raise HTTPException(

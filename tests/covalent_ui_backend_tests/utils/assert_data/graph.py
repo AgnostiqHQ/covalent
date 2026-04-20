@@ -101,7 +101,7 @@ def seed_graph_data():
                                 "sublattice_dispatch_id": None,
                             },
                         ],
-                        "links": [
+                        "edges": [
                             {
                                 "edge_name": "name",
                                 "parameter_type": "arg",

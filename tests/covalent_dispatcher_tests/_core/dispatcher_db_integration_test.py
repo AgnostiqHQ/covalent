@@ -338,7 +338,7 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
         return nx.readwrite.node_link_data(g)
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_edges",
         side_effect=get_graph_nodes_links,
     )
 

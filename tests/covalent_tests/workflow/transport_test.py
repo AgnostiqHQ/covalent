@@ -316,7 +316,7 @@ def test_transport_graph_serialize(workflow_transport_graph):
         assert field in serialized_data["nodes"][0]
 
     # Check link field "edge_name" is not filtered out when metadata_only is False
-    assert "edge_name" in serialized_data["links"][0]
+    assert "edge_name" in serialized_data["edges"][0]
 
     # Check node information is filtered out when metadata_only is True
     serialized_data = cloudpickle.loads(wtg.serialize(metadata_only=True))
@@ -325,7 +325,7 @@ def test_transport_graph_serialize(workflow_transport_graph):
         assert "metadata" in serialized_data["nodes"][0]
 
     # Check link field "edge_name" is filtered out when metadata_only is True
-    assert "edge_name" not in serialized_data["links"][0]
+    assert "edge_name" not in serialized_data["edges"][0]
 
     # Check that parameter nodes get filtered out when metadata_only is True
     wtg.add_node(
@@ -413,7 +413,7 @@ def test_transport_graph_json_serialization():
         assert "metadata" in serialized_data["nodes"][0]
 
     # Check link field "edge_name" is filtered out when metadata_only is True
-    assert "edge_name" not in serialized_data["links"][0]
+    assert "edge_name" not in serialized_data["edges"][0]
 
     # Check timestamps
     assert tg.get_node_value(1, "start_time") == ts

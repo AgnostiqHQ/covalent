@@ -59,7 +59,7 @@ jobs:
         run: python setup.py sdist && pip install dist/*.tar.gz
 
       - name: Install test requirements
-        run: pip install --no-cache-dir -r ./tests/requirements.txt
+        run: pip install --no-cache-dir -r ./tests/requirements.txt "locust>=2.11.0"
 
       - name: Start Covalent dispatcher server
         run: covalent start -d --ignore-migrations

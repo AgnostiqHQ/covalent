@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Make `dask[distributed]` and optional dependency via `covalent[dask]` extra
+- Default executor changed from `dask` to `local` in `defaults.py`
+- Dropped Python 3.10 support, added Python 3.13; updated `test_matrix.json` and CI workflows accordingly
+- Fixed `extract_graph` to handle both `"edges"` (networkx ≥3.x) and `"links"` (older networkx) as the edge key; added lower bound on networkx version
+- Fixed various 422 errors by setting additional `Content-Type: application/json` headers as necessary
+- Moved `locust` out of `tests/requirements.txt` into the benchmark workflow only, to avoid a `gevent` conflict
+- Various test fixes: renamed `status` → `job_status`, corrected mock paths, updated graph key references
+
 ## [0.240.0-rc.0] - 2025-05-14
 
 ### Authors

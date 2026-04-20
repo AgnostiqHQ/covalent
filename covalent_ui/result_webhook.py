@@ -101,7 +101,12 @@ def send_draw_request(lattice) -> None:
     )
 
     try:
-        response = requests.post(get_ui_url("/api/draw"), data=draw_request)
+        response = requests.post(
+            get_ui_url("/api/draw"),
+            data=draw_request,
+            headers={"Content-Type": "application/json"},
+            timeout=10,
+        )
         response.raise_for_status()
     except requests.exceptions.HTTPError as ex:
         app_log.error(ex)

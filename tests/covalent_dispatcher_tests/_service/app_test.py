@@ -161,7 +161,11 @@ def test_register(mocker, app, client, mock_manifest):
         "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post("/api/v2/dispatches", data=mock_manifest.json())
+    resp = client.post(
+        "/api/v2/dispatches",
+        content=mock_manifest.model_dump_json(),
+        headers={"content-type": "application/json"},
+    )
 
     assert resp.json() == json.loads(mock_manifest.json())
     mock_register_dispatch.assert_awaited_with(mock_manifest, None)
@@ -172,7 +176,11 @@ def test_register_exception(mocker, app, client, mock_manifest):
         "covalent_dispatcher._service.app.dispatcher.register_dispatch", side_effect=RuntimeError()
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post("/api/v2/dispatches", data=mock_manifest.json())
+    resp = client.post(
+        "/api/v2/dispatches",
+        content=mock_manifest.model_dump_json(),
+        headers={"content-type": "application/json"},
+    )
     assert resp.status_code == 400
 
 
@@ -183,7 +191,11 @@ def test_register_redispatch(mocker, app, client, mock_manifest):
         return_value=mock_manifest,
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post(f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.json())
+    resp = client.post(
+        f"/api/v2/dispatches/{dispatch_id}/redispatches",
+        content=mock_manifest.model_dump_json(),
+        headers={"content-type": "application/json"},
+    )
     mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, False)
     assert resp.json() == json.loads(mock_manifest.json())
 
@@ -197,7 +209,8 @@ def test_register_redispatch_reuse(mocker, app, client, mock_manifest):
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
     resp = client.post(
         f"/api/v2/dispatches/{dispatch_id}/redispatches",
-        data=mock_manifest.json(),
+        content=mock_manifest.model_dump_json(),
+        headers={"content-type": "application/json"},
         params={"reuse_previous_results": True},
     )
     mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, True)
@@ -211,7 +224,11 @@ def test_register_redispatch_exception(mocker, app, client, mock_manifest):
         side_effect=RuntimeError(),
     )
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
-    resp = client.post(f"/api/v2/dispatches/{dispatch_id}/redispatches", data=mock_manifest.json())
+    resp = client.post(
+        f"/api/v2/dispatches/{dispatch_id}/redispatches",
+        content=mock_manifest.model_dump_json(),
+        headers={"content-type": "application/json"},
+    )
     assert resp.status_code == 400
 
 
