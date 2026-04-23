@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.241.0-rc.0] - 2025-04-23
+
 ### Changed
 
 - Make `dask[distributed]` and optional dependency via `covalent[dask]` extra
