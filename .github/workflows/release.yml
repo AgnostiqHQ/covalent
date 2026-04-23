@@ -209,14 +209,3 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/*
-
-      - name: Alert Slack
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "covalent-ci"
-          SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ":warning:  Attention Required  :warning:"
-          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
