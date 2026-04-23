@@ -42,11 +42,11 @@ permissions:
 env:
   PAUL_BLART: >
     '['
-    '"AlejandroEsquivel",'
-    '"FyzHsn",'
+    '"araghukas",'
+    '"RoboJSB",'
     '"wjcunningham7",'
-    '"kessler-frost",'
-    '"santoshkumarradha"]'
+    '"venkatBala",'
+    '"pandey-tushar"]'
 
 jobs:
   github:
