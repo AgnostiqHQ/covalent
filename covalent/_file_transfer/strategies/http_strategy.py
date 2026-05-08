@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 
 import requests
@@ -55,7 +56,20 @@ class HTTP(FileTransferStrategy):
                 # Workaround for Requests bug when streaming from empty files
                 app_log.debug(f"uploading to {to_filepath}")
                 data = reader.read() if filesize < 50 else reader
-                r = requests.put(to_filepath, headers={"Content-Length": str(filesize)}, data=data)
+
+                # Build headers including Content-Length and any extra headers
+                headers = {"Content-Length": str(filesize)}
+
+                # Add extra headers from environment (e.g., X-SESSION-TOKEN for authenticated uploads)
+                extra_headers_data = os.environ.get("COVALENT_EXTRA_HEADERS")
+                if extra_headers_data:
+                    try:
+                        extra_headers = json.loads(extra_headers_data)
+                        headers.update(extra_headers)
+                    except json.JSONDecodeError:
+                        app_log.warning("Failed to parse COVALENT_EXTRA_HEADERS, skipping")
+
+                r = requests.put(to_filepath, headers=headers, data=data)
                 r.raise_for_status()
 
         return callable
