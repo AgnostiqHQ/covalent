@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed various 422 errors by setting additional `Content-Type: application/json` headers as necessary
 - Moved `locust` out of `tests/requirements.txt` into the benchmark workflow only, to avoid a `gevent` conflict
 - Various test fixes: renamed `status` → `job_status`, corrected mock paths, updated graph key references
+- Fix redispatch bug
 
 ## [0.240.0-rc.0] - 2025-05-14
 
