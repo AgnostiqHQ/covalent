@@ -245,6 +245,7 @@ def test_copy_nodes_from(tg, mocker):
         0,
         name="replacement",
         function=replacement,
+        type="function",
         status=RESULT_STATUS.COMPLETED,
         metadata={"0-mock-key": "0-mock-value"},
     )
@@ -252,6 +253,7 @@ def test_copy_nodes_from(tg, mocker):
         1,
         name="multiply",
         function=multiply,
+        type="function",
         status=RESULT_STATUS.NEW_OBJECT,
         metadata={"1-mock-key": "1-mock-value"},
     )
@@ -259,6 +261,7 @@ def test_copy_nodes_from(tg, mocker):
         2,
         name="replacement",
         function=replacement,
+        type="function",
         status=RESULT_STATUS.COMPLETED,
         metadata={"2-mock-key": "2-mock-value"},
     )

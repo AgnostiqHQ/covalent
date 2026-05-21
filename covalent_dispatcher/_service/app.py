@@ -208,8 +208,15 @@ async def register_redispatch(
         reuse_previous_results: Whether to try reusing the results of
             previously completed electrons.
 
+    The dispatcher will avoid asking the client to re-upload artifacts
+    it determines can be reused from the original dispatch. The status
+    `"PENDING_REPLACEMENT"` indicates that a task's definition has
+    changed from the original dispatch, hence that new uploads are
+    required.
+
     Returns:
         The manifest with `dispatch_id` and remote URIs for each asset populated.
+
     """
     try:
         return await dispatcher.register_redispatch(
