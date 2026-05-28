@@ -266,7 +266,6 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
 
     if test_retcode != 0:
         exception = subprocess.CalledProcessError(returncode=test_retcode, cmd=test_cmd)
-        print("some exception ", exception)
         with pytest.raises(subprocess.CalledProcessError) as excinfo:
             crm._run_in_subprocess(
                 cmd=test_cmd,
@@ -382,6 +381,64 @@ def test_get_tf_statefile_path(mocker, crm, executor_name):
     # mock_get_config.assert_called_once_with("dispatcher.db_path")
 
 
+def test_docker(mocker, crm, caplog):
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.shutil.which",
+        return_value=None,
+    )
+    with pytest.raises(SystemExit):
+        crm._validation_docker()
+        assert caplog.levelname == "ERROR"
+        assert caplog.text == "Docker not found on system"
+
+
+@pytest.mark.parametrize(
+    "cmd",
+    ["mock-terraform init", "mock-terraform destroy"],
+)
+def test_log_error_msg(mocker, crm, cmd):
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.open",
+        new=mock.mock_open(read_data="test data"),
+    )
+    crm._log_error_msg(cmd)
+
+
+@pytest.mark.parametrize(
+    "mock_exist, indicator",
+    [
+        ([True, None], "On deploy"),
+        ([True, None], "On destroy"),
+        ([False, True], None),
+        ([False, False], None),
+    ],
+)
+def test_terraform_error_validator(mocker, crm, mock_exist, indicator):
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.os.path.join",
+        return_value="test-mock-error-file",
+    )
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.os.path.exists",
+        side_effect=mock_exist,
+    )
+    mocker.patch("covalent.cloud_resource_manager.core.os.path.getsize", return_value=2)
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.open",
+        new=mock.mock_open(read_data=f"mock test\n{indicator}"),
+    )
+    status = crm._terraform_error_validator(tfstate_path="mock_file_path")
+    if mock_exist[0]:
+        if indicator == "On deploy":
+            assert status == "*up"
+        elif indicator == "On destroy":
+            assert status == "*down"
+    elif mock_exist[1]:
+        assert status == "up"
+    else:
+        assert status == "down"
+
+
 @pytest.mark.parametrize(
     "dry_run, executor_options",
     [
@@ -432,6 +489,20 @@ def test_up(
 
     mock_update_config = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.Path.exists",
+        return_value=True,
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.Path.unlink",
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.os.path.getsize",
+        return_value=0,
     )
 
     if executor_options:
@@ -586,7 +657,7 @@ def test_down(mocker, crm):
 
     mocker.patch(
         "covalent.cloud_resource_manager.core.os.path.getsize",
-        return_value=2,
+        return_value=0,
     )
 
     crm.down(print_callback=None)
@@ -607,7 +678,7 @@ def test_down(mocker, crm):
     mock_run_in_subprocess.assert_called_once_with(cmd=cmd, print_callback=None, env_vars=env_vars)
 
     assert mock_path_exists.call_count == 5
-    assert mock_path_unlink.call_count == 4
+    assert mock_path_unlink.call_count == 5
 
 
 def test_status(mocker, crm):
