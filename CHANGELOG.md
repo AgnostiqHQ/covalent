@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed the `workdir` and `create_unique_workdir` settings being ignored by the local and Dask executors during managed execution; tasks now run in the configured working directory
 - Make `dask[distributed]` and optional dependency via `covalent[dask]` extra
 - Default executor changed from `dask` to `local` in `defaults.py`
 - Dropped Python 3.10 support, added Python 3.13; updated `test_matrix.json` and CI workflows accordingly
