@@ -29,3 +29,21 @@ class TaskCancelledError(Exception):
 
 class CommandNotFoundError(Exception):
     pass
+
+
+class ConfigLockError(Exception):
+    """Raised when the lock on the Covalent configuration file cannot be acquired.
+
+    Attributes:
+        lock_file: Path of the lock file which could not be acquired.
+    """
+
+    def __init__(self, lock_file: str) -> None:
+        self.lock_file = lock_file
+        super().__init__(
+            f"Unable to acquire a lock on the Covalent configuration file '{lock_file}'. "
+            "Either another Covalent process is holding the lock, or the filesystem "
+            "hosting the configuration directory does not support file locking. Set the "
+            "COVALENT_CONFIG_DIR environment variable to a directory on a filesystem "
+            "which supports file locking, such as a local disk."
+        )

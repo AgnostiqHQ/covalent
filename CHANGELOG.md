@@ -16,9 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed various 422 errors by setting additional `Content-Type: application/json` headers as necessary
 - Moved `locust` out of `tests/requirements.txt` into the benchmark workflow only, to avoid a `gevent` conflict
 - Various test fixes: renamed `status` → `job_status`, corrected mock paths, updated graph key references
+- Config file lock failures now raise a `ConfigLockError` explaining that `COVALENT_CONFIG_DIR` should point to a filesystem supporting file locking, instead of surfacing an opaque `filelock` error
 
 ## [0.240.0-rc.0] - 2025-05-14
-
 ### Authors
 
 - Casey Jao <casey@agnostiq.ai>

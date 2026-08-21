@@ -26,7 +26,11 @@ from typing import Any, Dict, List, Optional, Union
 import filelock
 import toml
 
+from .exceptions import ConfigLockError
+
 """Configuration manager."""
+
+CONFIG_LOCK_TIMEOUT = 1
 
 
 class ConfigManager:
@@ -88,6 +92,9 @@ class ConfigManager:
 
         Returns:
             None
+
+        Raises:
+            ConfigLockError: If the configuration file cannot be locked.
         """
 
         def update_nested_dict(old_dict, new_dict, override_existing: bool = True):
@@ -106,7 +113,8 @@ class ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        with filelock.FileLock(f"{self.config_file}.lock", timeout=1):
+        lock = self._acquire_config_lock()
+        try:
             with open(self.config_file, "r+") as f:
                 file_config = toml.load(f)
 
@@ -116,6 +124,34 @@ class ConfigManager:
 
                 # Writing it back to the file
                 self.write_config()
+        finally:
+            lock.release()
+
+    def _acquire_config_lock(self) -> filelock.BaseFileLock:
+        """
+        Acquire the lock guarding the configuration file.
+
+        Args:
+            None
+
+        Returns:
+            The acquired lock, which the caller is responsible for releasing.
+
+        Raises:
+            ConfigLockError: If the lock cannot be acquired, e.g., because the
+                filesystem hosting the configuration directory does not support
+                file locking.
+        """
+
+        lock_file = f"{self.config_file}.lock"
+        lock = filelock.FileLock(lock_file, timeout=CONFIG_LOCK_TIMEOUT)
+
+        try:
+            lock.acquire()
+        except (filelock.Timeout, NotImplementedError, OSError) as ex:
+            raise ConfigLockError(lock_file) from ex
+
+        return lock
 
     def read_config(self) -> None:
         """

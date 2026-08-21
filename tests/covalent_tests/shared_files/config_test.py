@@ -17,10 +17,12 @@
 import tempfile
 from dataclasses import asdict
 
+import filelock
 import pytest
 
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 from covalent._shared_files.defaults import DefaultConfig
+from covalent._shared_files.exceptions import ConfigLockError
 
 DEFAULT_CONFIG = asdict(DefaultConfig())
 
@@ -233,9 +235,33 @@ def test_update_config(mocker):
     cm.write_config.assert_called_once()
 
 
+@pytest.mark.parametrize(
+    "lock_error",
+    [filelock.Timeout("mock_config_file.lock"), NotImplementedError, OSError],
+)
+def test_update_config_lock_failure(mocker, lock_error):
+    """Test that an unacquirable config file lock raises an actionable error."""
+
+    cm = ConfigManager()
+
+    cm.config_file = "mock_config_file"
+
+    mock_filelock = mocker.patch("covalent._shared_files.config.filelock.FileLock")
+    mock_filelock.return_value.acquire.side_effect = lock_error
+    mock_open = mocker.patch("covalent._shared_files.config.open")
+
+    cm.write_config = mocker.Mock()
+
+    with pytest.raises(ConfigLockError, match="COVALENT_CONFIG_DIR"):
+        cm.update_config()
+
+    mock_open.assert_not_called()
+    cm.write_config.assert_not_called()
+    mock_filelock.return_value.release.assert_not_called()
+
+
 def test_config_manager_set(mocker, config_manager):
     """Test the set method in config manager."""
-
     cm = config_manager
     cm.config_data = {"mock_section": {"mock_dir": "initial_value"}}
     cm.set("mock_section.mock_dir", "final_value")
