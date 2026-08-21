@@ -18,8 +18,11 @@ import os
 from subprocess import PIPE, CalledProcessError, Popen
 from typing import Optional
 
+from ..._shared_files import logger
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
+
+app_log = logger.app_log
 
 
 class Rsync(FileTransferStrategy):
@@ -43,8 +46,9 @@ class Rsync(FileTransferStrategy):
         self.host = host
 
         if self.private_key_path and not os.path.exists(self.private_key_path):
-            raise FileNotFoundError(
-                f"Provided private key ({self.private_key_path}) does not exist. Could not instantiate Rsync File Transfer Strategy. "
+            app_log.warning(
+                f"Provided private key ({self.private_key_path}) does not exist on this machine. "
+                "The transfer will fail unless the key is available where the transfer is performed."
             )
 
     def get_rsync_ssh_cmd(
