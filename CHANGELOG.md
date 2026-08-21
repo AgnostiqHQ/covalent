@@ -16,9 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed various 422 errors by setting additional `Content-Type: application/json` headers as necessary
 - Moved `locust` out of `tests/requirements.txt` into the benchmark workflow only, to avoid a `gevent` conflict
 - Various test fixes: renamed `status` → `job_status`, corrected mock paths, updated graph key references
+- `Rsync` file transfer strategy now logs a warning instead of raising `FileNotFoundError` when the private key is not present locally, so remotely managed dispatchers can reference keys on the machine performing the transfer
 
 ## [0.240.0-rc.0] - 2025-05-14
-
 ### Authors
 
 - Casey Jao <casey@agnostiq.ai>

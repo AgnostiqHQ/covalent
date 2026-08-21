@@ -102,6 +102,19 @@ class TestRsyncStrategy:
                     File("/tmp/source.csv"), File("/tmp/dest.csv")
                 )()
 
+    def test_missing_private_key_warns_instead_of_raising(self, mocker):
+        mocker.patch("os.path.exists", return_value=False)
+        warning_mock = mocker.patch(
+            "covalent._file_transfer.strategies.rsync_strategy.app_log.warning"
+        )
+
+        strategy = Rsync(
+            user=self.MOCK_USER, host=self.MOCK_HOST, private_key_path=self.MOCK_PRIVATE_KEY_PATH
+        )
+
+        assert strategy.private_key_path == self.MOCK_PRIVATE_KEY_PATH
+        warning_mock.assert_called_once()
+
     def test_get_rsync_cmd(self):
         from_file = File("/home/ubuntu/from.csv")
         to_file = File("/home/ubuntu/to.csv")
@@ -112,8 +125,6 @@ class TestRsyncStrategy:
         assert cp_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
-        mocker.patch("os.path.exists", return_value=True)
-
         local_file = File(self.MOCK_LOCAL_FILEPATH)
         remote_file = File(self.MOCK_REMOTE_FILEPATH)
         private_key_path = self.MOCK_PRIVATE_KEY_PATH
