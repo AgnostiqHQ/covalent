@@ -26,6 +26,7 @@ from covalent._shared_files.exceptions import ConfigLockError
 
 DEFAULT_CONFIG = asdict(DefaultConfig())
 
+
 @pytest.fixture
 def config_manager():
     return ConfigManager()
