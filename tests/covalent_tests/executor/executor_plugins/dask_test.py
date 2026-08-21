@@ -373,10 +373,11 @@ def test_run_task_group_alt():
     """Test the wrapper submitted to dask"""
 
     def task(x, y):
+        with open("cwd.txt", "w") as f:
+            f.write(os.getcwd())
         return x + y
 
-    dispatch_id = "test_dask_send_receive"
-    node_id = 0
+    dispatch_id = "test_dask_send_receive"    node_id = 0
     task_group_id = 0
 
     x = TransportableObject(1)
@@ -446,23 +447,27 @@ def test_run_task_group_alt():
     stderr_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
+    workdir = tempfile.TemporaryDirectory()
 
     run_task_group_alt(
-        task_specs=[task_spec.dict()],
-        resources=resources.dict(),
+        task_specs=[task_spec.dict()],        resources=resources.dict(),
         output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url="http://localhost:48008",
+        workdir=workdir.name,
+        create_unique_workdir=True,
     )
 
     with open(result_file.name, "rb") as f:
         output = TransportableObject.deserialize(f.read())
     assert output.get_deserialized() == 3
 
+    task_workdir = os.path.join(workdir.name, dispatch_id, f"node_{node_id}")
+    assert os.listdir(task_workdir) == ["cwd.txt"]
+
     with open(cb_tmpfile.name, "r") as f:
         assert f.read() == "Hello\n"
-
     with open(ca_tmpfile.name, "r") as f:
         assert f.read() == "Bye\n"
 

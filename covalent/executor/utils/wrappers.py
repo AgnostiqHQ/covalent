@@ -23,7 +23,7 @@ import json
 import os
 import sys
 import traceback
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -96,6 +96,39 @@ def wrapper_fn(
     return TransportableObject(output)
 
 
+@contextmanager
+def set_workdir(workdir: str):
+    """Create the working directory and run the enclosed block inside it.
+
+    Args:
+        workdir: Directory in which the enclosed block is executed.
+    """
+    current_dir = os.getcwd()
+    Path(workdir).mkdir(parents=True, exist_ok=True)
+    os.chdir(workdir)
+    try:
+        yield
+    finally:
+        os.chdir(current_dir)
+
+
+def task_workdir(workdir: str, create_unique_workdir: bool, dispatch_id: str, task_id: int) -> str:
+    """Resolve the working directory for a single task.
+
+    Args:
+        workdir: Base working directory.
+        create_unique_workdir: Whether each task gets its own subdirectory.
+        dispatch_id: Dispatch id of the task.
+        task_id: Node id of the task.
+
+    Returns:
+        The directory in which the task is to be executed.
+    """
+    if create_unique_workdir:
+        return os.path.join(workdir, dispatch_id, f"node_{task_id}")
+    return workdir
+
+
 def io_wrapper(
     fn: Callable,
     args: List,
@@ -106,16 +139,12 @@ def io_wrapper(
     process and capture stdout and stderr"""
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
         try:
-            Path(workdir).mkdir(parents=True, exist_ok=True)
-            current_dir = os.getcwd()
-            os.chdir(workdir)
-            output = fn(*args, **kwargs)
+            with set_workdir(workdir):
+                output = fn(*args, **kwargs)
             tb = ""
         except Exception as ex:
             output = None
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        finally:
-            os.chdir(current_dir)
     return output, stdout.getvalue(), stderr.getvalue(), tb
 
 
@@ -161,6 +190,8 @@ def run_task_group(
     results_dir: str,
     task_group_metadata: dict,
     server_url: str,
+    workdir: str = ".",
+    create_unique_workdir: bool = False,
 ):
     """
     Run a task group.
@@ -243,7 +274,10 @@ def run_task_group(
                     )
                     exception_occurred = False
 
-                    with set_context(dispatch_id, task_id):
+                    current_workdir = task_workdir(
+                        workdir, create_unique_workdir, dispatch_id, task_id
+                    )
+                    with set_context(dispatch_id, task_id), set_workdir(current_workdir):
                         transportable_output = wrapper_fn(
                             serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
                         )
@@ -351,6 +385,8 @@ def run_task_group_alt(
     results_dir: str,
     task_group_metadata: dict,
     server_url: str,
+    workdir: str = ".",
+    create_unique_workdir: bool = False,
 ):
     """
     Alternate form of run_task_group.
@@ -431,7 +467,10 @@ def run_task_group_alt(
                     exception_occurred = False
 
                     # Run the task function
-                    with set_context(dispatch_id, task_id):
+                    current_workdir = task_workdir(
+                        workdir, create_unique_workdir, dispatch_id, task_id
+                    )
+                    with set_context(dispatch_id, task_id), set_workdir(current_workdir):
                         transportable_output = wrapper_fn(
                             serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
                         )

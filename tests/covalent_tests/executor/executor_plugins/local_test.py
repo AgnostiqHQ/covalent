@@ -243,10 +243,11 @@ def test_run_task_group(mocker):
     """Test the wrapper submitted to local"""
 
     def task(x, y):
+        with open("cwd.txt", "w") as f:
+            f.write(os.getcwd())
         return x + y
 
-    dispatch_id = "test_local_send_receive"
-    node_id = 0
+    dispatch_id = "test_local_send_receive"    node_id = 0
     task_group_id = 0
     server_url = "http://localhost:48008"
 
@@ -366,21 +367,25 @@ def test_run_task_group(mocker):
     stderr_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
+    workdir = tempfile.TemporaryDirectory()
 
     run_task_group(
-        task_specs=[task_spec.dict()],
-        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        task_specs=[task_spec.dict()],        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url=server_url,
+        workdir=workdir.name,
+        create_unique_workdir=True,
     )
 
     output = TransportableObject.deserialize(resources[node_0_output_file_url])
     assert output.get_deserialized() == 3
 
+    task_workdir = os.path.join(workdir.name, dispatch_id, f"node_{node_id}")
+    assert os.listdir(task_workdir) == ["cwd.txt"]
+
     with open(cb_tmpfile.name, "r") as f:
         assert f.read() == "Hello\n"
-
     with open(ca_tmpfile.name, "r") as f:
         assert f.read() == "Bye\n"
 
@@ -640,8 +645,9 @@ def test_send_internal(
         local_exec.workdir,
         test_case["task_group_metadata"],
         test_case["expected_server_url"],
+        local_exec.workdir,
+        local_exec.create_unique_workdir,
     )
-
 
 @pytest.mark.asyncio
 async def test_send(mocker):

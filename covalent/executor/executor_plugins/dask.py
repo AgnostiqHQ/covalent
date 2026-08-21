@@ -268,9 +268,10 @@ class DaskExecutor(AsyncBaseExecutor):
             self.cache_dir,
             task_group_metadata,
             server_url,
+            self.workdir,
+            self.create_unique_workdir,
             key=key,
         )
-
         _clients[key] = dask_client
         _futures[key] = future
 

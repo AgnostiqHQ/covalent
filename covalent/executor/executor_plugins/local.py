@@ -184,6 +184,8 @@ class LocalExecutor(BaseExecutor):
             self.workdir,
             task_group_metadata,
             server_url,
+            self.workdir,
+            self.create_unique_workdir,
         )
 
         def handle_cancelled(fut):
