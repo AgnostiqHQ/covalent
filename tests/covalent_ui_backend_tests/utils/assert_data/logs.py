@@ -15,6 +15,7 @@
 # limitations under the License.
 
 "Logs mock data"
+
 import copy
 
 from .config_data import LOG_FORMAT, LOG_LEVEL, LOG_TO_FILE

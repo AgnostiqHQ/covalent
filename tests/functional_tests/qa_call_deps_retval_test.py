@@ -16,7 +16,6 @@
 
 """QA script to test the call deps return value functionality."""
 
-
 import covalent as ct
 
 

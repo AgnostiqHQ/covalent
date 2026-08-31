@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Result object."""
+
 import os
 import re
 from datetime import datetime

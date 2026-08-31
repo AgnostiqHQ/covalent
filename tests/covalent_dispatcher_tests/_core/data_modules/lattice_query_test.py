@@ -18,7 +18,6 @@
 Tests for the querying lattices
 """
 
-
 from unittest.mock import MagicMock
 
 import pytest

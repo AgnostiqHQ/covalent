@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Electron test"""
+
 import datetime
 
 import pytest

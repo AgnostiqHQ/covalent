@@ -20,7 +20,6 @@ Tests for the core functionality of the dispatcher.
 This will be replaced in the next patch.
 """
 
-
 from unittest.mock import call
 
 import pytest

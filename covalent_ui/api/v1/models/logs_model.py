@@ -16,7 +16,6 @@
 
 """Logs response model"""
 
-
 from typing import Annotated, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Lattices test"""
+
 from os.path import abspath, dirname
 
 import pytest
