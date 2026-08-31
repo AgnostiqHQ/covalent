@@ -77,7 +77,7 @@ async def read_and_forward_pty_output():
         await sio.sleep(0.01)
         if file_descriptor and terminal_subprocess:
             timeout_sec = 0
-            (data_ready, _, _) = select.select([file_descriptor], [], [], timeout_sec)
+            data_ready, _, _ = select.select([file_descriptor], [], [], timeout_sec)
             if data_ready:
                 output = os.read(file_descriptor, max_read_bytes).decode()
                 await sio.emit("pty-output", {"output": output})
@@ -110,7 +110,7 @@ async def on_start_start_terminal(*args):
     global terminal_subprocess
     terminal_subprocess = True
     global child_process_id
-    (child_pid, fd) = pty.fork()
+    child_pid, fd = pty.fork()
     if child_pid == 0:
         subprocess.run([os.environ.get("SHELL", "bash")])
     else:

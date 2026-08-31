@@ -16,7 +16,6 @@
 
 """Unit tests for the FastAPI app."""
 
-
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from unittest.mock import MagicMock

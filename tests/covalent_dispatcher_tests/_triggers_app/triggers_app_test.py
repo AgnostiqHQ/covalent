@@ -16,7 +16,6 @@
 
 """Unit tests for the Triggers server endpoints"""
 
-
 from unittest import mock
 
 import pytest

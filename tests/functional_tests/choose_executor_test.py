@@ -16,7 +16,6 @@
 
 """Functional tests for selecting executor"""
 
-
 import covalent as ct
 
 

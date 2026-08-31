@@ -16,7 +16,6 @@
 
 """Tests for DB-backed Result"""
 
-
 import os
 import tempfile
 

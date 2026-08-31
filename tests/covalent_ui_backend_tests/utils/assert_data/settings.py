@@ -16,7 +16,6 @@
 
 """Settings mock data"""
 
-
 from .config_data import BASE_DIR, CONFIG_PATH, EXECUTOR_DIR, LOG_DIR
 
 

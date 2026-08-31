@@ -21,6 +21,7 @@ Revises:
 Create Date: 2022-07-19 16:31:18.833092
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
