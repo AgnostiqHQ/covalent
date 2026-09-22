@@ -90,6 +90,8 @@ Executing a Workflow
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
+:doc:`Using Local Modules in Remote Electrons <./execution/using_local_modules>`
+
 :doc:`Canceling a Workflow <./execution/cancel_dispatch>`
 
 .. :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
