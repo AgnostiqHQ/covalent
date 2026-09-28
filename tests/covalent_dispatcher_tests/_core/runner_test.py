@@ -18,7 +18,6 @@
 Tests for the core functionality of the runner.
 """
 
-
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

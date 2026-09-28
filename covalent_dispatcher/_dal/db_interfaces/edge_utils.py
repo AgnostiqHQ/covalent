@@ -16,7 +16,6 @@
 
 """Mappings between electron attributes and DB records"""
 
-
 from ..._db import models
 
 

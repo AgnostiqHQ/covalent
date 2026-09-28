@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Functions providing programmatic access to Covalent CLI commands."""
+
 import subprocess
 from typing import List, Optional
 
