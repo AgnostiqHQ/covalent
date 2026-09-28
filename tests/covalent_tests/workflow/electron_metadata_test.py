@@ -16,7 +16,6 @@
 
 """Unit tests to test whether electrons inherit lattice metadata correctly"""
 
-
 from covalent._shared_files.defaults import postprocess_prefix
 from covalent._workflow.transport import _TransportGraph
 

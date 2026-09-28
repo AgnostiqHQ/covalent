@@ -16,7 +16,6 @@
 
 """DB-backed edge"""
 
-
 from typing import Dict
 
 from .._db import models

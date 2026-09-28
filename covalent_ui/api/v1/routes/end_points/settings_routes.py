@@ -16,7 +16,6 @@
 
 """Settings Route"""
 
-
 from typing import Dict
 
 from fastapi import APIRouter, HTTPException, status
