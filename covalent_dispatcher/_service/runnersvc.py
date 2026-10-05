@@ -16,7 +16,6 @@
 
 """Endpoints to update status of running tasks."""
 
-
 from fastapi import APIRouter, Request
 
 from covalent._shared_files import logger

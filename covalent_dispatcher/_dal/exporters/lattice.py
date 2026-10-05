@@ -17,7 +17,6 @@
 
 """Functions to transform Lattice -> LatticeSchema"""
 
-
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.lattice import LatticeAssets, LatticeMetadata, LatticeSchema
 from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice

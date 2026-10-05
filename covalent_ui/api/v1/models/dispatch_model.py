@@ -16,7 +16,6 @@
 
 """Dispatch request and response model"""
 
-
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
 from uuid import UUID

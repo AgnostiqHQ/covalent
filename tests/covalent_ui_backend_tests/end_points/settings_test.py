@@ -16,7 +16,6 @@
 
 """Settings API"""
 
-
 import pytest
 
 from .. import fastapi_app
