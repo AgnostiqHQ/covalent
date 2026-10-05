@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Graph Data Layer"""
+
 from uuid import UUID
 
 from sqlalchemy import text
@@ -39,8 +40,7 @@ class Graph:
         Return:
             graph data with list of nodes
         """
-        sql = text(
-            """SELECT
+        sql = text("""SELECT
             electrons.id as id,
             electrons.name as name,
             electrons.transport_graph_node_id as node_id,
@@ -58,8 +58,7 @@ class Graph:
             ) as sublattice_dispatch_id
             from electrons join lattices on electrons.parent_lattice_id = lattices.id
             where lattices.id = :a
-        """
-        )
+        """)
         result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
         return result
 

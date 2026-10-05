@@ -16,7 +16,6 @@
 
 """Summary Test"""
 
-
 from os.path import abspath, dirname
 
 import pytest
