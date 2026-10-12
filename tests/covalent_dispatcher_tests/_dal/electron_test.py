@@ -16,7 +16,6 @@
 
 """Tests for DB-backed electron"""
 
-
 import pytest
 
 import covalent as ct

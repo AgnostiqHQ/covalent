@@ -16,7 +16,6 @@
 
 """Covalent CLI Tool - Service Management."""
 
-
 import asyncio
 import contextlib
 import json
@@ -335,9 +334,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     is_flag=False,
     type=str,
     help="""Memory limit per worker in GB.
-              Provide strings like 1gb/1GB or 0 for no limits""".replace(
-        "\n", ""
-    ),
+              Provide strings like 1gb/1GB or 0 for no limits""".replace("\n", ""),
 )
 @click.option(
     "-n",

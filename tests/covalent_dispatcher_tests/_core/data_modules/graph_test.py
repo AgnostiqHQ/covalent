@@ -18,7 +18,6 @@
 Tests for the graph querying functions
 """
 
-
 from unittest.mock import MagicMock
 
 import pytest

@@ -16,7 +16,6 @@
 
 """Logs functional test"""
 
-
 import pytest
 
 from covalent_ui.api.v1.data_layer.logs_dal import Logs

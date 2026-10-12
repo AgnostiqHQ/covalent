@@ -17,7 +17,6 @@
 
 """Functions to transform Lattice -> LatticeSchema"""
 
-
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.result import (

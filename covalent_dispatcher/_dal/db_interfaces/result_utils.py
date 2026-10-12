@@ -16,7 +16,6 @@
 
 """Mappings between result attributes and DB records"""
 
-
 from covalent._shared_files.schemas import result
 from covalent._shared_files.util_classes import Status
 

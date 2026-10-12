@@ -18,7 +18,6 @@
 Tests for the core functionality of the dispatcher.
 """
 
-
 from typing import Dict, List
 
 import pytest

@@ -18,7 +18,6 @@
 Utilities for querying the transport graph
 """
 
-
 # Note: these query static information which should be amenable to caching
 
 from typing import Dict, List
