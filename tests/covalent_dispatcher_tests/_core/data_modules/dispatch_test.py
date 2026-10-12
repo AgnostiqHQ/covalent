@@ -18,7 +18,6 @@
 Tests for the querying and updating dispatches
 """
 
-
 from unittest.mock import MagicMock
 
 import pytest

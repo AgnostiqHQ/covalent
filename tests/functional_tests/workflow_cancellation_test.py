@@ -16,7 +16,6 @@
 
 """End-to-end tests of dispatch cancellation"""
 
-
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 

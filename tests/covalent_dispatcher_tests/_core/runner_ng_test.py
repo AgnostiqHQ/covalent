@@ -18,7 +18,6 @@
 Tests for the core functionality of the runner.
 """
 
-
 import asyncio
 import datetime
 import sys

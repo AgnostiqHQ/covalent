@@ -16,7 +16,6 @@
 
 """Test wait for file transfer."""
 
-
 from pathlib import Path
 
 import covalent as ct

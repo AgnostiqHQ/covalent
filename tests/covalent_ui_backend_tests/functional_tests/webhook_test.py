@@ -16,7 +16,6 @@
 
 """Result webhook functional test"""
 
-
 import pytest
 
 import covalent as ct

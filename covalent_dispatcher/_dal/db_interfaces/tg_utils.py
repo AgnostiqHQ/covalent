@@ -16,7 +16,6 @@
 
 """Mappings between graph attributes and DB records"""
 
-
 from typing import List
 
 from sqlalchemy import select

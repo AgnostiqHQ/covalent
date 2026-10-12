@@ -18,7 +18,6 @@
 Tests for the core functionality of the dispatcher.
 """
 
-
 import base64
 import tempfile
 from unittest.mock import MagicMock
