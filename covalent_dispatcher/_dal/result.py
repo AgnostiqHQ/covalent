@@ -31,9 +31,13 @@ from .._db import models
 from .asset import Asset, copy_asset_meta
 from .base import DispatchedObject
 from .controller import Record
-from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
-from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.result_utils import _meta_record_map, get_filters, set_filters
+from .db_interfaces.result_utils import (  # nopycln: import
+    ASSET_KEYS,
+    METADATA_KEYS,
+    _meta_record_map,
+    get_filters,
+    set_filters,
+)
 from .electron import ELECTRON_KEYS, Electron
 from .lattice import LATTICE_KEYS, Lattice
 
