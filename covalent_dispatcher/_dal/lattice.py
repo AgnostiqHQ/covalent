@@ -23,9 +23,13 @@ from sqlalchemy.orm import Session
 from .._db import models
 from .base import DispatchedObject
 from .controller import Record
-from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
-from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.lattice_utils import _meta_record_map, get_filters, set_filters
+from .db_interfaces.lattice_utils import (  # nopycln: import
+    ASSET_KEYS,
+    METADATA_KEYS,
+    _meta_record_map,
+    get_filters,
+    set_filters,
+)
 from .tg import ELECTRON_KEYS, _TransportGraph
 
 LATTICE_KEYS = list(_meta_record_map.keys())
