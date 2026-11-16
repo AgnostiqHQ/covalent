@@ -15,5 +15,4 @@
 # limitations under the License.
 
 from .app import router as triggers_router  # nopycln: import
-from .app import triggers_only_app  # nopycln: import
-from .app import trigger_only_router
+from .app import trigger_only_router, triggers_only_app  # nopycln: import
